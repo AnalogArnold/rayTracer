@@ -16,8 +16,10 @@ def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_
     render_mesh = simdata_to_mesh(pypath, field_components, fields_to_render, scale)
     if world_position is not None:
         render_mesh.set_pos(world_position)
+    coords_world = np.matmul(render_mesh.coords, render_mesh.mesh_to_world_mat.T) # Convert to world coordinates
+    coords = np.ascontiguousarray(coords_world[:,:3])
+    #coords = np.ascontiguousarray(render_mesh.coords[:,:3])
     connectivity = render_mesh.connectivity
-    coords = np.ascontiguousarray(render_mesh.coords[:,:3])
     #node_coords = coords[connectivity,:3]
     x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes. Use this for coloring somehow
     x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
@@ -35,8 +37,9 @@ def get_mesh_data(pypath, field_components=("disp_x","disp_y", "disp_z"), fields
     render_mesh = simdata_to_mesh(pypath, field_components, fields_to_render, scale)
     if world_position is not None:
         render_mesh.set_pos(world_position)
+    coords_world = np.matmul(render_mesh.coords, render_mesh.mesh_to_world_mat.T) # Convert to world coordinates
+    coords = np.ascontiguousarray(coords_world[:,:3])
     connectivity = render_mesh.connectivity
-    coords = np.ascontiguousarray(render_mesh.coords[:,:3])
     #node_coords = coords[connectivity,:3]
     x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes. Use this for coloring somehow
     x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities

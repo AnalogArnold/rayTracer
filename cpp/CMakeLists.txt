@@ -68,4 +68,4 @@ else()
     )
 endif()
 
-install(TARGETS rtmaincpp LIBRARY DESTINATION /home/tudent/rayTracer)
+install(TARGETS rtmaincpp LIBRARY DESTINATION /home/micha/rayTracer)
