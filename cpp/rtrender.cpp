@@ -53,7 +53,7 @@ EiVector3d return_ray_color(const Ray& ray,
 
 
         // Look for intersection
-        IntersectionOutput intersection = intersect_plane(ray, connectivity_ptr, node_coords_ptr, number_of_elements);
+        IntersectionOutput intersection = intersect_triangle(ray, connectivity_ptr, node_coords_ptr, number_of_elements);
         Eigen::Index minRowIndex, minColIndex;
 
         intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value

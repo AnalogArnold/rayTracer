@@ -21,7 +21,7 @@ EiVectorD3d cross_rowwise(const EiVectorD3d& mat1, const EiVectorD3d& mat2) {
     return cross_product_result;
 }
 
-IntersectionOutput intersect_plane(const Ray& ray,
+IntersectionOutput intersect_triangle(const Ray& ray,
     const int* connectivity_ptr,
     const double* node_coords_ptr,
     const long long number_of_elements) {

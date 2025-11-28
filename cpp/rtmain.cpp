@@ -12,7 +12,6 @@
 #include <nanobind/eigen/dense.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/vector.h>
-#include <nanobind/nanobind.h>
 
 // raytracer header files
 #include "rteigentypes.h"
