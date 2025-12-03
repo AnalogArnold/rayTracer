@@ -16,6 +16,7 @@
 // raytracer header files
 #include "rteigentypes.h"
 #include "rtrender.h"
+#include "rtbvh.cpp"
 
 namespace nb = nanobind;
 
@@ -30,8 +31,10 @@ void render_scene(const int image_height,
     const std::vector<nb::DRef<Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor>>> matrix_pixel_spacings) {
 
     size_t num_cameras = camera_centers.size();
-    //std::cout << "Made it to the cpp" << std::endl;
 
+    build_acceleration_structures(scene_connectivity, scene_coords, scene_face_colors);
+   
+    /* // Comment out for preliminary testing of building BVHs
     // Iterate over all cameras and render an image for each
     for (size_t camera_idx = 0; camera_idx < num_cameras; ++camera_idx) {
         EiVector3d camera_center = camera_centers[camera_idx];
@@ -40,6 +43,7 @@ void render_scene(const int image_height,
 
         render_ppm_image(camera_center, pixel_00_center, matrix_pixel_spacing, scene_connectivity, scene_coords, scene_face_colors, image_height, image_width, number_of_samples);
     }
+        */
 }
 
 NB_MODULE(rtmaincpp, a) {

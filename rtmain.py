@@ -16,8 +16,8 @@ aspect_ratio = 16.0 / 9.0
 image_height = int(image_width / aspect_ratio)  # px
 #number_of_samples = 1; # for anti-aliasing
 # Assume single camera for now - but can be extended to multiple cameras later
-#camera_center = np.array([-0.5, 1.1, 1.1])
-camera_center = np.array([-1.0, 0.1, 0.5])
+camera_center = np.array([-0.5, 1.1, 1.1])
+#camera_center = np.array([-1.0, 0.1, 0.5])
 camera_target = np.array([0, 0, -1])
 angle_vertical_view = 90  # degrees
 
@@ -40,9 +40,9 @@ camera1.add_camera_to_scene(scene)
 
 data_path = dataset.render_simple_block_path() # Test mesh 1
 data_path2 = dataset.render_mechanical_3d_path() # Test mesh 2
-#add_mesh_to_scene(scene, data_path)
-add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
-add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
+add_mesh_to_scene(scene, data_path)
+#add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
+#add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
 
 # Lights - to be added later
 
