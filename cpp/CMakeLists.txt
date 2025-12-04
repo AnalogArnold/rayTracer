@@ -10,7 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Optimization flags
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release) # not for now
+set(CMAKE_BUILD_TYPE Debug)
 
 # Find Python and nanobind
 find_package(Python 3.11 COMPONENTS Interpreter Development EXACT REQUIRED)

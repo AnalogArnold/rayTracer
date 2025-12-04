@@ -319,6 +319,8 @@ bool binned_sah_split(BVH_Node& Node,
     // Recompute child bounds from the indices
     Node.left_child->bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, Node.left_child->min_triangle_idx, Node.left_child->triangle_count);
     Node.right_child->bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, Node.right_child->min_triangle_idx, Node.right_child->triangle_count);
+    
+    Node.triangle_count = 0; // Split => Internal node containing no triangles, so update the count
 
     // Build BVH recursively
     build_bvh(*Node.left_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
@@ -361,6 +363,10 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         double* mesh_node_coords_ptr = const_cast<double*>(mesh_node_coords.data());
         int* mesh_connectivity_ptr = const_cast<int*>(mesh_connectivity.data());
 
+        // DEBUG LINES
+        //std::cout << "number of elements " << mesh_number_of_elements << std::endl; // Test if there isn't issue passing the data that would cause errors further down the line
+        //std::cout << "first nodal coordinate " << mesh_node_coords_ptr[0] << std::endl;
+
         // Containers for calculated data
         std::vector<std::array<double,3>> mesh_triangle_centroids; // Store centroids for this mesh
         mesh_triangle_centroids.reserve(mesh_number_of_elements);
@@ -390,6 +396,9 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
             // Include triangle AABB in mesh AABB to get the bounding box for the whole thing
             mesh_aabb.expand_to_include_AABB(triangle_aabb);
         }
+        // DEBUG LINES
+        //std::cout << "mesh_triangle_centroids[4][0] " << mesh_triangle_centroids[4][0] << std::endl;
+        //std::cout << "mesh_triangle_aabbs[4].corner_max[0] " << mesh_triangle_aabbs[4].corner_max[0] << std::endl;
 
         // Actually build the BVH
         /*
@@ -408,9 +417,12 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
     */
 
         std::vector<int> mesh_triangle_indices;
-        mesh_triangle_indices.reserve(mesh_number_of_elements);
+        mesh_triangle_indices.resize(mesh_number_of_elements);
         std::iota(mesh_triangle_indices.begin(), mesh_triangle_indices.end(), 0);
-
+        // DEBUG LINES
+        //std::cout << "size of mesh_triangle_indices " << mesh_triangle_indices.size() << std::endl;
+        //std::cout << "mesh_triangle_indices[0] " << mesh_triangle_indices[0] << std::endl;
+        //std::cout << "mesh_triangle_indices[30] " << mesh_triangle_indices[30] << std::endl;
 
         //BVH_Node* root = nullptr; // syntax for raw pointers
         //root = new BVH_Node();
@@ -420,7 +432,6 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         root->min_triangle_idx = 0;
         root->triangle_count = mesh_number_of_elements;
         //mesh_bvh.root = std::move(root);
-
 
         build_bvh(*root, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
         print_bvh(root.get());
