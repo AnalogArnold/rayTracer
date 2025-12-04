@@ -52,8 +52,9 @@ add_mesh_to_scene(scene, data_path)
 
 from rtmaincpp import cpp_render_scene
 number_of_samples = 1; # for anti-aliasing
-nanobind_results = timeit.timeit("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_connectivity, scene.scene_coords, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), number=1)
-print(nanobind_results)
+cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_connectivity, scene.scene_coords, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)
+#nanobind_results = timeit.timeit("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_connectivity, scene.scene_coords, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), number=1)
+#print(nanobind_results)
 
 # NANOBIND TESTS    
 #from rtmaincpp import cpp_render_scene

@@ -6,7 +6,11 @@
 #include <limits>
 #include <numeric>
 #include "./Eigen/Dense"
+#include <iostream>
+#include <memory>
 
+#include "rtbvh.h"
+/*
 // nanobind header files
 #include <nanobind/nanobind.h>
 #include <nanobind/eigen/dense.h>
@@ -17,6 +21,7 @@
 #include "rteigentypes.h"
 #include "rtrender.h"
 #include "rtray.h"
+*/
 
 // TO-DO'S:
 // Update main to pass data and construct bvh; then rtrender and rtrayintersection to reflect these changes
@@ -32,6 +37,8 @@
 // build_bvh - Write it (depends on everything above, though)
 
 
+
+
  inline void compute_triangle_centroid(int node_0,
     int node_1,
     int node_2,
@@ -44,6 +51,7 @@
     }
 }
 
+/*
 // Bounding volume structure - axis-aligned bounding boxes (AABB)
 struct AABB {
     double corner_min[3]{};
@@ -53,6 +61,7 @@ struct AABB {
         corner_min[0] = corner_min[1] = corner_min[2] = std::numeric_limits<double>::infinity();
         corner_max[0] = corner_max[1] = corner_max[2] = -std::numeric_limits<double>::infinity();
     }
+     // Used for building AABBs for all mesh triangles
     void expand_to_include_node(const int& node_id,
         const double* mesh_node_coords_ptr){
         for (int i = 0; i < 3; ++i){
@@ -61,13 +70,22 @@ struct AABB {
              if (nodal_coordinate > corner_max[i]) corner_max[i] = nodal_coordinate;
         }
     }
-
+     // Used for SAH splitting
+     void expand_to_include_point(const std::array<double,3>& point){
+        for (int i = 0; i < 3; ++i){
+            double point_coordinate = point[i];
+            if (point_coordinate < corner_min[i]) corner_min[i] = point_coordinate;
+            if (point_coordinate > corner_max[i]) corner_max[i] = point_coordinate;
+        }
+    }
+     // Used for creating child node AABBs
     void expand_to_include_AABB(const AABB& other) {
         for (int i = 0; i < 3; ++i){
             if (other.corner_min[i] < corner_min[i]) corner_min[i] = other.corner_min[i];
             if (other.corner_max[i] > corner_max[i]) corner_max[i] = other.corner_max[i];
         }
     }
+
     inline double find_axis_extent(int axis) const {
         return corner_max[axis] - corner_min[axis];
     }
@@ -81,65 +99,103 @@ struct AABB {
 
 // BVH node structure - naive implementation with pointers for now. Replace with indices once functional to save a few bytes
 struct BVH_Node {
-    AABB bounding_box;
     int min_triangle_idx;
-    int max_triangle_idx;
     int triangle_count;
-    BVH_Node* left_child {nullptr}; // Nullptr if leaf.
-    BVH_Node* right_child {nullptr};
+    AABB bounding_box {};
+    // Unique pointers to prevent memory leaks with raw pointers and new BVH_Node use
+    std::unique_ptr<BVH_Node> left_child;
+    std::unique_ptr<BVH_Node> right_child;
+    //BVH_Node* left_child {nullptr}; // Nullptr if leaf.
+    //BVH_Node* right_child {nullptr};
 };
+*/
+AABB create_node_AABB(const std::vector<AABB>& mesh_triangle_abbs,
+    const std::vector<int>& mesh_triangle_indices,
+    const int node_min_triangle_idx,
+    const int node_triangle_count) {
+    // Iterates over all triangles assigned to the node to find its bounding box
+    int node_max_triangle_idx = node_min_triangle_idx + node_triangle_count;
+    AABB node_AABB;
+
+    for (int i = node_min_triangle_idx; i < node_max_triangle_idx; ++i) {
+        int triangle_idx = mesh_triangle_indices[i];
+        node_AABB.expand_to_include_AABB(mesh_triangle_abbs[triangle_idx]);
+    }
+    return node_AABB;
+}
+
+/*
+struct BVH {
+    std::vector<BVH_Node> nodes;
+    std::vector<unsigned int> triangle_indices; // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
+    std::unique_ptr<BVH_Node> root;
+};
+*/
 
 // Auxiliary functions for splitting and binning
 double find_SAH_cost_bin(unsigned int left_element_count, unsigned int right_element_count, const AABB& left_bounds, const AABB& right_bounds) {
     // Calculate the Surface Area Heuristic (SAH) cost of a node. Simplified equation for initial implementation.
    return (double)left_element_count * left_bounds.find_surface_area() + (double)right_element_count * right_bounds.find_surface_area(); // Static casts complained so leave C-style casts for now
 }
-
+/*
 struct Bin {
     // Bin for binning SAH
-    AABB bounding_box;
+    AABB bounding_box {};
     int element_count {0};
 };
 
+*/
+
 // Binned Surface Area Heuristic (SAH) split
 bool binned_sah_split(BVH_Node& Node,
-    const std::vector<AABB>& triangle_AABBs,
-    const std::vector<std::array<double,3>>& triangle_centroids,
-    unsigned int split_axis,
-    double split_position) {
-    // Find AABBs for the node
-    AABB node_AABB;
-    for (int i = 0; i < Node.triangle_count; ++i) {
-        // find min anx max of all centroids of triangles contained within the node
-        // set node_AABB values to the values found
+    const std::vector<std::array<double,3>>& mesh_triangle_centroids,
+    const std::vector<AABB>& mesh_triangle_aabbs,
+    const std::vector<int>& mesh_triangle_indices,
+    unsigned int& out_split_axis,
+    double& out_split_position) {
+
+    if (Node.triangle_count <= 2) return false; // Too small to split
+    unsigned int node_max_triangle_idx = Node.min_triangle_idx + Node.triangle_count;
+
+    // Compute centroid bounds for the node
+    // We use existing AABB since it nicely implements everything we need, BUT it is not to be confused with the actual bounding box of the node
+    // node_centroid_bounds - Only used to determine splitting
+    // bounding_box - Actual bounding box of the node used for ray intersections
+    AABB node_centroid_bounds{};
+    for (int i = Node.min_triangle_idx; i < node_max_triangle_idx; ++i) {
+        // Retrieve triangle and its centroid on the split axis
+        unsigned int triangle_idx = mesh_triangle_indices[i];
+        std::array<double,3> triangle_centroid = mesh_triangle_centroids[triangle_idx];
+        node_centroid_bounds.expand_to_include_point(triangle_centroid);
     }
 
     // Pick the longest axis for splitting
     int best_axis = 0;
-    double axis_extent = Node.bounding_box.find_axis_extent(best_axis);
+    double axis_extent = node_centroid_bounds.find_axis_extent(best_axis);
     for (int i = 1; i < 3; ++i) {
-        double temp_extent = Node.bounding_box.find_axis_extent(i);
+        double temp_extent = node_centroid_bounds.find_axis_extent(i);
         if (temp_extent > axis_extent){
             best_axis = i;
             axis_extent = temp_extent;
         }
     }
-    if (axis_extent == 0) return false; // All centroids on a plane => No useful split
-    split_axis = best_axis;
+    if (axis_extent == 0) return false; // All centroids coincident along the chosen axis => No useful split
+    // Might implement fallback split here (median et.c) here later rather than in the main build_bvh function?
+    out_split_axis = best_axis;
 
     // Create bins
     constexpr int NUM_BINS = 8;
     Bin bins[NUM_BINS];
-    const double inverse_extent = 1.0/axis_extent[best_axis];
-    for (unsigned int i = 0; i < Node.triangle_count; ++i) {
-        // get triangle
-        // get its centroid
-        // Find the bin it belongs to
-        //double t = (Node.bounding_box.corner_min[best_axis] - triangle_centroids[triangle_idx][best_axis]) * inverse_extent;
+
+    const double inverse_extent = 1.0/axis_extent;
+    for (unsigned int i = Node.min_triangle_idx; i < node_max_triangle_idx; ++i){
+        unsigned int triangle_idx = mesh_triangle_indices[i];
+        // Find the bin containing the triangle centroid
+        double t = (mesh_triangle_centroids[triangle_idx][best_axis] - node_centroid_bounds.corner_min[best_axis]) * inverse_extent;
         int bin_id = static_cast<int>(t * NUM_BINS);
         if (bin_id == NUM_BINS) bin_id = NUM_BINS - 1; // Round up to the last bin
         bins[bin_id].element_count++;
-        //bins[bin_id].bounding_box.expand_to_include_AABB(triangle_AABBs[triangle_idx]);
+        bins[bin_id].bounding_box.expand_to_include_AABB(mesh_triangle_aabbs[triangle_idx]);
     }
 
     // Pre-compute left/right bounds for all possible splits (so we don't have to recompute them from scratch to analyse every possible split)
@@ -174,7 +230,7 @@ bool binned_sah_split(BVH_Node& Node,
     double best_cost = std::numeric_limits<double>::infinity();
     int best_split_bin = -1;
 
-    for (int i = 0; i < BINS; ++i) {
+    for (int i = 0; i < NUM_BINS - 1; ++i) {
         unsigned int left_size = left_count[i];
         unsigned int right_size = right_count[i+1];
         if (left_size == 0 || right_size == 0) continue; // invalid split
@@ -189,47 +245,19 @@ bool binned_sah_split(BVH_Node& Node,
 
     // Convert bin index to world-space split position
     double bin_width = axis_extent / NUM_BINS;
-    split_position = Node.bounding_box.corner_min[best_axis] + bin_width * (best_split_bin + 1);
+    out_split_position = node_centroid_bounds.corner_min[best_axis] + bin_width * (best_split_bin + 1); // Boundary between best_split_bin and best_split_bin + 1
     return true;
 }
 
-void split_node(BVH_Node& node,
-    const std::vector<std::array<double,3>>& triangle_centroids,
-    double split_axis_position) {
-
-    unsigned int begin = node.min_triangle_idx;
-    unsigned int end = node.max_triangle_idx;
-    unsigned int mid = begin;
-
-    while (mid < end) {
-        // get triangle
-        // get its centroid and its value at the split_axis_position
-        // if centroid[split_axis_position] < split_axis_position  (on the left)
-        //   move mid to the right ++mid;
-        // else
-        //   move mid to the left --end; std::swap(triangle_indices[mid], triangle_indices[end]) or similar if triangles stored in bvh structure by their indices
-    }
-    unsigned int left_count = mid - begin;
-    unsigned int right_count = node.triangle_count - left_count;
-
-    if (left_count == 0 || right_count == 0) // Invalid split => No triangles left in either child node
-    {
-        return;
-        // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
-    }
-}
-
  void build_bvh(BVH_Node& Node,
-    const int* mesh_connectivity_ptr,
-    const double* mesh_node_coords_ptr,
-    const std::vector<std::array<double,3>>& triangle_centroids,
-    const std::vector<AABB>& triangle_abbs){
-    
+    const std::vector<std::array<double,3>>& mesh_triangle_centroids,
+    const std::vector<AABB>& mesh_triangle_aabbs,
+    std::vector<int>& mesh_triangle_indices){
+
     static constexpr int MAX_ELEMENTS_PER_LEAF = 4;
 
     // Check if we should terminate and make a leaf node
     if (Node.triangle_count <= MAX_ELEMENTS_PER_LEAF) {
-        // make this a leaf node (set node values appropriately depending on the final data layout)
         // For now leaf node means that both children are nullptr, so while these should be default values, set them again just to be sure
         Node.left_child = nullptr;
         Node.right_child = nullptr;
@@ -237,11 +265,74 @@ void split_node(BVH_Node& node,
     }
     // Otherwise, split elements into child nodes
     // Run binned SAH
-    int split_axis = 0;
+    unsigned int split_axis = 0;
     double split_position = 0.0;
-    bool found_split = binned_sah_split(Node, triangle_abbs, triangle_centroids, split_axis, split_position);
+    bool found_split = binned_sah_split(Node, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices, split_axis, split_position);
+    if (!found_split) {
+        Node.left_child = nullptr;
+        Node.right_child = nullptr;
+        return;
+        // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
+    }
+
+    // Partition of indices by centroid[axis] < split_pos
+    unsigned int begin = Node.min_triangle_idx;
+    unsigned int end = begin + Node.triangle_count;
+    unsigned int mid = begin;
+
+    while (mid < end) {
+        unsigned int triangle_idx = mesh_triangle_indices[mid];
+        double triangle_centroid_split = mesh_triangle_centroids[triangle_idx][split_axis];
+        // Compare triangle centroid position on the axis versus the splitting point
+        if (triangle_centroid_split < split_position) { // Triangle on the left
+            ++mid; // move mid to the right
+        } else {
+            --end; // Move end to left
+            std::swap(mesh_triangle_indices[mid], mesh_triangle_indices[end]);
+        }
+    }
+    // How many triangles are on the left and on the right
+    unsigned int left_count = mid - begin;
+    unsigned int right_count = Node.triangle_count - left_count;
+
+    // Abort split if one side is empty
+    if (left_count == 0 || right_count == 0) {
+        Node.left_child = nullptr;
+        Node.right_child = nullptr;
+        return;
+    }
+
+    // Create children
+    //Node.left_child = new BVH_Node{}; // raw pointer syntax
+    //Node.right_child = new BVH_Node{};
+    Node.left_child = std::make_unique<BVH_Node>();
+    Node.right_child = std::make_unique<BVH_Node>();
+
+    // Assign triangle ranges
+    // Left child indices: [begin, begin+left_count)
+    Node.left_child->triangle_count = left_count;
+    Node.left_child->min_triangle_idx = begin;
+    // Right child indices: [begin+left_count, begin+left_count+right_count)
+    Node.right_child->triangle_count = right_count;
+    Node.right_child->min_triangle_idx = begin + left_count;
+
+    // Recompute child bounds from the indices
+    Node.left_child->bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, Node.left_child->min_triangle_idx, Node.left_child->triangle_count);
+    Node.right_child->bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, Node.right_child->min_triangle_idx, Node.right_child->triangle_count);
+
+    // Build BVH recursively
+    build_bvh(*Node.left_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+    build_bvh(*Node.right_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+}
 
 
+// Sanity-test check function
+void print_bvh(const BVH_Node* node,
+    int depth = 0) {
+    if (!node) return;
+    std::cout << std::string(depth*2, ' ') << "Node triangles: " << node->triangle_count << "\n";
+    if (node->left_child) print_bvh(node->left_child.get(), depth + 1);
+    if (node->right_child) print_bvh(node->right_child.get(), depth + 1);
 }
 
 // Handles building all acceleration structures in the scene - bottom and top level
@@ -256,7 +347,7 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
     // Create vectors to store centroid and AABB data for the scene; might not need these, but have them for now
     std::vector<std::vector<std::array<double,3>>> scene_centroids; // Stores centroids for all meshes in the scene
     std::vector<std::vector<AABB>> scene_aabbs; // Stores AABBs for all meshes in this scene
-    scene_centroids.reserve(num_meshes); 
+    scene_centroids.reserve(num_meshes);
     scene_aabbs.reserve(num_meshes);
 
     // Iterate over MESHES
@@ -269,14 +360,14 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         long long mesh_number_of_elements = mesh_connectivity.shape(0); // number of triangles/faces, will give us indices for some bits
         double* mesh_node_coords_ptr = const_cast<double*>(mesh_node_coords.data());
         int* mesh_connectivity_ptr = const_cast<int*>(mesh_connectivity.data());
-        
+
         // Containers for calculated data
         std::vector<std::array<double,3>> mesh_triangle_centroids; // Store centroids for this mesh
         mesh_triangle_centroids.reserve(mesh_number_of_elements);
         std::vector<AABB> mesh_triangle_aabbs; // Bounding volumes for the elements in this mesh
         mesh_triangle_aabbs.reserve(mesh_number_of_elements);
         AABB mesh_aabb; // AABB for the entire mesh
-        
+
         // Iterate over ELEMENTS/TRIANGLES in this mesh
         for (int triangle_idx = 0; triangle_idx <mesh_number_of_elements; triangle_idx++) {
             // Use pointers - means we treat the 2D array as a flat 1D array and do the indexing manually by calculating the offset.
@@ -290,7 +381,7 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
             mesh_triangle_centroids.push_back(triangle_centroid);
 
             // Create bounding volume for this triangle
-            AABB triangle_aabb; 
+            AABB triangle_aabb;
             triangle_aabb.expand_to_include_node(node_0, mesh_node_coords_ptr);
             triangle_aabb.expand_to_include_node(node_1, mesh_node_coords_ptr);
             triangle_aabb.expand_to_include_node(node_2, mesh_node_coords_ptr);
@@ -301,27 +392,49 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         }
 
         // Actually build the BVH
-        std::vector<int> mesh_triangle_indices;
-        mesh_triangle_indices.resize(mesh_number_of_elements); // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
-        std::iota(mesh_triangle_indices.begin(), mesh_triangle_indices.end(), 0); // Fill the vector with triangle indices
+        /*
+        // With BVH struct
+        BVH mesh_bvh;
+        mesh_bvh.triangle_indices.resize(mesh_number_of_elements);
+        for (unsigned int i = 0; i < N; ++i){
+            mesh_bvh.triangle_indices[i] = i;
+        }
+        mesh_bvh.root = std::make_unique<BVH_Node>();
+        mesh_bvh.root->bounding_box = mesh_aabb;
+        mesh_bvh.root->min_triangle_idx = 0;
+        mesh_bvh.root->triangle_count = mesh_number_of_elements;
+        // Alternatively use iota, but we wanted minimal subset of C++ functions?
+        //std::iota(mesh_bvh.triangle_indices.begin(), mesh_bvh.triangle_indices.end(), 0); // Fill the vector with triangle indices
+    */
 
-        BVH_Node* root = nullptr;
-        root = new BVH_Node();
+        std::vector<int> mesh_triangle_indices;
+        mesh_triangle_indices.reserve(mesh_number_of_elements);
+        std::iota(mesh_triangle_indices.begin(), mesh_triangle_indices.end(), 0);
+
+
+        //BVH_Node* root = nullptr; // syntax for raw pointers
+        //root = new BVH_Node();
+
+        std::unique_ptr<BVH_Node> root = std::make_unique<BVH_Node>();
         root->bounding_box = mesh_aabb;
         root->min_triangle_idx = 0;
-        root->max_triangle_idx = mesh_number_of_elements - 1;
         root->triangle_count = mesh_number_of_elements;
-        
-        build_bvh(root, mesh_connectivity_ptr, mesh_node_coords_ptr, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+        //mesh_bvh.root = std::move(root);
 
+
+        build_bvh(*root, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+        print_bvh(root.get());
+
+        // Without struct bvh all data should be accessible via root pointer after building
     }
-    
+
     // Build TLAS - structure of BLASes. Target is BVH in itself, but use a vector to just contain them for now?
 
  }
 
 
 
+//
 
  /*
 // For performance improvement and corner cases, later have a look at: https://tavianator.com/2022/ray_box_boundary.html
