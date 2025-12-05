@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "rtbvh.h"
+#include "rtrayintersection.h"
+#include "rthitrecord.h"
 /*
 // nanobind header files
 #include <nanobind/nanobind.h>
@@ -122,6 +124,32 @@ AABB create_node_AABB(const std::vector<AABB>& mesh_triangle_abbs,
         node_AABB.expand_to_include_AABB(mesh_triangle_abbs[triangle_idx]);
     }
     return node_AABB;
+}
+
+// For performance improvement and corner cases, later have a look at: https://tavianator.com/2022/ray_box_boundary.html
+bool intersect_AABB (const Ray& ray, const AABB& aabb) {
+    // Slab method for ray-AABB intersection
+    double t_min[3];
+    double t_max[3];
+    EiVector3d inverse_direction = 1/(ray.direction.array()); // Divide first to use cheaper multiplication later
+
+    // Find ray intersections with planes defining the AABB in X, Y, Z
+    for (int i = 0; i < 3; ++i) {
+        t_min[i] = (aabb.corner_min[i] - ray.origin(i)) * inverse_direction(i);
+        t_max[i] = (aabb.corner_max[i] - ray.origin(i)) * inverse_direction(i);
+        if (t_min[i] > t_max[i]) std::swap(t_min[i], t_max[i]);
+    }
+
+    //Overlap test
+    // Find min and max values out of all t-values found
+    double t_close = t_min[0];
+    double t_far = t_max[0];
+    for (int i = 1; i < 3; ++i) {
+        if (t_min[i] > t_close) t_close = t_min[i];
+        if (t_max[i] < t_far) t_far = t_max[i];
+    }
+
+    return t_close < t_far; // False => No overlap => Ray does not intersect the AABB
 }
 
 /*
@@ -327,14 +355,65 @@ bool binned_sah_split(BVH_Node& Node,
     build_bvh(*Node.right_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
 }
 
-
 // Sanity-test check function
 void print_bvh(const BVH_Node* node,
     int depth = 0) {
     if (!node) return;
     std::cout << std::string(depth*2, ' ') << "Node triangles: " << node->triangle_count << "\n";
+    Ray test_ray;
+    test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
+    test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
+    std::cout << std::string(depth*2, ' ') << "AABB intersection: " << intersect_AABB(test_ray, node->bounding_box) << "\n";
     if (node->left_child) print_bvh(node->left_child.get(), depth + 1);
     if (node->right_child) print_bvh(node->right_child.get(), depth + 1);
+}
+
+void intersect_bvh(const Ray& ray,
+    const BVH_Node& node,
+    const std::vector<int>& mesh_triangle_indices,
+    const int* mesh_connectivity_ptr,
+    const double* mesh_node_coords_ptr) {
+
+     HitRecord intersection_record; // Only here for tests. Doesn't make sense to have it here later - it's one per ray, so it'll be in the renderer as usual.
+     std::cout << "Starting BVH intersection test" << std::endl;
+
+    if (!intersect_AABB(ray, node.bounding_box)) return; // Early exit if ray does not intersect the AABB of the node
+    if (node.left_child == nullptr && node.right_child == nullptr) {
+        // No children => Leaf node => Intersect triangles
+        std::cout << "Leaf node reached with " << node.triangle_count << " triangles." << std::endl;
+        int node_max_triangle_idx = node.min_triangle_idx + node.triangle_count;
+        // Get indices of the triangles within the node and store in vector to pass to the intersection function
+        std::vector<unsigned int> node_triangle_indices;
+        node_triangle_indices.resize(node.triangle_count);
+        for (int i = node.min_triangle_idx; i < node_max_triangle_idx; ++i) {
+            int triangle_idx = mesh_triangle_indices[i];
+            node_triangle_indices[i - node.min_triangle_idx] = triangle_idx;
+            std::cout << "Node triangle index: " << triangle_idx << std::endl;
+        }
+        IntersectionOutput intersection = intersect_bvh_triangles(ray, mesh_connectivity_ptr, mesh_node_coords_ptr, node.triangle_count, node_triangle_indices);
+        Eigen::Index minRowIndex, minColIndex;
+        std::cout << "Number of t_values: " << intersection.t_values.size() << std::endl;
+
+        intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value
+
+        double closest_t = intersection.t_values(minRowIndex, minColIndex);
+        if (closest_t < intersection_record.t) {
+            intersection_record.t = closest_t;
+            intersection_record.barycentric_coordinates = intersection.barycentric_coordinates.row(minRowIndex);
+            intersection_record.point_intersection = ray_at_t(closest_t, ray);
+            intersection_record.normal_surface = intersection.plane_normals.row(minRowIndex);
+            // Get a pointer to the array storing face colors for the mesh if intersected
+            //double* face_colors_ptr = const_cast<double*>((scene_face_colors[mesh_idx]).data());
+            //intersection_record.face_color = get_face_color(minRowIndex, face_colors_ptr);
+        }
+        if (intersection_record.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
+            std::cout << "Intersection found" << std::endl;
+        }
+    }
+    else { // Not a leaf node => Test children nodes for intersections
+        intersect_bvh(ray, *node.left_child, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
+        intersect_bvh(ray, *node.right_child, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
+    }
 }
 
 // Handles building all acceleration structures in the scene - bottom and top level
@@ -434,7 +513,11 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         //mesh_bvh.root = std::move(root);
 
         build_bvh(*root, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
-        print_bvh(root.get());
+        //print_bvh(root.get());
+        Ray test_ray;
+        test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
+        test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
+        intersect_bvh(test_ray, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
 
         // Without struct bvh all data should be accessible via root pointer after building
     }
@@ -443,50 +526,6 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
 
  }
 
-
-
-//
-
- /*
-// For performance improvement and corner cases, later have a look at: https://tavianator.com/2022/ray_box_boundary.html
-bool intersect_AABB (const Ray& ray, const AABB& aabb) {
-    // Slab method for ray-AABB intersection
-    double t_min[3];
-    double t_max[3];
-    EiVector3d inverse_direction = 1/(ray.direction.array()); // Divide first to use cheaper multiplication later
-
-    // Find ray intersections with planes defining the AABB in X, Y, Z
-    for (int i = 0; i < 3; ++i) {
-        t_min[i] = (aabb.corner_min[i] - ray.origin(i)) * inverse_direction(i);
-        t_max[i] = (aabb.corner_max[i] - ray.origin(i)) * inverse_direction(i);
-        if (t_min[i] > t_max[i]) std::swap(t_min[i], t_max[i]);
-    }
-
-    //Overlap test
-    // Find min and max values out of all t-values found
-    double t_close = t_min[0];
-    double t_far = t_max[0];
-    for (int i = 1; i < 3; ++i) {
-        if (t_min[i] > t_close) t_close = t_min[i];
-        if (t_max[i] < t_far) t_far = t_max[i];
-    }
-
-    return t_close < t_far; // False => No overlap => Ray does not intersect the AABB
-}
-*/
-/*
-void intersect_bvh(const Ray& ray, const BVH_Node& node) {
-    if (!intersect_AABB(ray, node.bounding_box)) return; // Early exit if ray does not intersect the AABB of the node
-    if (node.left_child == nullptr && node.right_child == nullptr) { // No children => Leaf node => Intersect triangles
-        // Intersect all triangles contained in the node
-
-    }
-    else { // Not a leaf node => Test children nodes for intersections
-        intersect_bvh(ray, *node.left_child);
-        intersect_bvh(ray, *node.right_child);
-    }
-}
-*/
 
 /*
 double find_SAH_cost_node(const BVH_Node& node) {
