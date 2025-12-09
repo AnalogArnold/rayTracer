@@ -17,6 +17,7 @@
 #include "rteigentypes.h"
 #include "rtrender.h"
 #include "rtbvh.h"
+#include "rtbvh_recursion.h"
 
 namespace nb = nanobind;
 
