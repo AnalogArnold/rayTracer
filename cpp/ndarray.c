@@ -8,30 +8,70 @@
 //#include <cstdio>
 //#include <cstdlib>
 
-// Written for double (_double), int (_int), unsigned int (_uint), and long long (_llong).
+//////////////////////////////////////////////////////// USAGE //////////////////////////////////////////////////////
+// Written for double, int, unsigned int, and long long.
 // Unit tests at the very bottom.
 
-// Functions:
-// ndarray_init_
-// ndaray_deinit_
-// ndarray_get_flat_index_
-// ndarray_set_index_
-// ndarray_get_
-// ndaray_fill_
-// ndarray_print_
-// ndarray_match_dimensions_
-// ndarray_add_in_place_
-// ndarray_subtract_in_place_
-// ndarray_multiply_in_place_
-// ndarray_divide_in_place_
-// ndarray_scalar_multiply_
-// ndarray_get_slice_
-// ndarray_add_
-// ndarray_subtract_
-// ndarray_multiply_elemWise_
-// ndarray_divide_elemWise_
+// Syntax: function_name(variable_type, &array1, &array2), etc.
 
-#define NDArray(T) struct { T *elems; size_t *dims;  size_t *strides; size_t ndims;  size_t nelems;}
+// Function names and arguments:
+// ndarray_init_T(*array, *elems, nelems, *dims, ndims)
+// ndarray_deinit_T(*array)
+// ndarray_get_flat_index_T(*array, *indices, indices_len, *out_index)
+// ndarray_set_index_T(*array, *indices, indices_len, value)
+// ndarray_get_T(*array, *indices, indices_len, *out_value)
+// ndarray_fill_T(*array, value)
+// ndarray_print_T(*array)
+// ndarray_match_dimensions_T(*array1, *array2)
+// ndarray_add_in_place_T(*array1, *array2)
+// ndarray_subtract_in_place_T(*array1, *array2)
+// ndarray_multiply_in_place_T(*array1, *array2)
+// ndarray_divide_in_place_T(*array1, *array2)
+// ndarray_scalar_multiply_T(*array, scalar) Nb4 scalar is the same type as the array elements
+// ndarray_get_slice_T(*array, *fixed_indices, fixed_length, slice_fixed_dim, **out_pointer, *out_length)
+// ndarray_add_T(*in_array1, *in_array2, *out_array)
+// ndarray_subtract_T(*in_array1, *in_array2, *out_array)
+// ndarray_multiply_elemWise_T(*in_array1, *in_array2, *out_array)
+// ndarray_divide_elemWise_T(*in_array1, *in_array2, *out_array)
+
+#define NDArray(T) struct { T *elems; size_t *dims;  size_t *strides; size_t ndims;  size_t nelems;} // name-mangling macro
+
+// Map standard C type names to type tags
+#define ND_T_double f64
+#define ND_T_i32 i32
+#define ND_T_unsigned_i32 u32
+#define ND_T_long_long i64
+
+// Paste macro for name-mangling
+// Ensure arguments are fully expanded before concantenating
+#define ND_PASTE2(a,b) a##b // ## is the concatenation operator
+#define ND_PASTE(a,b) ND_PASTE2(a,b)
+// Given a functionName and a typeTag, build symbol 'ndarray_functionName_typeTag`
+#define ND_FUNC(functionName, typeTag) ND_PASTE(ndarray_##functionName##_, typeTag) // expand to create a specific function name, e.g., ndarray_add_f64
+// Map C type token to a tag
+#define ND_TAG(T) ND_T_##T // Take a C-type token (e.g., int) and use the ND_T tag to retrieve the type tag (e.g., i32)
+
+// Top-level macros to create a "generic" interface. Take a C type token and pick the right function
+// Need to be updated for each additional function created...
+#define ndarray_init_T(T, array, data, nelems, dims, ndims) ND_FUNC(init, ND_TAG(T))(array, data, nelems, dims, ndims)
+#define ndarray_deinit_T(T, array) ND_FUNC(deinit, ND_TAG(T))(array)
+#define ndarray_get_flat_index_T(T, array, indices, indices_len, out_index) ND_FUNC(get_flat_index, ND_TAG(T))(array, indices, indices_len, out_index)
+#define ndarray_set_index_T(T, array, indices, indices_len, value) ND_FUNC(set_index, ND_TAG(T))(array, indices, indices_len, value)
+#define ndarray_get_T(T, array, indices, indices_len, out_value) ND_FUNC(get, ND_TAG(T))(array, indices, indices_len, out_value)
+#define ndarray_fill_T(T, array, value) ND_FUNC(fill, ND_TAG(T))(array, value)
+#define ndarray_print_T(T, array) ND_FUNC(print, ND_TAG(T))(array)
+#define ndarray_match_dimensions_T(T, array1, array2) ND_FUNC(match_dimensions, ND_TAG(T))(array1, array2)
+#define ndarray_add_in_place_T(T, array1, array2) ND_FUNC(add_in_place, ND_TAG(T))(array1, array2)
+#define ndarray_subtract_in_place_T(T, array1, array2) ND_FUNC(subtract_in_place, ND_TAG(T))(array1, array2)
+#define ndarray_multiply_in_place_T(T, array1, array2) ND_FUNC(multiply_in_place, ND_TAG(T))(array1, array2)
+#define ndarray_divide_in_place_T(T, array1, array2) ND_FUNC(divide_in_place, ND_TA
+#define ndarray_scalar_multiply_T(T, array, scalar) ND_FUNC(scalar_multiply, ND_TAG(T))(array, scalar)
+#define ndarray_get_slice_T(T, array, fixed_indices, fixed_length, slice_fixed_dim, out_pointer, out_length) ND_FUNC(get_slice, ND_TAG(T))(array, fixed_indices, fixed_length, slice_fixed_dim, out_pointer, out_length)
+#define ndarray_add_T(T, array1, array2, out_array) ND_FUNC(add, ND_TAG(T))(array1, array2, out_array)
+#define ndarray_subtract_T(T, array1, array2, out_array) ND_FUNC(subtract, ND_TAG(T))(array1, array2, out_array)
+#define ndarray_multiply_elemWise_T(T, array1, array2, out_array) ND_FUNC(multiply_elemWise, ND_TAG(T))(array1, array2, out_array)
+#define ndarray_divide_elemWise_T(T, array1, array2, out_array) ND_FUNC(divide_elemWise, ND_TAG(T))(array1, array2, out_array)
+
 
 /* // Struct breakdown
 typedef struct {
@@ -61,7 +101,7 @@ typedef enum {
 
 // Initialization
 NDArrayError
-ndarray_init_double(NDArray(double) *arr,
+ndarray_init_f64(NDArray(double) *arr,
     double *elems,
     size_t nelems,
     const size_t *dims,
@@ -107,7 +147,7 @@ ndarray_init_double(NDArray(double) *arr,
 
 // Deinitialization
 void
-ndarray_deinit_double(NDArray(double) *arr) {
+ndarray_deinit_f64(NDArray(double) *arr) {
     // Free dims and strides (elems is owned by the caller, so no need to)
     free(arr->dims);
     free(arr->strides);
@@ -117,7 +157,7 @@ ndarray_deinit_double(NDArray(double) *arr) {
 
 // Index computation
 NDArrayError
-ndarray_get_flat_index_double(const NDArray(double) *arr,
+ndarray_get_flat_index_f64(const NDArray(double) *arr,
     const size_t *indices,
     size_t indices_len,
     size_t *out_index) {
@@ -135,32 +175,32 @@ ndarray_get_flat_index_double(const NDArray(double) *arr,
 }
 
 NDArrayError
-ndarray_set_index_double(NDArray(double) *arr,
+ndarray_set_index_f64(NDArray(double) *arr,
     const size_t *indices,
     size_t indices_len,
     double value) {
     // Set value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_double(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_f64(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     arr->elems[flat] = value;
     return NDARRAY_OK;
 }
 
 NDArrayError
-ndarray_get_double(const NDArray(double) *arr,
+ndarray_get_f64(const NDArray(double) *arr,
     const size_t *indices,
     size_t indices_len,
     double *out_value) {
     // Get value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_double(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_f64(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     *out_value = arr->elems[flat];
     return NDARRAY_OK;
 }
 
-void ndarray_fill_double(NDArray(double) *arr,
+void ndarray_fill_f64(NDArray(double) *arr,
     double value) {
     // Fill the array with a given value
     for (size_t i = 0; i < arr->nelems; ++i) {
@@ -168,7 +208,7 @@ void ndarray_fill_double(NDArray(double) *arr,
     }
 }
 
-void ndarray_print_double(const NDArray(double) *arr) {
+void ndarray_print_f64(const NDArray(double) *arr) {
     // Print the array contents
     for (size_t i = 0; i < arr->nelems; ++i) {
         printf("%f ", arr->elems[i]);
@@ -176,7 +216,7 @@ void ndarray_print_double(const NDArray(double) *arr) {
     printf("\n");
 }
 
-bool ndarray_match_dimensions_double(const NDArray(double) *array1,
+bool ndarray_match_dimensions_f64(const NDArray(double) *array1,
     const NDArray(double) *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
@@ -189,9 +229,9 @@ bool ndarray_match_dimensions_double(const NDArray(double) *array1,
     return true;
 }
 NDArrayError
-ndarray_add_in_place_double(NDArray(double) *self, const NDArray(double) *other) {
+ndarray_add_in_place_f64(NDArray(double) *self, const NDArray(double) *other) {
     // Add two arrays together in-place
-    if (!ndarray_match_dimensions_double(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] += other->elems[i];
     }
@@ -199,9 +239,9 @@ ndarray_add_in_place_double(NDArray(double) *self, const NDArray(double) *other)
 }
 
 NDArrayError
-ndarray_subtract_in_place_double(NDArray(double) *self, const NDArray(double) *other) {
+ndarray_subtract_in_place_f64(NDArray(double) *self, const NDArray(double) *other) {
     // Subtract two arrays together in-place
-    if (!ndarray_match_dimensions_double(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] -= other->elems[i];
     }
@@ -209,9 +249,9 @@ ndarray_subtract_in_place_double(NDArray(double) *self, const NDArray(double) *o
 }
 
 NDArrayError
-ndarray_multiply_in_place_double(NDArray(double) *self, const NDArray(double) *other) {
+ndarray_multiply_in_place_f64(NDArray(double) *self, const NDArray(double) *other) {
     // Multiply two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_double(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] *= other->elems[i];
     }
@@ -219,9 +259,9 @@ ndarray_multiply_in_place_double(NDArray(double) *self, const NDArray(double) *o
 }
 
 NDArrayError
-ndarray_divide_in_place_double(NDArray(double) *self, const NDArray(double) *other) {
+ndarray_divide_in_place_f64(NDArray(double) *self, const NDArray(double) *other) {
     // Divide two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_double(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] /= other->elems[i];
     }
@@ -229,7 +269,7 @@ ndarray_divide_in_place_double(NDArray(double) *self, const NDArray(double) *oth
 }
 
 void
-ndarray_scalar_multiply_double(NDArray(double) *self,
+ndarray_scalar_multiply_f64(NDArray(double) *self,
     double scalar) {
     // Multiply an array by a scalar
     for (size_t i = 0; i < self->nelems; ++i) {
@@ -238,7 +278,7 @@ ndarray_scalar_multiply_double(NDArray(double) *self,
 }
 
 NDArrayError
-ndarray_get_slice_double(const NDArray(double) *arr,
+ndarray_get_slice_f64(const NDArray(double) *arr,
     size_t *fixed_indices, // these will be modified
     size_t fixed_length,
     size_t slice_fixed_dim,
@@ -254,7 +294,7 @@ ndarray_get_slice_double(const NDArray(double) *arr,
         fixed_indices[i] = 0;
     }
     size_t start_index;
-    NDArrayError err_start = ndarray_get_flat_index_double(arr, fixed_indices, fixed_length, &start_index);
+    NDArrayError err_start = ndarray_get_flat_index_f64(arr, fixed_indices, fixed_length, &start_index);
     if (err_start != NDARRAY_OK) return err_start; // Error getting start index
 
     size_t slice_length = arr->dims[slice_fixed_dim];
@@ -264,9 +304,9 @@ ndarray_get_slice_double(const NDArray(double) *arr,
 }
 
 NDArrayError
-ndarray_add_double(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
+ndarray_add_f64(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
     // Add two arrays together and return a third array
-    if (!ndarray_match_dimensions_double(array1, array2) || !ndarray_match_dimensions_double(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(array1, array2) || !ndarray_match_dimensions_f64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     //ndarray_fill(out_array, 0);
     // Could also fill out_array with 0s and run ndarray_add_in_place twice with array1 and array2, but then we have to basically go into 3 for loops, so not the best option
     for (size_t i = 0; i < array1->nelems; ++i) {
@@ -275,9 +315,9 @@ ndarray_add_double(const NDArray(double) *array1, const NDArray(double) *array2,
     return NDARRAY_OK;
 }
 NDArrayError
-ndarray_subtract_double(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
+ndarray_subtract_f64(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
     // Subtract two arrays together and return a third array
-    if (!ndarray_match_dimensions_double(array1, array2) || !ndarray_match_dimensions_double(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(array1, array2) || !ndarray_match_dimensions_f64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] - array2->elems[i];
     }
@@ -285,9 +325,9 @@ ndarray_subtract_double(const NDArray(double) *array1, const NDArray(double) *ar
 }
 
 NDArrayError
-ndarray_multiply_elemWise_double(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
+ndarray_multiply_elemWise_f64(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
     // Multiply two arrays together and return a third array
-    if (!ndarray_match_dimensions_double(array1, array2) || !ndarray_match_dimensions_double(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(array1, array2) || !ndarray_match_dimensions_f64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] * array2->elems[i];
     }
@@ -295,9 +335,9 @@ ndarray_multiply_elemWise_double(const NDArray(double) *array1, const NDArray(do
 }
 
 NDArrayError
-ndarray_divide_elemWise_double(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
+ndarray_divide_elemWise_f64(const NDArray(double) *array1, const NDArray(double) *array2, NDArray(double) *out_array) {
     // Divide two arrays together and return a third array
-    if (!ndarray_match_dimensions_double(array1, array2) || !ndarray_match_dimensions_double(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_f64(array1, array2) || !ndarray_match_dimensions_f64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] / array2->elems[i];
     }
@@ -309,7 +349,7 @@ ndarray_divide_elemWise_double(const NDArray(double) *array1, const NDArray(doub
 
 // Initialization
 NDArrayError
-ndarray_init_int(NDArray(int) *arr,
+ndarray_init_i32(NDArray(int) *arr,
     int *elems,
     size_t nelems,
     const size_t *dims,
@@ -355,7 +395,7 @@ ndarray_init_int(NDArray(int) *arr,
 
 // Deinitialization
 void
-ndarray_deinit_int(NDArray(int) *arr) {
+ndarray_deinit_i32(NDArray(int) *arr) {
     // Free dims and strides (elems is owned by the caller, so no need to)
     free(arr->dims);
     free(arr->strides);
@@ -365,7 +405,7 @@ ndarray_deinit_int(NDArray(int) *arr) {
 
 // Index computation
 NDArrayError
-ndarray_get_flat_index_int(const NDArray(int) *arr,
+ndarray_get_flat_index_i32(const NDArray(int) *arr,
     const size_t *indices,
     size_t indices_len,
     size_t *out_index) {
@@ -383,32 +423,32 @@ ndarray_get_flat_index_int(const NDArray(int) *arr,
 }
 
 NDArrayError
-ndarray_set_index_int(NDArray(int) *arr,
+ndarray_set_index_i32(NDArray(int) *arr,
     const size_t *indices,
     size_t indices_len,
     int value) {
     // Set value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_int(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_i32(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     arr->elems[flat] = value;
     return NDARRAY_OK;
 }
 
 NDArrayError
-ndarray_get_int(const NDArray(int) *arr,
+ndarray_get_i32(const NDArray(int) *arr,
     const size_t *indices,
     size_t indices_len,
     int *out_value) {
     // Get value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_int(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_i32(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     *out_value = arr->elems[flat];
     return NDARRAY_OK;
 }
 
-void ndarray_fill_int(NDArray(int) *arr,
+void ndarray_fill_i32(NDArray(int) *arr,
     int value) {
     // Fill the array with a given value
     for (size_t i = 0; i < arr->nelems; ++i) {
@@ -416,7 +456,7 @@ void ndarray_fill_int(NDArray(int) *arr,
     }
 }
 
-void ndarray_print_int(const NDArray(int) *arr) {
+void ndarray_print_i32(const NDArray(int) *arr) {
     // Print the array contents
     for (size_t i = 0; i < arr->nelems; ++i) {
         printf("%f ", arr->elems[i]);
@@ -424,7 +464,7 @@ void ndarray_print_int(const NDArray(int) *arr) {
     printf("\n");
 }
 
-bool ndarray_match_dimensions_int(const NDArray(int) *array1,
+bool ndarray_match_dimensions_i32(const NDArray(int) *array1,
     const NDArray(int) *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
@@ -437,9 +477,9 @@ bool ndarray_match_dimensions_int(const NDArray(int) *array1,
     return true;
 }
 NDArrayError
-ndarray_add_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
+ndarray_add_in_place_i32(NDArray(int) *self, const NDArray(int) *other) {
     // Add two arrays together in-place
-    if (!ndarray_match_dimensions_int(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] += other->elems[i];
     }
@@ -447,9 +487,9 @@ ndarray_add_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
 }
 
 NDArrayError
-ndarray_subtract_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
+ndarray_subtract_in_place_i32(NDArray(int) *self, const NDArray(int) *other) {
     // Subtract two arrays together in-place
-    if (!ndarray_match_dimensions_int(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] -= other->elems[i];
     }
@@ -457,9 +497,9 @@ ndarray_subtract_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
 }
 
 NDArrayError
-ndarray_multiply_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
+ndarray_multiply_in_place_i32(NDArray(int) *self, const NDArray(int) *other) {
     // Multiply two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_int(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] *= other->elems[i];
     }
@@ -467,9 +507,9 @@ ndarray_multiply_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
 }
 
 NDArrayError
-ndarray_divide_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
+ndarray_divide_in_place_i32(NDArray(int) *self, const NDArray(int) *other) {
     // Divide two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_int(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] /= other->elems[i];
     }
@@ -477,7 +517,7 @@ ndarray_divide_in_place_int(NDArray(int) *self, const NDArray(int) *other) {
 }
 
 void
-ndarray_scalar_multiply_int(NDArray(int) *self,
+ndarray_scalar_multiply_i32(NDArray(int) *self,
     int scalar) {
     // Multiply an array by a scalar
     for (size_t i = 0; i < self->nelems; ++i) {
@@ -486,7 +526,7 @@ ndarray_scalar_multiply_int(NDArray(int) *self,
 }
 
 NDArrayError
-ndarray_get_slice_int(const NDArray(int) *arr,
+ndarray_get_slice_i32(const NDArray(int) *arr,
     size_t *fixed_indices, // these will be modified
     size_t fixed_length,
     size_t slice_fixed_dim,
@@ -502,7 +542,7 @@ ndarray_get_slice_int(const NDArray(int) *arr,
         fixed_indices[i] = 0;
     }
     size_t start_index;
-    NDArrayError err_start = ndarray_get_flat_index_int(arr, fixed_indices, fixed_length, &start_index);
+    NDArrayError err_start = ndarray_get_flat_index_i32(arr, fixed_indices, fixed_length, &start_index);
     if (err_start != NDARRAY_OK) return err_start; // Error getting start index
 
     size_t slice_length = arr->dims[slice_fixed_dim];
@@ -512,9 +552,9 @@ ndarray_get_slice_int(const NDArray(int) *arr,
 }
 
 NDArrayError
-ndarray_add_int(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
+ndarray_add_i32(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
     // Add two arrays together and return a third array
-    if (!ndarray_match_dimensions_int(array1, array2) || !ndarray_match_dimensions_int(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(array1, array2) || !ndarray_match_dimensions_i32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     //ndarray_fill(out_array, 0);
     // Could also fill out_array with 0s and run ndarray_add_in_place twice with array1 and array2, but then we have to basically go into 3 for loops, so not the best option
     for (size_t i = 0; i < array1->nelems; ++i) {
@@ -523,9 +563,9 @@ ndarray_add_int(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(
     return NDARRAY_OK;
 }
 NDArrayError
-ndarray_subtract_int(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
+ndarray_subtract_i32(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
     // Subtract two arrays together and return a third array
-    if (!ndarray_match_dimensions_int(array1, array2) || !ndarray_match_dimensions_int(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(array1, array2) || !ndarray_match_dimensions_i32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] - array2->elems[i];
     }
@@ -533,9 +573,9 @@ ndarray_subtract_int(const NDArray(int) *array1, const NDArray(int) *array2, NDA
 }
 
 NDArrayError
-ndarray_multiply_elemWise_int(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
+ndarray_multiply_elemWise_i32(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
     // Multiply two arrays together and return a third array
-    if (!ndarray_match_dimensions_int(array1, array2) || !ndarray_match_dimensions_int(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(array1, array2) || !ndarray_match_dimensions_i32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] * array2->elems[i];
     }
@@ -543,9 +583,9 @@ ndarray_multiply_elemWise_int(const NDArray(int) *array1, const NDArray(int) *ar
 }
 
 NDArrayError
-ndarray_divide_elemWise_int(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
+ndarray_divide_elemWise_i32(const NDArray(int) *array1, const NDArray(int) *array2, NDArray(int) *out_array) {
     // Divide two arrays together and return a third array
-    if (!ndarray_match_dimensions_int(array1, array2) || !ndarray_match_dimensions_int(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i32(array1, array2) || !ndarray_match_dimensions_i32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] / array2->elems[i];
     }
@@ -556,7 +596,7 @@ ndarray_divide_elemWise_int(const NDArray(int) *array1, const NDArray(int) *arra
 
 // Initialization
 NDArrayError
-ndarray_init_uint(NDArray(unsigned int) *arr,
+ndarray_init_u32(NDArray(unsigned int) *arr,
     unsigned int *elems,
     size_t nelems,
     const size_t *dims,
@@ -602,7 +642,7 @@ ndarray_init_uint(NDArray(unsigned int) *arr,
 
 // Deinitialization
 void
-ndarray_deinit_uint(NDArray(unsigned int) *arr) {
+ndarray_deinit_u32(NDArray(unsigned int) *arr) {
     // Free dims and strides (elems is owned by the caller, so no need to)
     free(arr->dims);
     free(arr->strides);
@@ -612,7 +652,7 @@ ndarray_deinit_uint(NDArray(unsigned int) *arr) {
 
 // Index computation
 NDArrayError
-ndarray_get_flat_index_uint(const NDArray(unsigned int) *arr,
+ndarray_get_flat_index_u32(const NDArray(unsigned int) *arr,
     const size_t *indices,
     size_t indices_len,
     size_t *out_index) {
@@ -630,32 +670,32 @@ ndarray_get_flat_index_uint(const NDArray(unsigned int) *arr,
 }
 
 NDArrayError
-ndarray_set_index_uint(NDArray(unsigned int) *arr,
+ndarray_set_index_u32(NDArray(unsigned int) *arr,
     const size_t *indices,
     size_t indices_len,
     unsigned int value) {
     // Set value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_uint(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_u32(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     arr->elems[flat] = value;
     return NDARRAY_OK;
 }
 
 NDArrayError
-ndarray_get_uint(const NDArray(unsigned int) *arr,
+ndarray_get_u32(const NDArray(unsigned int) *arr,
     const size_t *indices,
     size_t indices_len,
     unsigned int *out_value) {
     // Get value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_uint(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_u32(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     *out_value = arr->elems[flat];
     return NDARRAY_OK;
 }
 
-void ndarray_fill_uint(NDArray(unsigned int) *arr,
+void ndarray_fill_u32(NDArray(unsigned int) *arr,
     unsigned int value) {
     // Fill the array with a given value
     for (size_t i = 0; i < arr->nelems; ++i) {
@@ -663,7 +703,7 @@ void ndarray_fill_uint(NDArray(unsigned int) *arr,
     }
 }
 
-void ndarray_print_uint(const NDArray(unsigned int) *arr) {
+void ndarray_print_u32(const NDArray(unsigned int) *arr) {
     // Print the array contents
     for (size_t i = 0; i < arr->nelems; ++i) {
         printf("%f ", arr->elems[i]);
@@ -671,7 +711,7 @@ void ndarray_print_uint(const NDArray(unsigned int) *arr) {
     printf("\n");
 }
 
-bool ndarray_match_dimensions_uint(const NDArray(unsigned int) *array1,
+bool ndarray_match_dimensions_u32(const NDArray(unsigned int) *array1,
     const NDArray(unsigned int) *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
@@ -684,9 +724,9 @@ bool ndarray_match_dimensions_uint(const NDArray(unsigned int) *array1,
     return true;
 }
 NDArrayError
-ndarray_add_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
+ndarray_add_in_place_u32(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
     // Add two arrays together in-place
-    if (!ndarray_match_dimensions_uint(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] += other->elems[i];
     }
@@ -694,9 +734,9 @@ ndarray_add_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsigned in
 }
 
 NDArrayError
-ndarray_subtract_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
+ndarray_subtract_in_place_u32(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
     // Subtract two arrays together in-place
-    if (!ndarray_match_dimensions_uint(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] -= other->elems[i];
     }
@@ -704,9 +744,9 @@ ndarray_subtract_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsign
 }
 
 NDArrayError
-ndarray_multiply_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
+ndarray_multiply_in_place_u32(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
     // Multiply two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_uint(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] *= other->elems[i];
     }
@@ -714,9 +754,9 @@ ndarray_multiply_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsign
 }
 
 NDArrayError
-ndarray_divide_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
+ndarray_divide_in_place_u32(NDArray(unsigned int) *self, const NDArray(unsigned int) *other) {
     // Divide two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_uint(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] /= other->elems[i];
     }
@@ -724,7 +764,7 @@ ndarray_divide_in_place_uint(NDArray(unsigned int) *self, const NDArray(unsigned
 }
 
 void
-ndarray_scalar_multiply_uint(NDArray(unsigned int) *self,
+ndarray_scalar_multiply_u32(NDArray(unsigned int) *self,
     unsigned int scalar) {
     // Multiply an array by a scalar
     for (size_t i = 0; i < self->nelems; ++i) {
@@ -733,7 +773,7 @@ ndarray_scalar_multiply_uint(NDArray(unsigned int) *self,
 }
 
 NDArrayError
-ndarray_get_slice_uint(const NDArray(unsigned int) *arr,
+ndarray_get_slice_u32(const NDArray(unsigned int) *arr,
     size_t *fixed_indices, // these will be modified
     size_t fixed_length,
     size_t slice_fixed_dim,
@@ -749,7 +789,7 @@ ndarray_get_slice_uint(const NDArray(unsigned int) *arr,
         fixed_indices[i] = 0;
     }
     size_t start_index;
-    NDArrayError err_start = ndarray_get_flat_index_uint(arr, fixed_indices, fixed_length, &start_index);
+    NDArrayError err_start = ndarray_get_flat_index_u32(arr, fixed_indices, fixed_length, &start_index);
     if (err_start != NDARRAY_OK) return err_start; // Error getting start index
 
     size_t slice_length = arr->dims[slice_fixed_dim];
@@ -759,9 +799,9 @@ ndarray_get_slice_uint(const NDArray(unsigned int) *arr,
 }
 
 NDArrayError
-ndarray_add_uint(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
+ndarray_add_u32(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
     // Add two arrays together and return a third array
-    if (!ndarray_match_dimensions_uint(array1, array2) || !ndarray_match_dimensions_uint(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(array1, array2) || !ndarray_match_dimensions_u32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     //ndarray_fill(out_array, 0);
     // Could also fill out_array with 0s and run ndarray_add_in_place twice with array1 and array2, but then we have to basically go into 3 for loops, so not the best option
     for (size_t i = 0; i < array1->nelems; ++i) {
@@ -770,9 +810,9 @@ ndarray_add_uint(const NDArray(unsigned int) *array1, const NDArray(unsigned int
     return NDARRAY_OK;
 }
 NDArrayError
-ndarray_subtract_uint(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
+ndarray_subtract_u32(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
     // Subtract two arrays together and return a third array
-    if (!ndarray_match_dimensions_uint(array1, array2) || !ndarray_match_dimensions_uint(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(array1, array2) || !ndarray_match_dimensions_u32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] - array2->elems[i];
     }
@@ -780,9 +820,9 @@ ndarray_subtract_uint(const NDArray(unsigned int) *array1, const NDArray(unsigne
 }
 
 NDArrayError
-ndarray_multiply_elemWise_uint(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
+ndarray_multiply_elemWise_u32(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
     // Multiply two arrays together and return a third array
-    if (!ndarray_match_dimensions_uint(array1, array2) || !ndarray_match_dimensions_uint(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(array1, array2) || !ndarray_match_dimensions_u32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] * array2->elems[i];
     }
@@ -790,9 +830,9 @@ ndarray_multiply_elemWise_uint(const NDArray(unsigned int) *array1, const NDArra
 }
 
 NDArrayError
-ndarray_divide_elemWise_uint(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
+ndarray_divide_elemWise_u32(const NDArray(unsigned int) *array1, const NDArray(unsigned int) *array2, NDArray(unsigned int) *out_array) {
     // Divide two arrays together and return a third array
-    if (!ndarray_match_dimensions_uint(array1, array2) || !ndarray_match_dimensions_uint(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_u32(array1, array2) || !ndarray_match_dimensions_u32(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] / array2->elems[i];
     }
@@ -803,7 +843,7 @@ ndarray_divide_elemWise_uint(const NDArray(unsigned int) *array1, const NDArray(
 
 // Initialization
 NDArrayError
-ndarray_init_llong(NDArray(long long) *arr,
+ndarray_init_i64(NDArray(long long) *arr,
     long long *elems,
     size_t nelems,
     const size_t *dims,
@@ -849,7 +889,7 @@ ndarray_init_llong(NDArray(long long) *arr,
 
 // Deinitialization
 void
-ndarray_deinit_llong(NDArray(long long) *arr) {
+ndarray_deinit_i64(NDArray(long long) *arr) {
     // Free dims and strides (elems is owned by the caller, so no need to)
     free(arr->dims);
     free(arr->strides);
@@ -859,7 +899,7 @@ ndarray_deinit_llong(NDArray(long long) *arr) {
 
 // Index computation
 NDArrayError
-ndarray_get_flat_index_llong(const NDArray(long long) *arr,
+ndarray_get_flat_index_i64(const NDArray(long long) *arr,
     const size_t *indices,
     size_t indices_len,
     size_t *out_index) {
@@ -877,32 +917,32 @@ ndarray_get_flat_index_llong(const NDArray(long long) *arr,
 }
 
 NDArrayError
-ndarray_set_index_llong(NDArray(long long) *arr,
+ndarray_set_index_i64(NDArray(long long) *arr,
     const size_t *indices,
     size_t indices_len,
     long long value) {
     // Set value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_llong(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_i64(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     arr->elems[flat] = value;
     return NDARRAY_OK;
 }
 
 NDArrayError
-ndarray_get_llong(const NDArray(long long) *arr,
+ndarray_get_i64(const NDArray(long long) *arr,
     const size_t *indices,
     size_t indices_len,
     long long *out_value) {
     // Get value at an index
     size_t flat;
-    NDArrayError err = ndarray_get_flat_index_llong(arr, indices, indices_len, &flat);
+    NDArrayError err = ndarray_get_flat_index_i64(arr, indices, indices_len, &flat);
     if (err != NDARRAY_OK) return err;
     *out_value = arr->elems[flat];
     return NDARRAY_OK;
 }
 
-void ndarray_fill_llong(NDArray(long long) *arr,
+void ndarray_fill_i64(NDArray(long long) *arr,
     long long value) {
     // Fill the array with a given value
     for (size_t i = 0; i < arr->nelems; ++i) {
@@ -910,7 +950,7 @@ void ndarray_fill_llong(NDArray(long long) *arr,
     }
 }
 
-void ndarray_print_llong(const NDArray(long long) *arr) {
+void ndarray_print_i64(const NDArray(long long) *arr) {
     // Print the array contents
     for (size_t i = 0; i < arr->nelems; ++i) {
         printf("%f ", arr->elems[i]);
@@ -918,7 +958,7 @@ void ndarray_print_llong(const NDArray(long long) *arr) {
     printf("\n");
 }
 
-bool ndarray_match_dimensions_llong(const NDArray(long long) *array1,
+bool ndarray_match_dimensions_i64(const NDArray(long long) *array1,
     const NDArray(long long) *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
@@ -931,9 +971,9 @@ bool ndarray_match_dimensions_llong(const NDArray(long long) *array1,
     return true;
 }
 NDArrayError
-ndarray_add_in_place_llong(NDArray(long long) *self, const NDArray(long long) *other) {
+ndarray_add_in_place_i64(NDArray(long long) *self, const NDArray(long long) *other) {
     // Add two arrays together in-place
-    if (!ndarray_match_dimensions_llong(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] += other->elems[i];
     }
@@ -941,9 +981,9 @@ ndarray_add_in_place_llong(NDArray(long long) *self, const NDArray(long long) *o
 }
 
 NDArrayError
-ndarray_subtract_in_place_llong(NDArray(long long) *self, const NDArray(long long) *other) {
+ndarray_subtract_in_place_i64(NDArray(long long) *self, const NDArray(long long) *other) {
     // Subtract two arrays together in-place
-    if (!ndarray_match_dimensions_llong(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] -= other->elems[i];
     }
@@ -951,9 +991,9 @@ ndarray_subtract_in_place_llong(NDArray(long long) *self, const NDArray(long lon
 }
 
 NDArrayError
-ndarray_multiply_in_place_llong(NDArray(long long) *self, const NDArray(long long) *other) {
+ndarray_multiply_in_place_i64(NDArray(long long) *self, const NDArray(long long) *other) {
     // Multiply two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_llong(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] *= other->elems[i];
     }
@@ -961,9 +1001,9 @@ ndarray_multiply_in_place_llong(NDArray(long long) *self, const NDArray(long lon
 }
 
 NDArrayError
-ndarray_divide_in_place_llong(NDArray(long long) *self, const NDArray(long long) *other) {
+ndarray_divide_in_place_i64(NDArray(long long) *self, const NDArray(long long) *other) {
     // Divide two arrays together in-place (element-wise)
-    if (!ndarray_match_dimensions_llong(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(self, other)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] /= other->elems[i];
     }
@@ -971,7 +1011,7 @@ ndarray_divide_in_place_llong(NDArray(long long) *self, const NDArray(long long)
 }
 
 void
-ndarray_scalar_multiply_llong(NDArray(long long) *self,
+ndarray_scalar_multiply_i64(NDArray(long long) *self,
     long long scalar) {
     // Multiply an array by a scalar
     for (size_t i = 0; i < self->nelems; ++i) {
@@ -980,7 +1020,7 @@ ndarray_scalar_multiply_llong(NDArray(long long) *self,
 }
 
 NDArrayError
-ndarray_get_slice_llong(const NDArray(long long) *arr,
+ndarray_get_slice_i64(const NDArray(long long) *arr,
     size_t *fixed_indices, // these will be modified
     size_t fixed_length,
     size_t slice_fixed_dim,
@@ -996,7 +1036,7 @@ ndarray_get_slice_llong(const NDArray(long long) *arr,
         fixed_indices[i] = 0;
     }
     size_t start_index;
-    NDArrayError err_start = ndarray_get_flat_index_llong(arr, fixed_indices, fixed_length, &start_index);
+    NDArrayError err_start = ndarray_get_flat_index_i64(arr, fixed_indices, fixed_length, &start_index);
     if (err_start != NDARRAY_OK) return err_start; // Error getting start index
 
     size_t slice_length = arr->dims[slice_fixed_dim];
@@ -1006,9 +1046,9 @@ ndarray_get_slice_llong(const NDArray(long long) *arr,
 }
 
 NDArrayError
-ndarray_add_llong(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
+ndarray_add_i64(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
     // Add two arrays together and return a third array
-    if (!ndarray_match_dimensions_llong(array1, array2) || !ndarray_match_dimensions_llong(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(array1, array2) || !ndarray_match_dimensions_i64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     //ndarray_fill(out_array, 0);
     // Could also fill out_array with 0s and run ndarray_add_in_place twice with array1 and array2, but then we have to basically go into 3 for loops, so not the best option
     for (size_t i = 0; i < array1->nelems; ++i) {
@@ -1017,9 +1057,9 @@ ndarray_add_llong(const NDArray(long long) *array1, const NDArray(long long) *ar
     return NDARRAY_OK;
 }
 NDArrayError
-ndarray_subtract_llong(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
+ndarray_subtract_i64(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
     // Subtract two arrays together and return a third array
-    if (!ndarray_match_dimensions_llong(array1, array2) || !ndarray_match_dimensions_llong(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(array1, array2) || !ndarray_match_dimensions_i64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] - array2->elems[i];
     }
@@ -1027,9 +1067,9 @@ ndarray_subtract_llong(const NDArray(long long) *array1, const NDArray(long long
 }
 
 NDArrayError
-ndarray_multiply_elemWise_llong(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
+ndarray_multiply_elemWise_i64(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
     // Multiply two arrays together and return a third array
-    if (!ndarray_match_dimensions_llong(array1, array2) || !ndarray_match_dimensions_llong(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(array1, array2) || !ndarray_match_dimensions_i64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] * array2->elems[i];
     }
@@ -1037,9 +1077,9 @@ ndarray_multiply_elemWise_llong(const NDArray(long long) *array1, const NDArray(
 }
 
 NDArrayError
-ndarray_divide_elemWise_llong(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
+ndarray_divide_elemWise_i64(const NDArray(long long) *array1, const NDArray(long long) *array2, NDArray(long long) *out_array) {
     // Divide two arrays together and return a third array
-    if (!ndarray_match_dimensions_llong(array1, array2) || !ndarray_match_dimensions_llong(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
+    if (!ndarray_match_dimensions_i64(array1, array2) || !ndarray_match_dimensions_i64(array1, out_array)) return NDARRAY_DIM_MISMATCH; // Dimensions do not match, can't add
     for (size_t i = 0; i < array1->nelems; ++i) {
         out_array->elems[i] = array1->elems[i] / array2->elems[i];
     }
@@ -1073,30 +1113,30 @@ int test_init_deinit() {
     size_t ndims = 2;
     NDArray(double) arr;
 
-    if (ndarray_init_double(&arr, data, nelems, dims, ndims) != NDARRAY_OK) {
+    if (ndarray_init_f64(&arr, data, nelems, dims, ndims) != NDARRAY_OK) {
         return TEST_FAIL;
     }
     // Check core properties
     if (arr.ndims != ndims || arr.nelems != nelems) {
-        ndarray_deinit_double(&arr);
+        ndarray_deinit_f64(&arr);
         return TEST_FAIL;
     }
     // Check calculated strides (C-style/row-major: stride[0]=3, stride[1]=1)
     if (arr.strides[0] != 3 || arr.strides[1] != 1) {
-        ndarray_deinit_double(&arr);
+        ndarray_deinit_f64(&arr);
         return TEST_FAIL;
     }
 
     // 2. Invalid initialization (nelems mismatch)
     size_t wrong_nelems = 5;
     NDArray(double) arr_err;
-    if (ndarray_init_double(&arr_err, data, wrong_nelems, dims, ndims) != NDARRAY_ELEMS_WRONG_LEN_FOR_DIMS) {
-        ndarray_deinit_double(&arr); // Deinit the good one
+    if (ndarray_init_f64(&arr_err, data, wrong_nelems, dims, ndims) != NDARRAY_ELEMS_WRONG_LEN_FOR_DIMS) {
+        ndarray_deinit_f64(&arr); // Deinit the good one
         return TEST_FAIL;
     }
 
     // 3. Deinitialization (manual check for no crash)
-    ndarray_deinit_double(&arr);
+    ndarray_deinit_f64(&arr);
 
     return TEST_PASS;
 }
@@ -1107,7 +1147,7 @@ int test_indexing() {
     size_t nelems = 12;
     size_t ndims = 3;
     NDArray(double) arr;
-    ndarray_init_double(&arr, data, nelems, dims, ndims);
+    ndarray_init_f64(&arr, data, nelems, dims, ndims);
 
     // 1. Flat Index check: Index (1, 0, 2)
     // Formula: 1*stride[0] + 0*stride[1] + 2*stride[2]
@@ -1115,8 +1155,8 @@ int test_indexing() {
     // Flat index: 1*6 + 0*3 + 2*1 = 8
     size_t indices_102[] = {1, 0, 2};
     size_t flat_index;
-    if (ndarray_get_flat_index_double(&arr, indices_102, ndims, &flat_index) != NDARRAY_OK || flat_index != 8) {
-        ndarray_deinit_double(&arr);
+    if (ndarray_get_flat_index_f64(&arr, indices_102, ndims, &flat_index) != NDARRAY_OK || flat_index != 8) {
+        ndarray_deinit_f64(&arr);
         return TEST_FAIL;
     }
 
@@ -1124,25 +1164,25 @@ int test_indexing() {
     // Index (0, 1, 1): 0*6 + 1*3 + 1*1 = 4. Original value is 5.0
     size_t indices_011[] = {0, 1, 1};
     double new_value = 99.9;
-    if (ndarray_set_index_double(&arr, indices_011, ndims, new_value) != NDARRAY_OK) {
-        ndarray_deinit_double(&arr);
+    if (ndarray_set_index_f64(&arr, indices_011, ndims, new_value) != NDARRAY_OK) {
+        ndarray_deinit_f64(&arr);
         return TEST_FAIL;
     }
 
     double retrieved_value;
-    if (ndarray_get_double(&arr, indices_011, ndims, &retrieved_value) != NDARRAY_OK || retrieved_value != new_value) {
-        ndarray_deinit_double(&arr);
+    if (ndarray_get_f64(&arr, indices_011, ndims, &retrieved_value) != NDARRAY_OK || retrieved_value != new_value) {
+        ndarray_deinit_f64(&arr);
         return TEST_FAIL;
     }
 
     // 3. Out-of-bounds check (index 2 for dim 0, which is size 2)
     size_t indices_oob[] = {2, 0, 0};
-    if (ndarray_get_flat_index_double(&arr, indices_oob, ndims, &flat_index) != NDARRAY_INDEX_OUT_OF_BOUNDS) {
-        ndarray_deinit_double(&arr);
+    if (ndarray_get_flat_index_f64(&arr, indices_oob, ndims, &flat_index) != NDARRAY_INDEX_OUT_OF_BOUNDS) {
+        ndarray_deinit_f64(&arr);
         return TEST_FAIL;
     }
 
-    ndarray_deinit_double(&arr);
+    ndarray_deinit_f64(&arr);
     return TEST_PASS;
 }
 
@@ -1150,13 +1190,13 @@ int test_array_utilities() {
     double data1[] = {0.0, 0.0, 0.0, 0.0};
     size_t dims1[] = {2, 2};
     NDArray(double) arr1;
-    ndarray_init_double(&arr1, data1, 4, dims1, 2);
+    ndarray_init_f64(&arr1, data1, 4, dims1, 2);
 
     // 1. Fill check
-    ndarray_fill_double(&arr1, 5.5);
+    ndarray_fill_f64(&arr1, 5.5);
     for (size_t i = 0; i < arr1.nelems; ++i) {
         if (arr1.elems[i] != 5.5) {
-            ndarray_deinit_double(&arr1);
+            ndarray_deinit_f64(&arr1);
             return TEST_FAIL;
         }
     }
@@ -1165,11 +1205,11 @@ int test_array_utilities() {
     double data2[] = {1.0, 2.0, 3.0, 4.0};
     size_t dims2[] = {2, 2};
     NDArray(double) arr2;
-    ndarray_init_double(&arr2, data2, 4, dims2, 2);
+    ndarray_init_f64(&arr2, data2, 4, dims2, 2);
 
-    if (!ndarray_match_dimensions_double(&arr1, &arr2)) {
-        ndarray_deinit_double(&arr1);
-        ndarray_deinit_double(&arr2);
+    if (!ndarray_match_dimensions_f64(&arr1, &arr2)) {
+        ndarray_deinit_f64(&arr1);
+        ndarray_deinit_f64(&arr2);
         return TEST_FAIL;
     }
 
@@ -1177,18 +1217,18 @@ int test_array_utilities() {
     double data3[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
     size_t dims3[] = {3, 2}; // 3x2 vs 2x2
     NDArray(double) arr3;
-    ndarray_init_double(&arr3, data3, 6, dims3, 2);
+    ndarray_init_f64(&arr3, data3, 6, dims3, 2);
 
-    if (ndarray_match_dimensions_double(&arr1, &arr3)) {
-        ndarray_deinit_double(&arr1);
-        ndarray_deinit_double(&arr2);
-        ndarray_deinit_double(&arr3);
+    if (ndarray_match_dimensions_f64(&arr1, &arr3)) {
+        ndarray_deinit_f64(&arr1);
+        ndarray_deinit_f64(&arr2);
+        ndarray_deinit_f64(&arr3);
         return TEST_FAIL;
     }
 
-    ndarray_deinit_double(&arr1);
-    ndarray_deinit_double(&arr2);
-    ndarray_deinit_double(&arr3);
+    ndarray_deinit_f64(&arr1);
+    ndarray_deinit_f64(&arr2);
+    ndarray_deinit_f64(&arr3);
     return TEST_PASS;
 }
 
@@ -1203,17 +1243,17 @@ int test_arithmetic() {
     double d2[] = {10.0, 20.0, 30.0, 40.0};
 
     NDArray(double) arr1, arr2;
-    ndarray_init_double(&arr1, d1, nelems, dims, ndims);
-    ndarray_init_double(&arr2, d2, nelems, dims, ndims);
+    ndarray_init_f64(&arr1, d1, nelems, dims, ndims);
+    ndarray_init_f64(&arr2, d2, nelems, dims, ndims);
 
     // Temp storage for in-place modification
     double d1_copy[] = {1.0, 2.0, 3.0, 4.0};
     NDArray(double) arr1_copy;
-    ndarray_init_double(&arr1_copy, d1_copy, nelems, dims, ndims);
+    ndarray_init_f64(&arr1_copy, d1_copy, nelems, dims, ndims);
 
     // 1. In-place Add check (arr1_copy += arr2)
     // Expected: {11, 22, 33, 44}
-    if (ndarray_add_in_place_double(&arr1_copy, &arr2) != NDARRAY_OK) return TEST_FAIL;
+    if (ndarray_add_in_place_f64(&arr1_copy, &arr2) != NDARRAY_OK) return TEST_FAIL;
     if (d1_copy[0] != 11.0 || d1_copy[3] != 44.0) {
         return TEST_FAIL;
     }
@@ -1222,16 +1262,16 @@ int test_arithmetic() {
     // Expected: {10, 40, 90, 160}
     double d_out[] = {0.0, 0.0, 0.0, 0.0};
     NDArray(double) arr_out;
-    ndarray_init_double(&arr_out, d_out, nelems, dims, ndims);
+    ndarray_init_f64(&arr_out, d_out, nelems, dims, ndims);
 
-    if (ndarray_multiply_elemWise_double(&arr1, &arr2, &arr_out) != NDARRAY_OK) return TEST_FAIL;
+    if (ndarray_multiply_elemWise_f64(&arr1, &arr2, &arr_out) != NDARRAY_OK) return TEST_FAIL;
     if (d_out[1] != 40.0 || d_out[2] != 90.0) {
         return TEST_FAIL;
     }
 
     // 3. Scalar Multiply check (arr1 *= 2.0)
     // Expected: {2, 4, 6, 8}
-    ndarray_scalar_multiply_double(&arr1, 2.0);
+    ndarray_scalar_multiply_f64(&arr1, 2.0);
     if (d1[0] != 2.0 || d1[3] != 8.0) {
         return TEST_FAIL;
     }
@@ -1240,18 +1280,18 @@ int test_arithmetic() {
     double wrong_dims_data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
     size_t wrong_dims[] = {3, 2}; // Mismatch with 2x2
     NDArray(double) arr_wrong;
-    ndarray_init_double(&arr_wrong, wrong_dims_data, 6, wrong_dims, 2);
+    ndarray_init_f64(&arr_wrong, wrong_dims_data, 6, wrong_dims, 2);
 
-    if (ndarray_subtract_in_place_double(&arr1, &arr_wrong) != NDARRAY_DIM_MISMATCH) {
-        ndarray_deinit_double(&arr_wrong);
+    if (ndarray_subtract_in_place_f64(&arr1, &arr_wrong) != NDARRAY_DIM_MISMATCH) {
+        ndarray_deinit_f64(&arr_wrong);
         return TEST_FAIL;
     }
 
-    ndarray_deinit_double(&arr1);
-    ndarray_deinit_double(&arr2);
-    ndarray_deinit_double(&arr1_copy);
-    ndarray_deinit_double(&arr_out);
-    ndarray_deinit_double(&arr_wrong);
+    ndarray_deinit_f64(&arr1);
+    ndarray_deinit_f64(&arr2);
+    ndarray_deinit_f64(&arr1_copy);
+    ndarray_deinit_f64(&arr_out);
+    ndarray_deinit_f64(&arr_wrong);
     return TEST_PASS;
 }
 
@@ -1265,7 +1305,7 @@ int test_slicing() {
     size_t nelems = 12;
     size_t ndims = 3;
     NDArray(double) arr;
-    ndarray_init_double(&arr, data, nelems, dims, ndims);
+    ndarray_init_f64(&arr, data, nelems, dims, ndims);
 
     double *slice_ptr;
     size_t slice_len;
@@ -1275,9 +1315,9 @@ int test_slicing() {
     size_t fixed_2[] = {1, 1, 0};
     size_t slice_fixed_dim_2 = 1; // Will fail if set to 2 since slicer doesn't work for the last dimension. As expected.
     // The logic: slice_fixed_dim is the dimension *to be* sliced.
-    if (ndarray_get_slice_double(&arr, fixed_2, ndims, slice_fixed_dim_2, &slice_ptr, &slice_len) != NDARRAY_OK) {
+    if (ndarray_get_slice_f64(&arr, fixed_2, ndims, slice_fixed_dim_2, &slice_ptr, &slice_len) != NDARRAY_OK) {
         printf("Getting slice failed\n");
-        printf("%d", ndarray_get_slice_double(&arr, fixed_2, ndims, slice_fixed_dim_2, &slice_ptr, &slice_len));
+        printf("%d", ndarray_get_slice_f64(&arr, fixed_2, ndims, slice_fixed_dim_2, &slice_ptr, &slice_len));
         return TEST_FAIL;
     }
     // Check slice length and content
@@ -1286,21 +1326,50 @@ int test_slicing() {
         printf("Bad slice\n");
         return TEST_FAIL;
     }
-    ndarray_deinit_double(&arr);
+    ndarray_deinit_f64(&arr);
     return TEST_PASS;
+}
+
+int test_macros() {
+    // Test if C macros for generics work
+    size_t dims[] = {2, 2};
+    size_t nelems = 4;
+    double data[] = {0.0, 1.0, 0.0, 4.0};
+    size_t ndims = 2;
+    NDArray(double) arr;
+    //ndarray_init_f64(&arr, data, nelems, dims, ndims);
+    if (ndarray_init_T(double, &arr, data, nelems, dims, ndims) == NDARRAY_OK) {
+        ndarray_print_T(double, &arr);
+        size_t indices_011[] = {0, 1};
+        double new_value = 99.9;
+        ndarray_set_index_T(double, &arr, indices_011, ndims, new_value);
+        // Check if we successfully changed the values and if we can retrieve them
+        if (ndarray_get_T(double, &arr, indices_011, ndims, &new_value) != NDARRAY_OK || new_value != 99.9) {
+            ndarray_deinit_f64(&arr); // if fail, assume that this macro might not work either and use function explicitly
+            return TEST_FAIL;
+        }
+
+        ndarray_deinit_T(double, &arr);
+        return TEST_PASS;
+    } else {
+        printf("error %d", ndarray_init_T(double, &arr, data, nelems, dims, ndims));
+        ndarray_deinit_f64(&arr);
+        return TEST_FAIL;
+    }
 }
 
 int main() {
     printf("--- Running NDArray Unit Tests ---\n");
 
-    print_test_result("Test Init/Deinit", test_init_deinit());
-    print_test_result("Test Indexing (Flat, Get, Set)", test_indexing());
-    print_test_result("Test Array Utilities (Fill, Match Dims)", test_array_utilities());
-    print_test_result("Test Arithmetic (In-place & Out-of-place)", test_arithmetic());
-    print_test_result("Test Slicing", test_slicing());
+    print_test_result("Test init/deinit", test_init_deinit());
+    print_test_result("Test indexing (flat, get, set)", test_indexing());
+    print_test_result("Test array utilities (fill, match dims)", test_array_utilities());
+    print_test_result("Test arithmetic (in-place & out-of-place)", test_arithmetic());
+    print_test_result("Test slicing", test_slicing());
+    print_test_result("Test macros", test_macros());
 
-    printf("\n--- Test Summary ---\n");
-    printf("Total Tests: %d\n", total_tests);
+    printf("\n--- Test summary ---\n");
+    printf("Total tests: %d\n", total_tests);
     printf("Passed: %d\n", passed_tests);
     printf("Failed: %d\n", total_tests - passed_tests);
 
