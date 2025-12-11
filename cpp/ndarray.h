@@ -11,9 +11,10 @@ extern "C" {
 #include <stdbool.h> // bool
 #include <stdio.h>
 #include <stdlib.h> // malloc, free
+#include <stdint.h> // to get uint32_t etc.
 
 //////////////////////////////////////////////////////// USAGE //////////////////////////////////////////////////////
-// Written for double, int, unsigned int, and long long.
+// Written for double, int, uint32_t, and long long.
 // Unit tests at the very bottom.
 
 // Syntax: function_name(variableype, &array1, &array2), etc.
@@ -72,7 +73,7 @@ typedef struct {
 } NDArray_i32;
 
 typedef struct {
-    unsigned int *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
+    uint32_t *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
     size_t *dims; // Heap-owned copy of dimension size_ts
     size_t *strides; // Heap-owned strides
     size_t ndims; // Number of dimensions
@@ -98,9 +99,9 @@ typedef struct {
 
 // Map standard C type names to type tags
 #define ND_double f64
-#define ND_i32 i32
-#define ND_unsigned_i32 u32
-#define ND_long_long i64
+#define ND_int i32
+#define ND_uint32_t u32 // uint32_t
+#define ND_i64_t i64 // long long
 
 // Paste macro for name-mangling
 // Ensure arguments are fully expanded before concantenating
@@ -627,12 +628,12 @@ ndarray_divide_elemWise_i32(const NDArray_i32 *array1, const NDArray_i32 *array2
     return NDARRAY_OK;
 }
 
-////////////////////////////////////////////////////// UNSIGNED INT ////////////////////////////////////////////////////
+////////////////////////////////////////////////////// uint32_t ////////////////////////////////////////////////////
 
 // Initialization
 NDArrayError
 ndarray_init_u32(NDArray_u32 *arr,
-    unsigned int *elems,
+    uint32_t *elems,
     size_t nelems,
     const size_t *dims,
     size_t ndims) {
@@ -708,7 +709,7 @@ NDArrayError
 ndarray_set_index_u32(NDArray_u32 *arr,
     const size_t *indices,
     size_t indices_len,
-    unsigned int value) {
+    uint32_t value) {
     // Set value at an index
     size_t flat;
     NDArrayError err = ndarray_get_flat_index_u32(arr, indices, indices_len, &flat);
@@ -721,7 +722,7 @@ NDArrayError
 ndarray_get_u32(const NDArray_u32 *arr,
     const size_t *indices,
     size_t indices_len,
-    unsigned int *out_value) {
+    uint32_t *out_value) {
     // Get value at an index
     size_t flat;
     NDArrayError err = ndarray_get_flat_index_u32(arr, indices, indices_len, &flat);
@@ -731,7 +732,7 @@ ndarray_get_u32(const NDArray_u32 *arr,
 }
 
 void ndarray_fill_u32(NDArray_u32 *arr,
-    unsigned int value) {
+    uint32_t value) {
     // Fill the array with a given value
     for (size_t i = 0; i < arr->nelems; ++i) {
         arr->elems[i] = value;
@@ -800,7 +801,7 @@ ndarray_divide_in_place_u32(NDArray_u32 *self, const NDArray_u32 *other) {
 
 void
 ndarray_scalar_multiply_u32(NDArray_u32 *self,
-    unsigned int scalar) {
+    uint32_t scalar) {
     // Multiply an array by a scalar
     for (size_t i = 0; i < self->nelems; ++i) {
         self->elems[i] *= scalar;
@@ -812,7 +813,7 @@ ndarray_get_slice_u32(const NDArray_u32 *arr,
     size_t *fixed_indices, // these will be modified
     size_t fixed_length,
     size_t slice_fixed_dim,
-    unsigned int **out_ptr,
+    uint32_t **out_ptr,
     size_t *out_length) {
     // Get a slice in 1D
     // C can't return a length-tracked slice directly, so we return a pointer and the output length

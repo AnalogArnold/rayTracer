@@ -71,6 +71,7 @@ struct AABB {
         for (int i = 0; i < 3; ++i){
             box_dims[i] = find_axis_extent(i);
         return 2 * (box_dims[0] * box_dims[1] + box_dims[1] * box_dims[2] + box_dims[0] * box_dims[2]);
+        }
     }
 
     inline bool is_valid() const {
@@ -83,3 +84,25 @@ struct AABB {
         return true;
     }
 };
+
+// BVH node structure
+struct BVH_Node {
+    AABB bounding_box {}; // size 48
+    unsigned int left_child_index; // right_child_index = left + 1, so no need to store that
+};
+
+
+struct MeshBLAS {
+    std::vector<AABB> mesh_aabbs;
+    std::vector<unsigned int> child_index;
+    std::vector<unsigned int> leaf_first_triangle_idx;
+    std::vector<unsigned int> leaf_triangle_count;
+
+};
+
+
+
+
+void build_acceleration_structures(const std::vector <nanobind::ndarray<const int, nanobind::c_contig>>& scene_connectivity,
+    const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords,
+    const std::vector<nanobind::ndarray<const double, nanobind::c_contig>>& scene_face_colors);

@@ -12,7 +12,7 @@
 #include "rtbvh_recursion.h"
 #include "rtrayintersection.h"
 #include "rthitrecord.h"
-#include "ndarray.h"
+//#include "ndarray.h"
 
 
 /*
@@ -384,6 +384,21 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
         double* mesh_node_coords_ptr = const_cast<double*>(mesh_node_coords.data());
         int* mesh_connectivity_ptr = const_cast<int*>(mesh_connectivity.data());
 
+        /*
+        double data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        size_t dims[] = {2, 3};
+        size_t nelems = 6;
+        size_t ndims = 2;
+        //NDArray_f64 arr;
+        NDArray(double) arr;
+        ndarray_init(double, &arr, data, nelems, dims, ndims);
+        ndarray_print(double, &arr);
+        ndarray_deinit(double, &arr);
+        */
+        //ndarray_init_f64(&arr, data, nelems, dims, ndims);
+        //ndarray_print_f64(&arr);
+        //ndarray_deinit_f64(&arr);
+
         // DEBUG LINES
         //std::cout << "number of elements " << mesh_number_of_elements << std::endl; // Test if there isn't issue passing the data that would cause errors further down the line
         //std::cout << "first nodal coordinate " << mesh_node_coords_ptr[0] << std::endl;
@@ -461,18 +476,7 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
         test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
         intersect_bvh_r(test_ray, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
 
-        double data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-        size_t dims[] = {2, 3};
-        size_t nelems = 6;
-        size_t ndims = 2;
-        //NDArray_f64 arr;
-        NDArray(double) arr;
-        ndarray_init(double, &arr, data, nelems, dims, ndims);
-        ndarray_print(double, &arr);
-        ndarray_deinit(double, &arr);
-        //ndarray_init_f64(&arr, data, nelems, dims, ndims);
-        //ndarray_print_f64(&arr);
-        //ndarray_deinit_f64(&arr);
+        
 
 
         // Without struct bvh all data should be accessible via root pointer after building
