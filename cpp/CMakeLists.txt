@@ -69,5 +69,5 @@ else()
     )
 endif()
 
-install(TARGETS rtmaincpp LIBRARY DESTINATION /home/micha/rayTracer) # home laptop
-#install(TARGETS rtmaincpp LIBRARY DESTINATION /home/tudent/rayTracer) # work laptop
+#install(TARGETS rtmaincpp LIBRARY DESTINATION /home/micha/rayTracer) # home laptop
+install(TARGETS rtmaincpp LIBRARY DESTINATION /home/tudent/rayTracer) # work laptop

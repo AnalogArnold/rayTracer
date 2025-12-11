@@ -12,6 +12,13 @@
 #include "rtbvh_recursion.h"
 #include "rtrayintersection.h"
 #include "rthitrecord.h"
+
+extern "C" {
+#include "ndarray.h"
+// #include "ndarray_float.h"
+// etc. if you have more
+}
+
 /*
 // nanobind header files
 #include <nanobind/nanobind.h>
@@ -518,6 +525,16 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
         test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
         intersect_bvh(test_ray, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
+
+        double data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        size_t dims[] = {2, 3};
+        size_t nelems = 6;
+        size_t ndims = 2;
+        NDArray_f64 arr;
+        ndarray_init_f64(&arr, data, nelems, dims, ndims);
+        ndarray_print_f64(&arr);
+        ndarray_deinit_f64(&arr);
+
 
         // Without struct bvh all data should be accessible via root pointer after building
     }

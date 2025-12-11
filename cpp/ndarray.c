@@ -34,8 +34,7 @@
 // ndarray_multiply_elemWise_T(*in_array1, *in_array2, *out_array)
 // ndarray_divide_elemWise_T(*in_array1, *in_array2, *out_array)
 
-#define NDArray(T) struct { T *elems; size_t *dims;  size_t *strides; size_t ndims;  size_t nelems;} // name-mangling macro
-
+/*
 // Map standard C type names to type tags
 #define ND_T_double f64
 #define ND_T_i32 i32
@@ -81,7 +80,7 @@ typedef struct {
     size_t ndims; // Number of dimensions
     size_t nelems; // Total number of elements
 } NDArray(double);
-*/
+
 
 // C structs:
 // struct name {data}; - Requires using the keyword every time it is used, e.g., struct MyStruct struct;
@@ -1085,6 +1084,7 @@ ndarray_divide_elemWise_i64(const NDArray(long long) *array1, const NDArray(long
     }
     return NDARRAY_OK;
 }
+*/
 
 /////////////////////////////////////////////////////// UNIT TESTS /////////////////////////////////////////////////////
 // Tests (for doubles, which these functions were initially written for)
