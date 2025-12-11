@@ -1,100 +1,46 @@
-#include <stddef.h> // size_t
-#include <stdbool.h> // bool
-#include <stdio.h>
-#include <stdlib.h> // malloc, free
-
 // C++ equivalents
 //#include <cstddef>
 //#include <cstdio>
 //#include <cstdlib>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stddef.h> // size_t
+#include <stdbool.h> // bool
+#include <stdio.h>
+#include <stdlib.h> // malloc, free
+
 //////////////////////////////////////////////////////// USAGE //////////////////////////////////////////////////////
 // Written for double, int, unsigned int, and long long.
 // Unit tests at the very bottom.
 
-// Syntax: function_name(variable_type, &array1, &array2), etc.
+// Syntax: function_name(variableype, &array1, &array2), etc.
 
 // Function names and arguments:
-// ndarray_init_T(*array, *elems, nelems, *dims, ndims)
-// ndarray_deinit_T(*array)
-// ndarray_get_flat_index_T(*array, *indices, indices_len, *out_index)
-// ndarray_set_index_T(*array, *indices, indices_len, value)
-// ndarray_get_T(*array, *indices, indices_len, *out_value)
-// ndarray_fill_T(*array, value)
-// ndarray_print_T(*array)
-// ndarray_match_dimensions_T(*array1, *array2)
-// ndarray_add_in_place_T(*array1, *array2)
-// ndarray_subtract_in_place_T(*array1, *array2)
-// ndarray_multiply_in_place_T(*array1, *array2)
-// ndarray_divide_in_place_T(*array1, *array2)
-// ndarray_scalar_multiply_T(*array, scalar) Nb4 scalar is the same type as the array elements
-// ndarray_get_slice_T(*array, *fixed_indices, fixed_length, slice_fixed_dim, **out_pointer, *out_length)
-// ndarray_add_T(*in_array1, *in_array2, *out_array)
-// ndarray_subtract_T(*in_array1, *in_array2, *out_array)
-// ndarray_multiply_elemWise_T(*in_array1, *in_array2, *out_array)
-// ndarray_divide_elemWise_T(*in_array1, *in_array2, *out_array)
+// ndarray_init(type, *array, *elems, nelems, *dims, ndims)
+// ndarray_deinit(type,*array)
+// ndarray_get_flat_index(type,*array, *indices, indices_len, *out_index)
+// ndarray_set_index(type,*array, *indices, indices_len, value)
+// ndarray_get(type,*array, *indices, indices_len, *out_value)
+// ndarray_fill(type,*array, value)
+// ndarray_print(type,*array)
+// ndarray_match_dimensions(type,*array1, *array2)
+// ndarray_add_in_place(type,*array1, *array2)
+// ndarray_subtract_in_place(type,*array1, *array2)
+// ndarray_multiply_in_place(type,*array1, *array2)
+// ndarray_divide_in_place(type,*array1, *array2)
+// ndarray_scalar_multiply(type,*array, scalar) Nb4 scalar is the same type as the array elements
+// ndarray_get_slice(type,*array, *fixed_indices, fixed_length, slice_fixed_dim, **out_pointer, *out_length)
+// ndarray_add(type,*in_array1, *in_array2, *out_array)
+// ndarray_subtract(type,*in_array1, *in_array2, *out_array)
+// ndarray_multiply_elemWise(type,*in_array1, *in_array2, *out_array)
+// ndarray_divide_elemWise(type,*in_array1, *in_array2, *out_array)
 
-/*
-#define DEFINE_NDARRAY_TYPE(T, typeTag) typedef struct { T *elems; size_t *dims;  size_t *strides; size_t ndims;  size_t nelems;} NDArray_##typeTag// name-mangling macro
+///////////////////////////////////////////////////// TYPE DEFS ///////////////////////////////////////////////////
 
-DEFINE_NDARRAY_TYPE(double, f64);
-DEFINE_NDARRAY_TYPE(int, i32);
-DEFINE_NDARRAY_TYPE(unsigned int, u32);
-DEFINE_NDARRAY_TYPE(long long, i64);
-
-// Map standard C type names to type tags
-#define ND_T_double f64
-#define ND_T_i32 i32
-#define ND_T_unsigned_i32 u32
-#define ND_T_long_long i64
-
-// Paste macro for name-mangling
-// Ensure arguments are fully expanded before concantenating
-#define ND_PASTE2(a,b) a##b // ## is the concatenation operator
-#define ND_PASTE(a,b) ND_PASTE2(a,b)
-// Given a functionName and a typeTag, build symbol 'ndarray_functionName_typeTag`
-#define ND_FUNC(functionName, typeTag) ND_PASTE(ndarray_##functionName##_, typeTag) // expand to create a specific function name, e.g., ndarray_add_f64
-// Map C type token to a tag
-#define ND_TAG(T) ND_T_##T // Take a C-type token (e.g., int) and use the ND_T tag to retrieve the type tag (e.g., i32)
-
-// Top-level macros to create a "generic" interface. Take a C type token and pick the right function
-// Need to be updated for each additional function created...
-#define ndarray_init_T(T, array, data, nelems, dims, ndims) ND_FUNC(init, ND_TAG(T))(array, data, nelems, dims, ndims)
-#define ndarray_deinit_T(T, array) ND_FUNC(deinit, ND_TAG(T))(array)
-#define ndarray_get_flat_index_T(T, array, indices, indices_len, out_index) ND_FUNC(get_flat_index, ND_TAG(T))(array, indices, indices_len, out_index)
-#define ndarray_set_index_T(T, array, indices, indices_len, value) ND_FUNC(set_index, ND_TAG(T))(array, indices, indices_len, value)
-#define ndarray_get_T(T, array, indices, indices_len, out_value) ND_FUNC(get, ND_TAG(T))(array, indices, indices_len, out_value)
-#define ndarray_fill_T(T, array, value) ND_FUNC(fill, ND_TAG(T))(array, value)
-#define ndarray_print_T(T, array) ND_FUNC(print, ND_TAG(T))(array)
-#define ndarray_match_dimensions_T(T, array1, array2) ND_FUNC(match_dimensions, ND_TAG(T))(array1, array2)
-#define ndarray_add_in_place_T(T, array1, array2) ND_FUNC(add_in_place, ND_TAG(T))(array1, array2)
-#define ndarray_subtract_in_place_T(T, array1, array2) ND_FUNC(subtract_in_place, ND_TAG(T))(array1, array2)
-#define ndarray_multiply_in_place_T(T, array1, array2) ND_FUNC(multiply_in_place, ND_TAG(T))(array1, array2)
-#define ndarray_divide_in_place_T(T, array1, array2) ND_FUNC(divide_in_place, ND_TA
-#define ndarray_scalar_multiply_T(T, array, scalar) ND_FUNC(scalar_multiply, ND_TAG(T))(array, scalar)
-#define ndarray_get_slice_T(T, array, fixed_indices, fixed_length, slice_fixed_dim, out_pointer, out_length) ND_FUNC(get_slice, ND_TAG(T))(array, fixed_indices, fixed_length, slice_fixed_dim, out_pointer, out_length)
-#define ndarray_add_T(T, array1, array2, out_array) ND_FUNC(add, ND_TAG(T))(array1, array2, out_array)
-#define ndarray_subtract_T(T, array1, array2, out_array) ND_FUNC(subtract, ND_TAG(T))(array1, array2, out_array)
-#define ndarray_multiply_elemWise_T(T, array1, array2, out_array) ND_FUNC(multiply_elemWise, ND_TAG(T))(array1, array2, out_array)
-#define ndarray_divide_elemWise_T(T, array1, array2, out_array) ND_FUNC(divide_elemWise, ND_TAG(T))(array1, array2, out_array)
-
-
-/* // Struct breakdown
-typedef struct {
-    double *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
-    size_t *dims; // Heap-owned copy of dimension sizes
-    size_t *strides; // Heap-owned strides
-    size_t ndims; // Number of dimensions
-    size_t nelems; // Total number of elements
-} NDArray_f64;
-*/
-
-// C structs:
-// struct name {data}; - Requires using the keyword every time it is used, e.g., struct MyStruct struct;
-// typedef struct {data} name; - Doesn't require the use of keyword every time
-
-
-// Enum to define errors in NDArray_f64
+// Enum to define errors in NDArray
 typedef enum {
     NDARRAY_OK = 0,
     NDARRAY_ELEMS_WRONG_LEN_FOR_DIMS,
@@ -104,14 +50,90 @@ typedef enum {
     NDARRAY_DIM_MISMATCH
 } NDArrayError;
 
-//////////////////////////////////////////////////////// DOUBLE //////////////////////////////////////////////////////
+// C structs:
+// struct name {data}; - Requires using the keyword every time it is used, e.g., struct MyStruct struct;
+// typedef struct {data} name; - Doesn't require the use of keyword every time
+
+
 typedef struct {
     double *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
-    size_t *dims; // Heap-owned copy of dimension sizes
+    size_t *dims; // Heap-owned copy of dimension size_ts
     size_t *strides; // Heap-owned strides
     size_t ndims; // Number of dimensions
     size_t nelems; // Total number of elements
 } NDArray_f64;
+
+typedef struct {
+    int *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
+    size_t *dims; // Heap-owned copy of dimension size_ts
+    size_t *strides; // Heap-owned strides
+    size_t ndims; // Number of dimensions
+    size_t nelems; // Total number of elements
+} NDArray_i32;
+
+typedef struct {
+    unsigned int *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
+    size_t *dims; // Heap-owned copy of dimension size_ts
+    size_t *strides; // Heap-owned strides
+    size_t ndims; // Number of dimensions
+    size_t nelems; // Total number of elements
+} NDArray_u32;
+
+typedef struct {
+    long long *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
+    size_t *dims; // Heap-owned copy of dimension size_ts
+    size_t *strides; // Heap-owned strides
+    size_t ndims; // Number of dimensions
+    size_t nelems; // Total number of elements
+} NDArray_i64;
+
+
+////////////////////////////////////////////////////////// MACROS ////////////////////////////////////////////////////////
+// Purpose: Save the user having to write out full function names, since each type needs its own separate thing.
+// So for example, the syntax simplifies to:
+// NDArray_f64 arr;  -->  NDArray(double);
+// ndarray_init_f64(&arr, data, nelems, dims, ndims);  -->  ndarray_init(double, &arr, data, nelems, dims, ndims);
+// ndarray_print_f64(&arr);  -->  ndarray_print(double, &arr);
+// ndarray_deinit_f64(&arr);  -->  ndarray_deinit(double, &arr);
+
+// Map standard C type names to type tags
+#define ND_double f64
+#define ND_i32 i32
+#define ND_unsigned_i32 u32
+#define ND_long_long i64
+
+// Paste macro for name-mangling
+// Ensure arguments are fully expanded before concantenating
+#define ND_PASTE2(a,b) a##b // ## is the concatenation operator
+#define ND_PASTE(a,b) ND_PASTE2(a,b)
+// Given a functionName and a typeTag, build symbol 'ndarray_functionNameypeTag`
+#define ND_FUNC(functionName, typeTag) ND_PASTE(ndarray_##functionName##_, typeTag) // expand to create a specific function name, e.g., ndarray_add_f64
+// Map C type token to a tag
+#define NDAG(T) ND_##T // Take a C-type token (e.g., int) and use the ND tag to retrieve the type tag (e.g., i32)
+
+// Top-level macros to create a "generic" interface. Take a C type token and pick the right function
+// Need to be updated for each additional function created...
+#define NDArray(T) ND_PASTE(NDArray_, NDAG(T))
+#define ndarray_init(T, array, data, nelems, dims, ndims) ND_FUNC(init, NDAG(T))(array, data, nelems, dims, ndims)
+#define ndarray_deinit(T, array) ND_FUNC(deinit, NDAG(T))(array)
+#define ndarray_get_flat_index(T, array, indices, indices_len, out_index) ND_FUNC(get_flat_index, NDAG(T))(array, indices, indices_len, out_index)
+#define ndarray_set_index(T, array, indices, indices_len, value) ND_FUNC(set_index, NDAG(T))(array, indices, indices_len, value)
+#define ndarray_get(T, array, indices, indices_len, out_value) ND_FUNC(get, NDAG(T))(array, indices, indices_len, out_value)
+#define ndarray_fill(T, array, value) ND_FUNC(fill, NDAG(T))(array, value)
+#define ndarray_print(T, array) ND_FUNC(print, NDAG(T))(array)
+#define ndarray_match_dimensions(T, array1, array2) ND_FUNC(match_dimensions, NDAG(T))(array1, array2)
+#define ndarray_add_in_place(T, array1, array2) ND_FUNC(add_in_place, NDAG(T))(array1, array2)
+#define ndarray_subtract_in_place(T, array1, array2) ND_FUNC(subtract_in_place, NDAG(T))(array1, array2)
+#define ndarray_multiply_in_place(T, array1, array2) ND_FUNC(multiply_in_place, NDAG(T))(array1, array2)
+#define ndarray_divide_in_place(T, array1, array2) ND_FUNC(divide_in_place, NDA
+#define ndarray_scalar_multiply(T, array, scalar) ND_FUNC(scalar_multiply, NDAG(T))(array, scalar)
+#define ndarray_get_slice(T, array, fixed_indices, fixed_length, slice_fixed_dim, out_pointer, out_length) ND_FUNC(get_slice, NDAG(T))(array, fixed_indices, fixed_length, slice_fixed_dim, out_pointer, out_length)
+#define ndarray_add(T, array1, array2, out_array) ND_FUNC(add, NDAG(T))(array1, array2, out_array)
+#define ndarray_subtract(T, array1, array2, out_array) ND_FUNC(subtract, NDAG(T))(array1, array2, out_array)
+#define ndarray_multiply_elemWise(T, array1, array2, out_array) ND_FUNC(multiply_elemWise, NDAG(T))(array1, array2, out_array)
+#define ndarray_divide_elemWise(T, array1, array2, out_array) ND_FUNC(divide_elemWise, NDAG(T))(array1, array2, out_array)
+
+//////////////////////////////////////////////////////// DOUBLE //////////////////////////////////////////////////////
 
 // Initialization
 NDArrayError
@@ -234,7 +256,7 @@ bool ndarray_match_dimensions_f64(const NDArray_f64 *array1,
     const NDArray_f64 *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
-    // Compare size for  each constituing dimension
+    // Compare size_t for  each constituing dimension
     for (size_t i = 0; i < array1->ndims; ++i) {
         if (array1->dims[i] != array2->dims[i]) {
             return false;
@@ -358,15 +380,7 @@ ndarray_divide_elemWise_f64(const NDArray_f64 *array1, const NDArray_f64 *array2
     return NDARRAY_OK;
 }
 
-
 ///////////////////////////////////////////////////////// INT ///////////////////////////////////////////////////////
-typedef struct {
-    int *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
-    size_t *dims; // Heap-owned copy of dimension sizes
-    size_t *strides; // Heap-owned strides
-    size_t ndims; // Number of dimensions
-    size_t nelems; // Total number of elements
-} NDArray_i32;
 
 // Initialization
 NDArrayError
@@ -489,7 +503,7 @@ bool ndarray_match_dimensions_i32(const NDArray_i32 *array1,
     const NDArray_i32 *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
-    // Compare size for  each constituing dimension
+    // Compare size_t for  each constituing dimension
     for (size_t i = 0; i < array1->ndims; ++i) {
         if (array1->dims[i] != array2->dims[i]) {
             return false;
@@ -614,13 +628,6 @@ ndarray_divide_elemWise_i32(const NDArray_i32 *array1, const NDArray_i32 *array2
 }
 
 ////////////////////////////////////////////////////// UNSIGNED INT ////////////////////////////////////////////////////
-typedef struct {
-    unsigned int *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
-    size_t *dims; // Heap-owned copy of dimension sizes
-    size_t *strides; // Heap-owned strides
-    size_t ndims; // Number of dimensions
-    size_t nelems; // Total number of elements
-} NDArray_u32;
 
 // Initialization
 NDArrayError
@@ -743,7 +750,7 @@ bool ndarray_match_dimensions_u32(const NDArray_u32 *array1,
     const NDArray_u32 *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
-    // Compare size for  each constituing dimension
+    // Compare size_t for  each constituing dimension
     for (size_t i = 0; i < array1->ndims; ++i) {
         if (array1->dims[i] != array2->dims[i]) {
             return false;
@@ -868,13 +875,6 @@ ndarray_divide_elemWise_u32(const NDArray_u32 *array1, const NDArray_u32 *array2
 }
 
 /////////////////////////////////////////////////////// LONG LONG /////////////////////////////////////////////////////
-typedef struct {
-    long long *elems; // external storage, not owned by NDArray_f64. Need double explicitly in C
-    size_t *dims; // Heap-owned copy of dimension sizes
-    size_t *strides; // Heap-owned strides
-    size_t ndims; // Number of dimensions
-    size_t nelems; // Total number of elements
-} NDArray_i64;
 
 // Initialization
 NDArrayError
@@ -997,7 +997,7 @@ bool ndarray_match_dimensions_i64(const NDArray_i64 *array1,
     const NDArray_i64 *array2) {
     // Check if two arrays have the same dimensions
     if (array1->ndims != array2->ndims) return false; // Different number of dimensions
-    // Compare size for  each constituing dimension
+    // Compare size_t for  each constituing dimension
     for (size_t i = 0; i < array1->ndims; ++i) {
         if (array1->dims[i] != array2->dims[i]) {
             return false;
@@ -1127,13 +1127,13 @@ ndarray_divide_elemWise_i64(const NDArray_i64 *array1, const NDArray_i64 *array2
 #define TEST_PASS (0)
 #define TEST_FAIL (1)
 
-int total_tests = 0;
-int passed_tests = 0;
+int totalests = 0;
+int passedests = 0;
 
-void print_test_result(const char* name, int result) {
-    total_tests++;
+void printest_result(const char* name, int result) {
+    totalests++;
     if (result == TEST_PASS) {
-        passed_tests++;
+        passedests++;
         printf("PASS: %s\n", name);
     } else {
         printf("FAIL: %s\n", name);
@@ -1210,7 +1210,7 @@ int test_indexing() {
         return TEST_FAIL;
     }
 
-    // 3. Out-of-bounds check (index 2 for dim 0, which is size 2)
+    // 3. Out-of-bounds check (index 2 for dim 0, which is size_t 2)
     size_t indices_oob[] = {2, 0, 0};
     if (ndarray_get_flat_index_f64(&arr, indices_oob, ndims, &flat_index) != NDARRAY_INDEX_OUT_OF_BOUNDS) {
         ndarray_deinit_f64(&arr);
@@ -1345,7 +1345,7 @@ int test_slicing() {
     double *slice_ptr;
     size_t slice_len;
 
-    // 1. Slice along dim 1 (the middle dimension, size 2)
+    // 1. Slice along dim 1 (the middle dimension, size_t 2)
     // Fixed indices: (1, 1, _) -> should be {7.0, 8.0}
     size_t fixed_2[] = {1, 1, 0};
     size_t slice_fixed_dim_2 = 1; // Will fail if set to 2 since slicer doesn't work for the last dimension. As expected.
@@ -1373,21 +1373,21 @@ int test_macros() {
     size_t ndims = 2;
     NDArray_f64 arr;
     //ndarray_init_f64(&arr, data, nelems, dims, ndims);
-    if (ndarray_init_T(double, &arr, data, nelems, dims, ndims) == NDARRAY_OK) {
-        ndarray_print_T(double, &arr);
+    if (ndarray_init(double, &arr, data, nelems, dims, ndims) == NDARRAY_OK) {
+        ndarray_print(double, &arr);
         size_t indices_011[] = {0, 1};
         double new_value = 99.9;
-        ndarray_set_index_T(double, &arr, indices_011, ndims, new_value);
+        ndarray_set_index(double, &arr, indices_011, ndims, new_value);
         // Check if we successfully changed the values and if we can retrieve them
-        if (ndarray_get_T(double, &arr, indices_011, ndims, &new_value) != NDARRAY_OK || new_value != 99.9) {
+        if (ndarray_get(double, &arr, indices_011, ndims, &new_value) != NDARRAY_OK || new_value != 99.9) {
             ndarray_deinit_f64(&arr); // if fail, assume that this macro might not work either and use function explicitly
             return TEST_FAIL;
         }
 
-        ndarray_deinit_T(double, &arr);
+        ndarray_deinit(double, &arr);
         return TEST_PASS;
     } else {
-        printf("error %d", ndarray_init_T(double, &arr, data, nelems, dims, ndims));
+        printf("error %d", ndarray_init(double, &arr, data, nelems, dims, ndims));
         ndarray_deinit_f64(&arr);
         return TEST_FAIL;
     }
@@ -1396,19 +1396,23 @@ int test_macros() {
 int main() {
     printf("--- Running NDArray Unit Tests ---\n");
 
-    print_test_result("Test init/deinit", test_init_deinit());
-    print_test_result("Test indexing (flat, get, set)", test_indexing());
-    print_test_result("Test array utilities (fill, match dims)", test_array_utilities());
-    print_test_result("Test arithmetic (in-place & out-of-place)", test_arithmetic());
-    print_test_result("Test slicing", test_slicing());
-    print_test_result("Test macros", test_macros());
+    printest_result("Test init/deinit", test_init_deinit());
+    printest_result("Test indexing (flat, get, set)", test_indexing());
+    printest_result("Test array utilities (fill, match dims)", test_array_utilities());
+    printest_result("Test arithmetic (in-place & out-of-place)", test_arithmetic());
+    printest_result("Test slicing", test_slicing());
+    printest_result("Test macros", test_macros());
 
     printf("\n--- Test summary ---\n");
-    printf("Total tests: %d\n", total_tests);
-    printf("Passed: %d\n", passed_tests);
-    printf("Failed: %d\n", total_tests - passed_tests);
+    printf("Total tests: %d\n", totalests);
+    printf("Passed: %d\n", passedests);
+    printf("Failed: %d\n", totalests - passedests);
 
     // Return 0 if all tests passed, 1 otherwise
-    return total_tests == passed_tests ? 0 : 1;
+    return totalests == passedests ? 0 : 1;
 }
 */
+
+#ifdef __cplusplus
+}
+#endif

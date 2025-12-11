@@ -12,12 +12,7 @@
 #include "rtbvh_recursion.h"
 #include "rtrayintersection.h"
 #include "rthitrecord.h"
-
-extern "C" {
 #include "ndarray.h"
-// #include "ndarray_float.h"
-// etc. if you have more
-}
 
 /*
 // nanobind header files
@@ -530,10 +525,14 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         size_t dims[] = {2, 3};
         size_t nelems = 6;
         size_t ndims = 2;
-        NDArray_f64 arr;
-        ndarray_init_f64(&arr, data, nelems, dims, ndims);
-        ndarray_print_f64(&arr);
-        ndarray_deinit_f64(&arr);
+        //NDArray_f64 arr;
+        NDArray(double) arr;
+        ndarray_init(double, &arr, data, nelems, dims, ndims);
+        ndarray_print(double, &arr);
+        ndarray_deinit(double, &arr);
+        //ndarray_init_f64(&arr, data, nelems, dims, ndims);
+        //ndarray_print_f64(&arr);
+        //ndarray_deinit_f64(&arr);
 
 
         // Without struct bvh all data should be accessible via root pointer after building
