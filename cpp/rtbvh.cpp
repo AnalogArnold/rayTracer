@@ -90,9 +90,6 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
         mesh_triangle_aabbs.reserve(mesh_number_of_elements * sizeof(AABB));
         AABB mesh_aabb; // AABB_r for the entire mesh
 
-
-        std::vector<uint32_t> bvh_mesh_connectivity;
-        bvh_mesh_connectivity.reserve(mesh_number_of_elements * sizeof(uint32_t) * 3);
         // Iterate over ELEMENTS/TRIANGLES in this mesh
         for (int triangle_idx = 0; triangle_idx < mesh_number_of_elements; triangle_idx++) {
             // Use pointers - means we treat the 2D array as a flat 1D array and do the indexing manually by calculating the offset.
@@ -112,34 +109,27 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
             triangle_aabb.expand_to_include_node(node_2, mesh_node_coords_ptr);
             mesh_triangle_aabbs.push_back(triangle_aabb);
 
-            // Include triangle AABB_r in mesh AABB_r to get the bounding box for the whole thing
+            // Include triangle AABB in mesh AABB to get the bounding box for the whole thing
             mesh_aabb.expand_to_include_AABB(triangle_aabb);
-            bvh_mesh_connectivity.push_back(node_0);
-            bvh_mesh_connectivity.push_back(node_1);
-            bvh_mesh_connectivity.push_back(node_2);
         } // ELEMENTS/TRIANGLES
-
 
         // DEBUG LINES
         //std::cout << "mesh_triangle_centroids[4][0] " << mesh_triangle_centroids[4][0] << std::endl;
         //std::cout << "mesh_triangle_aabbs[4].corner_max[0] " << mesh_triangle_aabbs[4].corner_max[0] << std::endl;
 
-        // NDArray from vector
-        std::cout << "From std::vector:" << std::endl;
-        NDArray(uint32_t) ndarray_mesh_connectivity;
+        // NDArray for connectivity
         size_t dims[] = {mesh_number_of_elements, static_cast<size_t>(nodes_per_element)};
-        size_t nelems = mesh_number_of_elements * static_cast<size_t>(nodes_per_element);
-        size_t ndims = 2;
-        ndarray_init(uint32_t, &ndarray_mesh_connectivity, &bvh_mesh_connectivity[0], nelems, &dims[0], ndims);
-        ndarray_print(uint32_t, &ndarray_mesh_connectivity);
-        ndarray_deinit(uint32_t, &ndarray_mesh_connectivity);
+        size_t n_elems = mesh_number_of_elements * static_cast<size_t>(nodes_per_element);
+        size_t n_dims = 2;
+        NDArray(int) ndarray_mesh_connectivity;
+        ndarray_init(int, &ndarray_mesh_connectivity, mesh_connectivity_ptr, n_elems, &dims[0], n_dims); // Copy data directly from NumPy array buffer
+        //ndarray_print(int, &ndarray_mesh_connectivity);
+        //size_t indices[] = {2,1};
+        //int test_index;
+        //ndarray_get(int, &ndarray_mesh_connectivity, &indices[0], n_dims, &test_index);
+        //std::cout << "index" << test_index << std::endl;
+        ndarray_deinit(int, &ndarray_mesh_connectivity);
         
-        // Test copying data directly from numpy buffer rather than copying into a vector and then getting the NDArray
-        std::cout << "Directly from Python buffer:" << std::endl;
-        NDArray(int) ndarray_mesh_connectivity_buff;
-        ndarray_init(int, &ndarray_mesh_connectivity_buff, mesh_connectivity_ptr, nelems, &dims[0], ndims);
-        ndarray_print(int, &ndarray_mesh_connectivity_buff);
-        ndarray_deinit(int, &ndarray_mesh_connectivity_buff);
 
         scene_centroids.push_back(mesh_triangle_centroids);
         scene_aabbs.push_back(mesh_triangle_aabbs);
