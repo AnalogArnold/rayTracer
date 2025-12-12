@@ -22,6 +22,7 @@ inline void compute_triangle_centroid_r(int node_0,
     int node_2,
     const double* mesh_node_coords_ptr,
     std::array<double,3> &triangle_centroid);
+    
 
 // Bounding volume structure - axis-aligned bounding boxes (AABB_r)
 struct AABB_r {
@@ -68,16 +69,19 @@ struct AABB_r {
     }
 };
 
+inline void compute_mesh_centroid_r(AABB_r mesh_aabb,
+    std::array<double,3>& mesh_centroid);
+
 // BVH node structure - naive implementation with pointers for now. Replace with indices once functional to save a few bytes
 struct BVH_Node_r {
-    int min_triangle_idx;
-    int triangle_count;
     AABB_r bounding_box {};
     // Unique pointers to prevent memory leaks with raw pointers and new BVH_Node_r use
     std::unique_ptr<BVH_Node_r> left_child;
     std::unique_ptr<BVH_Node_r> right_child;
     //BVH_Node_r* left_child {nullptr}; // Nullptr if leaf.
     //BVH_Node_r* right_child {nullptr};
+    int min_triangle_idx;
+    int triangle_count;
 };
 
 AABB_r create_node_AABB_r(const std::vector<AABB_r>& mesh_triangle_abbs,
@@ -85,15 +89,31 @@ AABB_r create_node_AABB_r(const std::vector<AABB_r>& mesh_triangle_abbs,
     const int node_min_triangle_idx,
     const int node_triangle_count);
 
-/*
+
 struct BVH {
-    std::vector<BVH_Node_r> nodes;
-    std::vector<unsigned int> triangle_indices; // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
+    //std::vector<BVH_Node_r> nodes;
     std::unique_ptr<BVH_Node_r> root;
+    std::vector<int> triangle_indices; // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
+    double* mesh_node_coords_ptr; // pointer to contiguous array of mesh node coordinates
+    int* mesh_connectivity_ptr; // pointer to contiguous array of mesh connectivity
+    double* mesh_face_colors_ptr; // pointer to contiguous array of mesh face colors
 };
-*/
 
+// Structure is the same as BVH_Node_r, so this isn't exactly necessary and would save me having to write the splitting function twice. 
+// Here for clarity as I am trying to work out how this works.
+struct TLAS_Node_r {
+    AABB_r bounding_box {};
+    std::unique_ptr<TLAS_Node_r> left_child;
+    std::unique_ptr<TLAS_Node_r> right_child;
+    int min_blas_idx; // Index into vector of BLAS roots
+    int blas_leaf_count; // Number of BLASes in this node (consecutive in the array)
+};
 
+struct TLAS{
+    std::vector<std::reference_wrapper<BVH>> mesh_blas; // Reference wrappers to avoid copying the BLASes themselves
+    std::unique_ptr<TLAS_Node_r> root;
+    std::vector<int> blas_indices; // Indices to BLASes in the TLAS
+};
 
 struct Bin_r {
     // Bin_r for binning SAH
@@ -107,6 +127,15 @@ bool binned_sah_split_r(BVH_Node_r& Node,
     const std::vector<std::array<double,3>>& mesh_triangle_centroids,
     const std::vector<AABB_r>& mesh_triangle_aabbs,
     const std::vector<int>& mesh_triangle_indices,
+    unsigned int& out_split_axis,
+    double& out_split_position);
+
+
+// Binned Surface Area Heuristic (SAH) split2
+bool binned_sah_split_t_r(TLAS_Node_r& Node,
+    const std::vector<std::array<double,3>>& blas_centroids,
+    const std::vector<AABB_r>& blas_aabbs,
+    const std::vector<int>& blas_indices,
     unsigned int& out_split_axis,
     double& out_split_position);
 

@@ -28,18 +28,6 @@
 #include "rtray.h"
 */
 
-// TO-DO'S:
-// Update main to pass data and construct bvh; then rtrender and rtrayintersection to reflect these changes
-// AABBs - Tested. Updated adding the point, since triangle node data isn't passed as EiVector3d.
-// compute_triangle_centroid - Tested. Updated to reflect how triangle data is passed.
-// Bin_r - Don't touch
-
-// intersect_AABB - 1. Run test cases separately to make sure results are okay. 2. Bullet-proof it based on https://tavianator.com/2022/ray_box_boundary.html
-// BVHNode - Decide on the final data layout
-// intersect_bvh_r - Update with iterating over triangles (depends on node layout, though)
-// find_SAH_cost functions - For now keep the simplified version.
-// binned_sah_split, split_node  - Same as intersect_bvh_r. Update arguments. Test for corner cases and maybe add fail-safe option if SAH splitting fails.
-// build_bvh - Write it (depends on everything above, though)
 
  inline void compute_triangle_centroid_r(int node_0,
     int node_1,
@@ -50,6 +38,13 @@
     // Update the value of the passed array, so we don't have to fiddle with structs etc. to return a value.
     for (int i = 0; i < 3; ++i){
         triangle_centroid[i] = (mesh_node_coords_ptr[node_0 * 3 + i] + mesh_node_coords_ptr[node_1 * 3 + i] + mesh_node_coords_ptr[node_2 * 3 + i]) / 3.0;
+    }
+}
+
+inline void compute_mesh_centroid_r(AABB_r mesh_aabb, std::array<double,3>& mesh_centroid) {
+    // Compute centroid of the mesh AABB
+    for (int i = 0; i < 3; ++i){
+        mesh_centroid[i] = (mesh_aabb.corner_min[i] + mesh_aabb.corner_max[i]) / 2.0;
     }
 }
 
@@ -219,7 +214,113 @@ bool binned_sah_split_r(BVH_Node_r& Node,
     return true;
 }
 
- void build_bvh(BVH_Node_r& Node,
+
+bool binned_sah_split_t_r(TLAS_Node_r& Node,
+    const std::vector<std::array<double,3>>& blas_centroids,
+    const std::vector<AABB_r>& blas_aabbs,
+    const std::vector<int>& blas_indices,
+    unsigned int& out_split_axis,
+    double& out_split_position) {
+    if (Node.blas_leaf_count <= 2) return false; // Too small to split
+    
+    unsigned int node_max_blas_idx = Node.min_blas_idx + Node.blas_leaf_count;
+
+    // Compute centroid bounds for the node
+    // We use existing AABB_r since it nicely implements everything we need, BUT it is not to be confused with the actual bounding box of the node
+    // node_centroid_bounds - Only used to determine splitting
+    // bounding_box - Actual bounding box of the node used for ray intersections
+    AABB_r node_centroid_bounds{};
+    for (int i = Node.min_blas_idx; i < node_max_blas_idx; ++i) {
+        // Retrieve triangle and its centroid on the split axis
+        unsigned int blas_idx = blas_indices[i];
+        std::array<double,3> blas_centroid = blas_centroids[blas_idx];
+        node_centroid_bounds.expand_to_include_point(blas_centroid);
+    }
+
+    // Pick the longest axis for splitting
+    int best_axis = 0;
+    double axis_extent = node_centroid_bounds.find_axis_extent(best_axis);
+    for (int i = 1; i < 3; ++i) {
+        double temp_extent = node_centroid_bounds.find_axis_extent(i);
+        if (temp_extent > axis_extent){
+            best_axis = i;
+            axis_extent = temp_extent;
+        }
+    }
+    if (axis_extent == 0) return false; // All centroids coincident along the chosen axis => No useful split
+    // Might implement fallback split here (median et.c) here later rather than in the main build_bvh function?
+    out_split_axis = best_axis;
+
+    // Create bins
+    constexpr int NUM_BINS = 8;
+    Bin_r bins[NUM_BINS];
+
+    const double inverse_extent = 1.0/axis_extent;
+    for (unsigned int i = Node.min_blas_idx; i < node_max_blas_idx; ++i) {
+        unsigned int blas_idx = blas_indices[i];
+        // Find the Bin_r containing the triangle centroid
+        double t = (blas_centroids[blas_idx][best_axis] - node_centroid_bounds.corner_min[best_axis]) * inverse_extent;
+        int bin_id = static_cast<int>(t * NUM_BINS);
+        if (bin_id == NUM_BINS) bin_id = NUM_BINS - 1; // Round up to the last Bin_r
+        bins[bin_id].element_count++;
+        bins[bin_id].bounding_box.expand_to_include_AABB(blas_aabbs[blas_idx]);
+    }
+
+    // Pre-compute left/right bounds for all possible splits (so we don't have to recompute them from scratch to analyse every possible split)
+    unsigned int left_count[NUM_BINS], right_count[NUM_BINS];
+    AABB_r left_bounds[NUM_BINS], right_bounds[NUM_BINS];
+
+    // Left-to-right
+    AABB_r possible_left_box;
+    unsigned int possible_left_count = 0;
+    for (int i = 0; i < NUM_BINS; ++i) {
+        if (bins[i].element_count > 0) {
+            possible_left_box.expand_to_include_AABB(bins[i].bounding_box);
+        }
+        possible_left_count += bins[i].element_count;
+        left_bounds[i] = possible_left_box;
+        left_count[i] = possible_left_count;
+    }
+    // Right-to-left
+    AABB_r possible_right_box;
+    unsigned int possible_right_count = 0;
+    for (int i = NUM_BINS - 1; i >= 0; --i) {
+        if (bins[i].element_count > 0) {
+            possible_right_box.expand_to_include_AABB(bins[i].bounding_box);
+        }
+        possible_right_count += bins[i].element_count;
+        right_bounds[i] = possible_right_box;
+        right_count[i] = possible_right_count;
+        if (i == 0) break; // Safety
+    }
+
+    // Evaluate SAH at each Bin_r boundary and pick the best one (i.e., the one which minimizes the cost function)
+    double best_cost = std::numeric_limits<double>::infinity();
+    int best_split_bin = -1;
+
+    for (int i = 0; i < NUM_BINS - 1; ++i) {
+        unsigned int left_size = left_count[i];
+        unsigned int right_size = right_count[i+1];
+        if (left_size == 0 || right_size == 0) continue; // invalid split
+
+        double cost = find_SAH_cost_bin_r(left_size, right_size, left_bounds[i], right_bounds[i+1]);
+        if (cost < best_cost) {
+            best_cost = cost;
+            best_split_bin = i;
+        }
+    }
+    if (best_split_bin == -1) return false; // No useful split found
+
+    // Convert Bin_r index to world-space split position
+    double bin_width = axis_extent / NUM_BINS;
+    out_split_position = node_centroid_bounds.corner_min[best_axis] + bin_width * (best_split_bin + 1); // Boundary between best_split_bin and best_split_bin + 1
+    return true;
+
+
+    }
+
+
+ void build_bvh_r(BVH_Node_r& Node,
     const std::vector<std::array<double,3>>& mesh_triangle_centroids,
     const std::vector<AABB_r>& mesh_triangle_aabbs,
     std::vector<int>& mesh_triangle_indices){
@@ -293,10 +394,81 @@ bool binned_sah_split_r(BVH_Node_r& Node,
     Node.triangle_count = 0; // Split => Internal node containing no triangles, so update the count
 
     // Build BVH recursively
-    build_bvh(*Node.left_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
-    build_bvh(*Node.right_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+    build_bvh_r(*Node.left_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+    build_bvh_r(*Node.right_child, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
 }
 
+
+void build_tlas_r(TLAS_Node_r& Node,
+    const std::vector<AABB_r>& blas_aabbs,
+    const std::vector<std::array<double,3>>& blas_centroids,
+    std::vector<int>& blas_indices){
+
+    static constexpr int MAX_ELEMENTS_PER_LEAF = 2;
+
+    if (Node.blas_leaf_count <= MAX_ELEMENTS_PER_LEAF) {
+        // Leaf node
+        Node.left_child = nullptr;
+        Node.right_child = nullptr;
+        return;
+    }
+    // Otherwise, split elements into child nodes
+    // Run binned SAH
+    unsigned int split_axis = 0;
+    double split_position = 0.0;
+    bool found_split = binned_sah_split_t_r(Node, blas_centroids, blas_aabbs, blas_indices, split_axis, split_position);
+    if (!found_split) {
+        Node.left_child = nullptr;
+        Node.right_child = nullptr;
+        return;
+        // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
+    }
+// Partition of indices by centroid[axis] < split_pos
+    unsigned int begin = Node.min_blas_idx;
+    unsigned int end = begin + Node.blas_leaf_count;
+    unsigned int mid = begin;
+
+    while (mid < end) {
+        unsigned int blas_idx = blas_indices[mid];
+        double blas_centroid_split = blas_centroids[blas_idx][split_axis];
+        // Compare triangle centroid position on the axis versus the splitting point
+        if (blas_centroid_split < split_position) { // Triangle on the left
+            ++mid; // move mid to the right
+        } else {
+            --end; // Move end to left
+            std::swap(blas_indices[mid], blas_indices[end]);
+        }
+    }
+    // How many triangles are on the left and on the right
+    unsigned int left_count = mid - begin;
+    unsigned int right_count = Node.blas_leaf_count - left_count;
+
+    // Abort split if one side is empty
+    if (left_count == 0 || right_count == 0) {
+        Node.left_child = nullptr;
+        Node.right_child = nullptr;
+        return;
+    }
+
+    // Create children
+    Node.left_child = std::make_unique<TLAS_Node_r>();
+    Node.right_child = std::make_unique<TLAS_Node_r>();
+    // Assign BLAS ranges
+    // Left child indices: [begin, begin+left_count)
+    Node.left_child->blas_leaf_count = left_count;
+    Node.left_child->min_blas_idx = begin;
+    // Right child indices: [begin+left_count, begin+left_count+right_count
+    Node.right_child->blas_leaf_count = right_count;
+    Node.right_child->min_blas_idx = begin + left_count;
+    // Recompute child bounds from the indices
+    Node.left_child->bounding_box = create_node_AABB_r(blas_aabbs, blas_indices, Node.left_child->min_blas_idx, Node.left_child->blas_leaf_count);
+    Node.right_child->bounding_box = create_node_AABB_r(blas_aabbs, blas_indices, Node.right_child->min_blas_idx, Node.right_child->blas_leaf_count);
+    Node.blas_leaf_count = 0; // Split => Internal node containing no BLASes, so update the count
+    // Build TLAS recursively
+    build_tlas_r(*Node.left_child, blas_aabbs, blas_centroids, blas_indices);
+    build_tlas_r(*Node.right_child, blas_aabbs, blas_centroids, blas_indices);
+}
+    
 // Sanity-test check function
 void print_bvh_r(const BVH_Node_r* node,
     int depth = 0) {
@@ -310,6 +482,20 @@ void print_bvh_r(const BVH_Node_r* node,
     if (node->right_child) print_bvh_r(node->right_child.get(), depth + 1);
 }
 
+// Sanity-test check function2
+void print_tlas_r(const TLAS_Node_r* node,
+    int depth = 0) {
+    if (!node) return;
+    std::cout << std::string(depth*2, ' ') << "Node BLASes: " << node->blas_leaf_count << "\n";
+    Ray test_ray;
+    test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
+    test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
+    std::cout << std::string(depth*2, ' ') << "AABB_r intersection: " << intersect_AABB_r(test_ray, node->bounding_box) << "\n";
+    if (node->left_child) print_tlas_r(node->left_child.get(), depth + 1);
+    if (node->right_child) print_tlas_r(node->right_child.get(), depth + 1);
+}
+
+
 void intersect_bvh_r(const Ray& ray,
     const BVH_Node_r& node,
     const std::vector<int>& mesh_triangle_indices,
@@ -317,12 +503,12 @@ void intersect_bvh_r(const Ray& ray,
     const double* mesh_node_coords_ptr) {
 
      HitRecord intersection_record; // Only here for tests. Doesn't make sense to have it here later - it's one per ray, so it'll be in the renderer as usual.
-     std::cout << "Starting BVH intersection test" << std::endl;
+     std::cout << "  BLAS:Starting BVH intersection test" << std::endl;
 
     if (!intersect_AABB_r(ray, node.bounding_box)) return; // Early exit if ray does not intersect the AABB_r of the node
     if (node.left_child == nullptr && node.right_child == nullptr) {
         // No children => Leaf node => Intersect triangles
-        std::cout << "Leaf node reached with " << node.triangle_count << " triangles." << std::endl;
+        std::cout << "   BLAS: Leaf node reached with " << node.triangle_count << " triangles." << std::endl;
         int node_max_triangle_idx = node.min_triangle_idx + node.triangle_count;
         // Get indices of the triangles within the node and store in vector to pass to the intersection function
         std::vector<unsigned int> node_triangle_indices;
@@ -330,7 +516,7 @@ void intersect_bvh_r(const Ray& ray,
         for (int i = node.min_triangle_idx; i < node_max_triangle_idx; ++i) {
             int triangle_idx = mesh_triangle_indices[i];
             node_triangle_indices[i - node.min_triangle_idx] = triangle_idx;
-            std::cout << "Node triangle index: " << triangle_idx << std::endl;
+            std::cout << "    BLAS: Node triangle index: " << triangle_idx << std::endl;
         }
         IntersectionOutput intersection = intersect_bvh_triangles(ray, mesh_connectivity_ptr, mesh_node_coords_ptr, node.triangle_count, node_triangle_indices);
         Eigen::Index minRowIndex, minColIndex;
@@ -358,6 +544,32 @@ void intersect_bvh_r(const Ray& ray,
     }
 }
 
+
+void intersect_tlas_r(const Ray& ray,
+    const TLAS_Node_r& node,
+    TLAS & tlas) {
+
+     HitRecord intersection_record; // Only here for tests. Doesn't make sense to have it here later - it's one per ray, so it'll be in the renderer as usual.
+     std::cout << "TLAS: Starting BVH intersection test" << std::endl;
+
+    if (!intersect_AABB_r(ray, node.bounding_box)) return; // Early exit if ray does not intersect the AABB_r of the node
+    if (node.left_child == nullptr && node.right_child == nullptr) {
+        // No children => Leaf node => Intersect triangles
+        std::cout << "TLAS: Leaf node reached with " << node.blas_leaf_count << " BLASes." << std::endl;
+        int blas_idx = tlas.blas_indices[node.min_blas_idx];
+        int max_blas_idx = node.min_blas_idx + node.blas_leaf_count;
+        for (int i = blas_idx; i < max_blas_idx; ++i) {
+            std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
+            BVH& bvh = tlas.mesh_blas[tlas.blas_indices[i]]; // Get the BLAS corresponding to this TLAS leaf node
+            intersect_bvh_r(ray, *(bvh.root), bvh.triangle_indices, bvh.mesh_connectivity_ptr, bvh.mesh_node_coords_ptr);
+        }
+    }
+    else { // Not a leaf node => Test children nodes for intersections
+        intersect_tlas_r(ray, *node.left_child, tlas);
+        intersect_tlas_r(ray, *node.right_child, tlas);
+    }
+ }
+
 // Handles building all acceleration structures in the scene - bottom and top level
 // Might not need to pass scene_face_colors. Not sure yet.
 void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const int, nanobind::c_contig>>& scene_connectivity,
@@ -369,9 +581,16 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
     size_t num_meshes = scene_coords.size();
     // Create vectors to store centroid and AABB_r data for the scene; might not need these, but have them for now
     std::vector<std::vector<std::array<double,3>>> scene_centroids; // Stores centroids for all meshes in the scene
-    std::vector<std::vector<AABB_r>> scene_aabbs; // Stores AABBs for all meshes in this scene
-    scene_centroids.reserve(num_meshes);
-    scene_aabbs.reserve(num_meshes);
+    //scene_centroids.reserve(num_meshes); // Might not be worth reserving since we'll need num_meshes * num_elements_mesh * 3 * 8 bytes (double) for the whole vector
+    std::vector<std::vector<AABB_r>> scene_aabbs; // Stores AABBs for all elements comprising meshes in this scene
+     //scene_aabbs.reserve(num_meshes); // // Might not be worth reserving since we'll need num_meshes * num_elements_mesh * 48 bytes (AABB) for the whole vector
+    std::vector<AABB_r> scene_obj_aabbs; // Stores AABBs of the whole objectes (meshes) in this scene
+    scene_obj_aabbs.reserve(num_meshes * sizeof(AABB_r)); // Can reliably reserve this size and not expect it to change
+    std::vector<std::array<double,3>> scene_obj_centroids; // Stores centroids of the whole objectes (meshes) in this scene
+    scene_obj_centroids.reserve(num_meshes * 3 * sizeof(double)); // Can reliably reserve this size and not expect it to change
+
+    std::vector<BVH> scene_mesh_bvhs; // Store BVHs for all meshes in the scene
+    scene_mesh_bvhs.reserve(num_meshes * sizeof(BVH));
 
     // Iterate over MESHES
     for (size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx) {
@@ -451,10 +670,14 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
         // Alternatively use iota, but we wanted minimal subset of C++ functions?
         //std::iota(mesh_bvh.triangle_indices.begin(), mesh_bvh.triangle_indices.end(), 0); // Fill the vector with triangle indices
     */
-
+        scene_obj_aabbs.push_back(mesh_aabb); // Store the AABB_r of this mesh in the scene vector
         std::vector<int> mesh_triangle_indices;
         mesh_triangle_indices.resize(mesh_number_of_elements);
         std::iota(mesh_triangle_indices.begin(), mesh_triangle_indices.end(), 0);
+        std::array<double,3> mesh_centroid;
+        compute_mesh_centroid_r(mesh_aabb, mesh_centroid);
+        scene_obj_centroids.push_back(mesh_centroid); // Store the centroid of this mesh in the scene vector
+
         // DEBUG LINES
         //std::cout << "size of mesh_triangle_indices " << mesh_triangle_indices.size() << std::endl;
         //std::cout << "mesh_triangle_indices[0] " << mesh_triangle_indices[0] << std::endl;
@@ -469,21 +692,53 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
         root->triangle_count = mesh_number_of_elements;
         //mesh_bvh.root = std::move(root);
 
-        build_bvh(*root, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+        build_bvh_r(*root, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
+        // Build BVH struct
+        BVH mesh_bvh;
+        mesh_bvh.root = std::move(root);
+        mesh_bvh.triangle_indices = std::move(mesh_triangle_indices); 
+        mesh_bvh.mesh_node_coords_ptr = mesh_node_coords_ptr;
+        mesh_bvh.mesh_connectivity_ptr = mesh_connectivity_ptr;
+        double* mesh_face_colors_ptr = const_cast<double*>(mesh_face_colors.data());
+        mesh_bvh.mesh_face_colors_ptr = mesh_face_colors_ptr;
+        // Add to the vector storing scene BVHs
+        scene_mesh_bvhs.emplace_back(std::move(mesh_bvh)); // emplace_back to avoid unnecessary copies
+
+        // DEBUG LINES
         //print_bvh_r(root.get());
-        Ray test_ray;
-        test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
-        test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
-        intersect_bvh_r(test_ray, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
-
-        
-
+        //Ray test_ray;
+        //test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
+        //test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
+        //intersect_bvh_r(test_ray, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
 
         // Without struct bvh all data should be accessible via root pointer after building
     }
 
-    // Build TLAS - structure of BLASes. Target is BVH in itself, but use a vector to just contain them for now?
+    // BUILD TLAS - structure of BLASes
+    TLAS scene_tlas;
+    scene_tlas.mesh_blas.reserve(scene_mesh_bvhs.size());
+    AABB_r scene_aabb;
+    // Iterate over all mesh BVHs to build the TLAS
+    for (int mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx) {
+        scene_tlas.mesh_blas.emplace_back(scene_mesh_bvhs[mesh_idx]);
+        scene_aabb.expand_to_include_AABB(scene_obj_aabbs[mesh_idx]);
 
+    }
+    scene_tlas.root = std::make_unique<TLAS_Node_r>();
+    scene_tlas.root->bounding_box = scene_aabb;
+    scene_tlas.root->min_blas_idx = 0;
+    scene_tlas.root->blas_leaf_count = num_meshes;
+    std::vector<int> tlas_blas_indices;
+    tlas_blas_indices.resize(num_meshes);
+    std::iota(tlas_blas_indices.begin(), tlas_blas_indices.end(), 0);
+    scene_tlas.blas_indices = std::move(tlas_blas_indices);
+    build_tlas_r(*scene_tlas.root, scene_obj_aabbs, scene_obj_centroids, scene_tlas.blas_indices);
+    //print_tlas_r(scene_tlas.root.get());
+
+    Ray test_ray;
+    test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
+    test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
+    intersect_tlas_r(test_ray, *scene_tlas.root, scene_tlas);
  }
 
 
