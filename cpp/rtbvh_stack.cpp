@@ -515,77 +515,100 @@ void print_tlas_it(const TLAS_Node_it* node,
 
 
 void intersect_bvh_it(const Ray& ray,
-    const BVH_Node_it& node,
+    HitRecord &intersection_record,
+    const BVH_Node_it& root,
     const std::vector<int>& mesh_triangle_indices,
     const int* mesh_connectivity_ptr,
     const double* mesh_node_coords_ptr) {
 
-     HitRecord intersection_itecord; // Only here for tests. Doesn't make sense to have it here later - it's one per ray, so it'll be in the renderer as usual.
      std::cout << "  BLAS:Starting BVH intersection test" << std::endl;
 
-    if (!intersect_AABB_it(ray, node.bounding_box)) return; // Early exit if ray does not intersect the AABB_it of the node
-    if (node.left_child == nullptr && node.right_child == nullptr) {
-        // No children => Leaf node => Intersect triangles
-        std::cout << "   BLAS: Leaf node reached with " << node.triangle_count << " triangles." << std::endl;
-        int node_max_triangle_idx = node.min_triangle_idx + node.triangle_count;
-        // Get indices of the triangles within the node and store in vector to pass to the intersection function
-        std::vector<unsigned int> node_triangle_indices;
-        node_triangle_indices.resize(node.triangle_count);
-        for (int i = node.min_triangle_idx; i < node_max_triangle_idx; ++i) {
-            int triangle_idx = mesh_triangle_indices[i];
-            node_triangle_indices[i - node.min_triangle_idx] = triangle_idx;
-            std::cout << "    BLAS: Node triangle index: " << triangle_idx << std::endl;
-        }
-        IntersectionOutput intersection = intersect_bvh_triangles(ray, mesh_connectivity_ptr, mesh_node_coords_ptr, node.triangle_count, node_triangle_indices);
-        Eigen::Index minRowIndex, minColIndex;
-        std::cout << "Number of t_values: " << intersection.t_values.size() << std::endl;
+     std::vector<const BVH_Node_it*> stack;
+     stack.reserve(64); // temp
+     stack.push_back(&root);
 
-        intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value
+     while(!stack.empty()){
+        const BVH_Node_it* node = stack.back();
+        stack.pop_back();
 
-        double closest_t = intersection.t_values(minRowIndex, minColIndex);
-        if (closest_t < intersection_itecord.t) {
-            intersection_itecord.t = closest_t;
-            intersection_itecord.barycentric_coordinates = intersection.barycentric_coordinates.row(minRowIndex);
-            intersection_itecord.point_intersection = ray_at_t(closest_t, ray);
-            intersection_itecord.normal_surface = intersection.plane_normals.row(minRowIndex);
-            // Get a pointer to the array storing face colors for the mesh if intersected
-            //double* face_colors_ptr = const_cast<double*>((scene_face_colors[mesh_idx]).data());
-            //intersection_itecord.face_color = get_face_color(minRowIndex, face_colors_ptr);
+        if (!intersect_AABB_it(ray, node->bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (node->left_child == nullptr && node->right_child == nullptr) {
+            // No children => Leaf node => Intersect triangles
+            std::cout << "   BLAS: Leaf node reached with " << node->triangle_count << " triangles." << std::endl;
+            int node_max_triangle_idx = node->min_triangle_idx + node->triangle_count;
+            // Get indices of the triangles within the node and store in vector to pass to the intersection function
+            std::vector<unsigned int> node_triangle_indices; // Allocating this per leaf probably isn't the most optimal solution, so might have to update intersect_bvh_triangles later. Or keep a buffer since I pre-set max number of triangles per node anyway, so I can have a flat array pre-allocated at compile time
+            node_triangle_indices.resize(node->triangle_count);
+            for (int i = node->min_triangle_idx; i < node_max_triangle_idx; ++i) {
+                int triangle_idx = mesh_triangle_indices[i];
+                node_triangle_indices[i - node->min_triangle_idx] = triangle_idx;
+                std::cout << "    BLAS: Node triangle index: " << triangle_idx << std::endl;
+            }
+            IntersectionOutput intersection = intersect_bvh_triangles(ray, mesh_connectivity_ptr, mesh_node_coords_ptr, node->triangle_count, node_triangle_indices);
+            Eigen::Index minRowIndex, minColIndex;
+            std::cout << "Number of t_values: " << intersection.t_values.size() << std::endl;
+
+            intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value
+
+            double closest_t = intersection.t_values(minRowIndex, minColIndex);
+            if (closest_t < intersection_record.t) {
+                intersection_record.t = closest_t;
+                intersection_record.barycentric_coordinates = intersection.barycentric_coordinates.row(minRowIndex);
+                intersection_record.point_intersection = ray_at_t(closest_t, ray);
+                intersection_record.normal_surface = intersection.plane_normals.row(minRowIndex);
+                // Get a pointer to the array storing face colors for the mesh if intersected
+                //double* face_colors_ptr = const_cast<double*>((scene_face_colors[mesh_idx]).data());
+                //intersection_itecord.face_color = get_face_color(minRowIndex, face_colors_ptr);
+            }
+            if (intersection_record.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
+                std::cout << "Intersection found" << std::endl;
+            }
         }
-        if (intersection_itecord.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
-            std::cout << "Intersection found" << std::endl;
+        else { // Not a leaf node => Test children nodes for intersections
+            // DFS order
+            const BVH_Node_it* right = node->right_child.get();
+            if (right) stack.push_back(right);
+            const BVH_Node_it* left = node->left_child.get();
+            if(left) stack.push_back(left);
+            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
         }
-    }
-    else { // Not a leaf node => Test children nodes for intersections
-        intersect_bvh_it(ray, *node.left_child, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
-        intersect_bvh_it(ray, *node.right_child, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
-    }
+     }
 }
 
 
 void intersect_tlas_it(const Ray& ray,
-    const TLAS_Node_it& node,
+    const TLAS_Node_it& root,
     TLAS_it & tlas) {
 
-     HitRecord intersection_itecord; // Only here for tests. Doesn't make sense to have it here later - it's one per ray, so it'll be in the renderer as usual.
+     HitRecord intersection_record; // Only here for tests. Doesn't make sense to have it here later - it's one per ray, so it'll be in the renderer as usual.
      std::cout << "TLAS: Starting BVH intersection test" << std::endl;
+     std::vector<const TLAS_Node_it*> stack;
+     stack.reserve(64); // temp, really need to think this one through
+     stack.push_back(&root);
 
-    if (!intersect_AABB_it(ray, node.bounding_box)) return; // Early exit if ray does not intersect the AABB_it of the node
-    if (node.left_child == nullptr && node.right_child == nullptr) {
-        // No children => Leaf node => Intersect triangles
-        std::cout << "TLAS: Leaf node reached with " << node.blas_leaf_count << " BLASes." << std::endl;
-        int blas_idx = tlas.blas_indices[node.min_blas_idx];
-        int max_blas_idx = node.min_blas_idx + node.blas_leaf_count;
-        for (int i = blas_idx; i < max_blas_idx; ++i) {
-            std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
-            BVH_it& bvh = tlas.mesh_blas[tlas.blas_indices[i]]; // Get the BLAS corresponding to this TLAS leaf node
-            intersect_bvh_it(ray, *(bvh.root), bvh.triangle_indices, bvh.mesh_connectivity_ptr, bvh.mesh_node_coords_ptr);
+     while(!stack.empty()){
+        const TLAS_Node_it* node = stack.back();
+        stack.pop_back();
+
+        if (!intersect_AABB_it(ray, node->bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (node->left_child == nullptr && node->right_child == nullptr) {
+            // No children => Leaf node => Intersect triangles
+            std::cout << "TLAS: Leaf node reached with " << node->blas_leaf_count << " BLASes." << std::endl;
+            int blas_idx = tlas.blas_indices[node->min_blas_idx];
+            int max_blas_idx = node->min_blas_idx + node->blas_leaf_count;
+            for (int i = blas_idx; i < max_blas_idx; ++i) {
+                std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
+                BVH_it& bvh = tlas.mesh_blas[tlas.blas_indices[i]]; // Get the BLAS corresponding to this TLAS leaf node
+                intersect_bvh_it(ray, intersection_record, *(bvh.root), bvh.triangle_indices, bvh.mesh_connectivity_ptr, bvh.mesh_node_coords_ptr);
+            }
         }
-    }
-    else { // Not a leaf node => Test children nodes for intersections
-        intersect_tlas_it(ray, *node.left_child, tlas);
-        intersect_tlas_it(ray, *node.right_child, tlas);
-    }
+        else { // Not a leaf node => Test children nodes for intersections
+            TLAS_Node_it* right = node->right_child.get();
+            if(right) stack.push_back(right);
+            TLAS_Node_it* left = node->left_child.get();
+            if(left) stack.push_back(left);
+        }
+     }
  }
 
 // Handles building all acceleration structures in the scene - bottom and top level
