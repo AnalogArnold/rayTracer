@@ -33,8 +33,8 @@ void render_scene(const int image_height,
 
     size_t num_cameras = camera_centers.size();
 
-    build_acceleration_structures_r(scene_connectivity, scene_coords, scene_face_colors);
-    //build_acceleration_structures(scene_connectivity, scene_coords, scene_face_colors);
+    //build_acceleration_structures_r(scene_connectivity, scene_coords, scene_face_colors);
+    build_acceleration_structures(scene_connectivity, scene_coords, scene_face_colors);
 
    
     /* // Comment out for preliminary testing of building BVHs

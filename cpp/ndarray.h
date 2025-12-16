@@ -204,7 +204,7 @@ ndarray_get_flat_index_f64(const NDArray_f64 *arr,
     size_t flat = 0; // Essentially the standard row-major offset
     for (size_t dim = 0; dim < arr->ndims; ++dim) {
         size_t ind = indices[dim];
-        if (ind >= arr->dims[dim]) return NDARRAY_INDEX_OUT_OF_BOUNDS; // Index out of bounds
+        if (ind >= arr->dims[dim]) return NDARRAY_INDEX_OUT_OF_BOUNDS; // Index out of bounds; but checking slows performance, so not sure if we should keep it here forever...
         flat += ind * arr->strides[dim];
     }
     *out_index = flat; // Output index that we return (passed as input argument that we modify since we return status here)

@@ -16,6 +16,19 @@
 #include "rtrender.h"
 #include "rtray.h"
 
+// Enum storing the number of nodes per element, so we can update it later nicely when we add different types? At least that's the idea.
+enum ElementNodeQuantity {
+    TRI3 = 3,
+    QUAD4 = 4,
+    TET4 = 4,
+    TET10 = 10,
+    TET14 = 14,
+    HEX8 = 8,
+    HEX20 = 20,
+    HEX27 = 27
+};
+
+// Element centroid. Will need to update this/write separate functions for different element typs
 inline void compute_triangle_centroid(int node_0,
     int node_1,
     int node_2,
@@ -101,7 +114,12 @@ struct MeshBLAS {
 };
 
 
-
+inline void process_element_data_tri3(int mesh_number_of_triangles,
+    const int* mesh_connectivity_ptr,
+    const double* mesh_node_coords_ptr,
+    std::vector<std::array<double,3>>& mesh_element_centroids,
+    std::vector<AABB>& mesh_triangle_aabbs,
+    AABB& mesh_aabb);
 
 void build_acceleration_structures(const std::vector <nanobind::ndarray<const int, nanobind::c_contig>>& scene_connectivity,
     const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords,
