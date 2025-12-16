@@ -17,6 +17,8 @@
 #include "rtray.h"
 
 
+// Recursive implementation of BVH TLAS and BLAS
+
 inline void compute_triangle_centroid_r(int node_0,
     int node_1,
     int node_2,
