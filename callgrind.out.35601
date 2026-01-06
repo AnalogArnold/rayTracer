@@ -1,0 +1,5985 @@
+# callgrind format
+version: 1
+creator: callgrind-3.22.0
+pid: 35601
+cmd:  python rtmain.py
+part: 1
+
+
+desc: I1 cache: 32768 B, 64 B, 8-way associative
+desc: D1 cache: 49152 B, 64 B, 12-way associative
+desc: LL cache: 12582912 B, 64 B, 12-way associative
+
+desc: Timerange: Basic block 0 - 5814016279
+desc: Trigger: Program termination
+
+positions: line
+events: Ir Dr Dw I1mr D1mr D1mw ILmr DLmr DLmw
+summary: 0
+
+
+ob=(604) /home/tudent/rayTracer/rtmaincpp.so
+fl=(39) /home/tudent/rayTracer/cpp/rtrayintersection.cpp
+fn=(238) cross_rowwise(Eigen::Matrix<double, -1, 3, 1, -1, 3> const&, Eigen::Matrix<double, -1, 3, 1, -1, 3> const&)
+8 5448142 0 3891530 1 0 0 1
+fi=(41) /home/tudent/rayTracer/cpp/Eigen/src/Core/DenseStorage.h
+395 778306 778306 0 1 0 0 1
+fi=(40) /home/tudent/rayTracer/cpp/Eigen/src/Core/PlainObjectBase.h
+269 1556612
+59 4669836
+fi=(41)
+388 1556612
+fi=(34) /home/tudent/rayTracer/cpp/Eigen/src/Core/util/Memory.h
++9 778306
+fi=(40)
+286 778306
+fi=(34)
+397 1556612 0 0 1 0 0 1
++84 778306
+209 778306 0 778306
+cob=(4) ???
+cfi=(6) ???
+cfn=(174) 0x000000007fd9a3c0
+calls=778306 0 
+* 257618161 49289571 31220502 0 371101 430279 0 3 7
+* 778306
++3 1556612
+fi=(48) /home/tudent/rayTracer/cpp/Eigen/src/Core/Block.h
+319 778306 0 0 1 0 0 1
+fi=(30) /home/tudent/rayTracer/cpp/Eigen/src/Core/MapBase.h
+191 1556612
+fi=(41)
+399 778306 778306
+-4 778306 778306
+fi=(48)
+-76 2334918
+fi=(30)
+155 1556612
++36 1556612 0 0 1 0 0 1
+fi=(49) /home/tudent/rayTracer/cpp/Eigen/src/Core/CwiseBinaryOp.h
+-83 1556612
+fi=(48)
+319 2334918
+fi=(30)
+191 1556612
+fi=(48)
+319 778306
+fi=(30)
+191 1556612
+fi=(47) /home/tudent/rayTracer/cpp/Eigen/src/Core/AssignEvaluator.h
+566 2334918
+fi=(48)
+319 2334918 0 0 1 0 0 1
+fi=(50) /home/tudent/rayTracer/cpp/Eigen/src/Core/functors/BinaryFunctors.h
+80 3113224 3113224 0 0 90000
+373 778306
+fi=(54) /home/tudent/rayTracer/cpp/Eigen/src/Core/functors/AssignmentFunctors.h
+26 778306 0 778306
+fi=(47)
+566 2334918
+fi=(50)
+80 490260232 490260232 0 0 14051100
+373 122565058
+fi=(54)
+26 122565058 0 122565058 0 0 26285130 0 0 328
+fi=(47)
+566 367695174
+fi=(48)
+319 1556612
+fi=(30)
+191 1556612 0 0 1 0 0 1
+fi=(48)
+319 2334918
+fi=(30)
+191 1556612
+fi=(48)
+319 778306
+fi=(47)
+566 1556612
+fi=(50)
+80 1556612 1556612
+fi=(47)
+566 778306
+fi=(50)
+80 1556612 1556612
+373 778306
+fi=(54)
+26 778306 0 778306 1 0 0 1
+fi=(47)
+566 2334918
+fi=(50)
+80 245130116 245130116
+fi=(47)
+566 122565058
+fi=(50)
+80 245130116 245130116
+373 122565058
+fi=(54)
+26 122565058 0 122565058
+fi=(47)
+566 367695174
+fi=(48)
+319 3113224
+fi=(47)
+566 1556612
+fi=(50)
+80 1556612 1556612
+fi=(47)
+566 778306
+fi=(50)
+80 1556612 1556612
+373 778306
+fi=(54)
+26 778306 0 778306
+fi=(47)
+566 2334918
+fi=(50)
+80 245130116 245130116
+fi=(47)
+566 122565058
+fi=(50)
+80 245130116 245130116
+373 122565058
+fi=(54)
+26 122565058 0 122565058
+fi=(47)
+566 367695174
+fi=(41)
+364 778306 0 778306 0 0 70275
+fe=(39)
+22 778306
+fi=(41)
+364 778306 0 778306
+fe=(39)
+22 4669836 4669836
+fi=(34)
+220 1556612 0 0 2 0 0 2
+fi=(41)
+399 778306 778306
+fi=(48)
+-80 1556612
+fe=(39)
+
+fn=(190) intersect_triangle(Ray const&, int const*, double const*, long long)
+27 1350000 0 810000 1 0 0 1
+fi=(46) /home/tudent/rayTracer/cpp/Eigen/src/Core/Matrix.h
+394 270000
+fe=(39)
+27 2160000 0 1080000 1 0 1 1 0 1
+fi=(46)
+394 270000
+fe=(39)
+27 1350000 270000 810000 0 0 70277 0 0 2
++4 270000
+fi=(46)
+394 540000 0 270000 1 0 0 1
+fe=(39)
+31 270000 0 270000
+fi=(52) /home/tudent/rayTracer/cpp/Eigen/src/Core/util/XprHelper.h
+174 540000 0 540000
+fi=(46)
+394 540000 0 540000 0 0 1 0 0 1
+cfi=(40)
+cfn=(192) Eigen::PlainObjectBase<Eigen::Matrix<double, -1, 3, 1, -1, 3> >::PlainObjectBase<Eigen::Replicate<Eigen::Matrix<double, 1, 3, 1, 1, 3>, -1, -1> >(Eigen::DenseBase<Eigen::Replicate<Eigen::Matrix<double, 1, 3, 1, 1, 3>, -1, -1> > const&)
+calls=270000 527 
+* 677622404 173558751 165490454 242 526898 15011103 17 10 171
+fi=(43) /home/tudent/rayTracer/cpp/Eigen/src/Core/Array.h
+254 540000
+fi=(77) /home/tudent/rayTracer/cpp/Eigen/src/Core/ArrayWrapper.h
+57 270000 0 270000
+fi=(43)
+254 270000
+fi=(77)
+57 540000 0 540000 2 0 0 1
+fi=(43)
+254 540000 0 540000
+cfi=(40)
+cfn=(202) Eigen::PlainObjectBase<Eigen::Array<double, -1, 3, 1, -1, 3> >::PlainObjectBase<Eigen::ArrayWrapper<Eigen::Replicate<Eigen::Matrix<double, 1, 3, 1, 1, 3>, -1, -1> const> >(Eigen::DenseBase<Eigen::ArrayWrapper<Eigen::Replicate<Eigen::Matrix<double, 1, 3, 1, 1, 3>, -1, -1> const> > const&)
+calls=270000 527 
+* 541350000 151920000 145620000 228 428266 14962522 4 4 168
+fi=(41)
+466 810000 0 540000 0 0 1 0 0 1
+fi=(40)
+269 540000
+68 810000 0 0 225 0 0 1
+fi=(41)
+504 540000
+fi=(34)
+397 270000
+fi=(40)
+286 270000
+fi=(41)
+506 270000 0 270000
+fi=(34)
+397 540000
++84 270000
+209 270000
+481 270000 0 270000
+209 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 99408330 18168030 11598030 0 450006 182585 0 6 4
+* 270000 0 0 225 0 0 1
++3 540000
+fi=(46)
+394 1620000 270000 540000 1 0 90000 1
+cfi=(40)
+cfn=(228) Eigen::PlainObjectBase<Eigen::Matrix<double, -1, 3, 1, -1, 3> >::PlainObjectBase<Eigen::Matrix<double, -1, -1, 1, -1, -1> >(Eigen::DenseBase<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const&)
+calls=270000 527 
+* 433080000 86130000 80010000 5 0 15210017 5 0 167
+* 1620000 0 540000 1 0 0 1
+cfi=(40)
+cfn=(228)
+calls=270000 527 
+* 459990000 86670000 80550000 0 3330004 15190294 0 4 169
+fe=(39)
+64 1080000 0 270000
+cfn=(238)
+calls=270000 -56 
+* 1396350000 547560000 145350000 10 270000 15120017 10 0 168
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256) 0x000000007fd9a200
+calls=270000 0 
+* 47520000 13500000 8910000 19 270003 0 19 3
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000 0 0 225 0 0 1
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 54270000 16020000 9720000 1 90000 0 1
+fi=(46)
+394 810000 270000 270000 0 90000
+cfi=(40)
+cfn=(228)
+calls=270000 527 
+* 420390000 84510000 78840000 225 4770000 90001 1
+fe=(39)
+67 1350000 540000 270000 0 90000
+cfn=(238)
+calls=270000 -59 
+* 1369350000 545130000 143280000 0 13590000
+* 270000
+fi=(43)
+254 1890000 270000 540000 1 0 0 1
+cfi=(40)
+cfn=(268) Eigen::PlainObjectBase<Eigen::Array<double, -1, 3, 1, -1, 3> >::PlainObjectBase<Eigen::Matrix<double, -1, 3, 1, -1, 3> >(Eigen::DenseBase<Eigen::Matrix<double, -1, 3, 1, -1, 3> > const&)
+calls=270000 527 
+* 458058330 85758030 79728030 5 5 14714417 5 5 167
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 51840000 15120000 9450000 0 180000
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 49950000 14400000 9180000
+fi=(49)
+108 1350000 810000 0 1 90000 0 1
+fi=(51) /home/tudent/rayTracer/cpp/Eigen/src/Core/VectorwiseOp.h
+-43 270000 270000
+fi=(43)
+254 810000 270000
+fi=(51)
+65 270000 0 270000
+fi=(43)
+254 270000 0 270000 1 0 0 1
+cfi=(40)
+cfn=(282) Eigen::PlainObjectBase<Eigen::Array<double, -1, 1, 0, -1, 1> >::PlainObjectBase<Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> >(Eigen::DenseBase<Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> > const&)
+calls=270000 527 
+* 2697660000 628830000 625230000 18 14040001 5245738 10 1 41
+fi=(41)
+395 270000 270000
+fi=(78) /home/tudent/rayTracer/cpp/Eigen/src/Core/CwiseNullaryOp.h
+71 540000
+fi=(49)
++36 540000 270000 270000 0 90000 160276 0 0 1
+fi=(43)
+254 270000
+fi=(49)
+107 540000 270000 270000
+fi=(43)
+254 270000
+fi=(49)
+107 2430000 1350000 1080000 226 0 0 2
+fi=(43)
+254 270000 270000
+fi=(49)
+107 1620000 0 1620000 0 0 90000
+fi=(43)
+254 270000 0 270000
+cfi=(40)
+cfn=(298) Eigen::PlainObjectBase<Eigen::Array<bool, -1, -1, 0, -1, -1> >::PlainObjectBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)1, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)1, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const> >(Eigen::DenseBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)1, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)1, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const> > const&)
+calls=270000 527 
+* 462959721 94860027 48780018 9 450004 630001 9 6 7
+fi=(55) /home/tudent/rayTracer/cpp/Eigen/src/Core/EigenBase.h
+64 540000 540000 0 1 0 0 1
+fi=(41)
+516 270000 270000
+fi=(56) /home/tudent/rayTracer/cpp/Eigen/src/Core/Visitor.h
+255 540000
++2 540000
+fi=(34)
+-28 540000 0 0 1 0 0 1
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 23490000 7020000 3780000 0 340275
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 33660000 9990000 5760000 0 320550
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 50558409 14646466 9279295 0 59175 70275
+fi=(41)
+368 270000 270000 0 1 19725 0 1
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 63416700 19338900 10800000 0 39450
+fi=(41)
+482 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 55154421 16326776 9743938 0 70275 70275
+fi=(41)
+482 270000 270000 0 0 90000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 55350000 16380000 9720000 2 230550 0 2 1
+fi=(41)
+482 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 55890000 16560000 9720000 0 90000
+-3 540000 0 0 1 0 0 1
++3 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 28673697 8515031 4882334 0 421650 70275
+-3 540000
++3 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 47661200 14060054 8579016 0 351375 70275
+-3 540000
++3 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 47872025 14130329 8579016 0 70275 70275
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 53737425 15822750 9660825 0 109725
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 54270000 16020000 9720000 0 90000
+fe=(39)
+110 3240000 2700000 0 0 180000
+fi=(34)
+220 540000 0 0 1 0 0 1
+-11 540000 270000 0 1 0 0 1
+fi=(41)
+506 270000 0 270000
++3 270000 0 270000
++1 270000 0 270000
+fi=(40)
++17 540000 0 540000
+fi=(34)
+209 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(216) 0x000000007fd99c40
+calls=270000 0 
+* 986130000 20160000 883080000 597 620352 15030082 16 7 168
+* 270000
++3 540000 0 0 1 0 0 1
++8 540000
+481 270000
+fi=(41)
+-91 270000 0 270000
+fi=(34)
+209 270000
+fi=(41)
+393 270000 0 270000
+fi=(40)
+527 540000 0 540000 0 0 70276 0 0 1
+fi=(34)
+209 270000 0 270000 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 34650000 8460000 5040000 808 281971 16104 0 2
+* 270000 0 270000
++3 1350000
++8 540000 270000
+fi=(41)
+390 270000 270000
++3 270000 0 270000
+fi=(45) /usr/include/c++/13/bits/stl_algobase.h
+1117 270000 270000 0 1 70275 0 1
++11 270000
+930 270000
+fi=(41)
+390 540000 0 270000
+fi=(45)
+931 21960000 0 21960000 0 0 1569967 0 0 6
+-1 21960000
++1 21960000 0 21960000
+-1 43920000 0 0 1 0 0 1
+fi=(34)
+209 270000 270000
+fi=(41)
+466 810000 0 540000 0 0 1 0 0 1
+fi=(34)
+209 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 108756986 18379726 11899726 0 743456 270424 0 10 3
+* 270000
++3 540000
++8 540000
+-11 270000 270000
+fi=(41)
+466 270000 0 0 1 0 0 1
++40 270000 0 270000
++3 270000 0 270000
++1 270000 0 270000
+-44 540000 0 540000
+fi=(34)
+209 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 91530000 17820000 11430000 2 0 250931 2 0 3
+* 270000
++3 540000
++8 540000 0 0 1 0 0 1
+-11 270000 270000
+fi=(41)
+466 270000
++40 270000 0 270000
++3 270000 0 270000
++1 270000 0 270000
+-44 540000 0 540000 0 0 1 0 0 1
+fi=(34)
+209 270000 0 270000 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 106830000 18000000 11610000 0 90001 270001 0 1 3
++3 270000
+-3 270000
++3 540000
++8 540000
+fi=(41)
+506 270000 0 270000
++4 270000
+-1 270000 0 270000
++1 270000 0 270000
+fe=(39)
+44 270000
++6 270000 270000 0 1 270000 0 1 3
++3 540000 270000
++3 2160000 270000
++5 1620000 270000 0 1 0 0 1
+-5 1080000 540000 0 0 360000 0 0 3
+fi=(58) /home/tudent/rayTracer/cpp/Eigen/src/Core/DenseCoeffsBase.h
+321 540000
+fe=(39)
+50 43650000 43650000 0 0 2700000 0 0 30
++3 87300000 43650000
++3 349200000 43650000 0 0 2790000 0 0 30
++5 261900000 43650000 0 0 2700000 0 0 30
+-5 174600000 87300000 0 0 900000 0 0 10
+fi=(58)
+321 87300000
+fe=(39)
+56 351360000 175680000 0 0 2610001 0 0 30
+fi=(58)
+321 175680000
+fe=(39)
+56 131760000 0 131760000 0 0 14760015 0 0 164
++5 131760000 131760000 0 0 4680000 0 0 52
+-8 131760000
++5 131760000 0 131760000 0 0 14670015 0 0 163
++3 263520000 0 131760000 1 0 14760020 1 0 164
+-8 395280000
+-9 132030000
+fi=(33) /usr/lib/gcc/x86_64-linux-gnu/13/include/emmintrin.h
+1341 270000
+-24 270000 270000 0 0 160275
++24 270000 270000
+-18 270000
+1030 540000 0 0 1 0 0 1
+1329 270000
+229 270000
+fi=(79) /home/tudent/rayTracer/cpp/Eigen/src/Core/arch/SSE/Reductions.h
+80 540000
+fi=(57) /home/tudent/rayTracer/cpp/Eigen/src/Core/CwiseUnaryOp.h
+-20 810000 270000 0 1 0 0 1
+fi=(43)
+254 1890000 270000 270000
+fe=(39)
+79 540000 0 270000 1 0 0 1
+fi=(43)
+254 270000
+fe=(39)
+79 270000 0 270000
+fi=(43)
+254 1080000 0 1080000
+cfi=(40)
+cfn=(316) Eigen::PlainObjectBase<Eigen::Array<double, -1, 1, 0, -1, 1> >::PlainObjectBase<Eigen::CwiseUnaryOp<Eigen::internal::scalar_inverse_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> const> >(Eigen::DenseBase<Eigen::CwiseUnaryOp<Eigen::internal::scalar_inverse_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> const> > const&)
+calls=270000 527 
+* 189773014 33190274 29950274 5 199726 3085709 5 1 5
+fi=(49)
+107 270000 270000
++1 270000 270000
+-1 270000 0 270000 1 0 0 1
++1 1080000 540000
+fi=(43)
+254 810000 540000 270000
+cfi=(40)
+cfn=(326) Eigen::PlainObjectBase<Eigen::Array<double, -1, 3, 1, -1, 3> >::PlainObjectBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_difference_op<double, double>, Eigen::Array<double, -1, 3, 1, -1, 3> const, Eigen::Array<double, -1, -1, 1, -1, -1> const> >(Eigen::DenseBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_difference_op<double, double>, Eigen::Array<double, -1, 3, 1, -1, 3> const, Eigen::Array<double, -1, -1, 1, -1, -1> const> > const&)
+calls=270000 527 
+* 495810000 152280000 80280000 453 27109726 9090002 5
+fi=(41)
+395 270000 270000
+fi=(49)
+108 540000 270000 0 1 0 0 1
+-1 1080000 540000 540000
++1 540000 270000
+fi=(43)
+254 1080000 270000 270000 1 0 0 1
+cfi=(40)
+cfn=(336) Eigen::PlainObjectBase<Eigen::Array<double, -1, 1, 0, -1, 1> >::PlainObjectBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::Array<double, -1, 3, 1, -1, 3> const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> >(Eigen::DenseBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::Array<double, -1, 3, 1, -1, 3> const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> > const&)
+calls=270000 527 
+* 887040000 319230000 52020000 229 9790279 5155743 5 2 6
+fi=(41)
+395 270000 270000
+fi=(78)
+71 540000
+fi=(49)
++36 2430000 810000 1620000 1 0 340276 1 0 1
++1 540000 270000 0 0 90000
+fi=(41)
+513 270000 270000
+fi=(49)
+108 540000
+-1 540000 270000 270000 1 0 0 1
+fi=(47)
+979 270000
+fi=(49)
+107 3240000 1620000 1620000 1 0 90000 1
+fi=(47)
+979 270000
+fi=(49)
+107 270000 270000
+fi=(47)
+979 810000 270000 270000 0 0 90000
+fi=(49)
+107 1620000 0 1620000 1 0 0 1
+fi=(47)
+979 270000 0 270000
+cfn=(344) void Eigen::internal::call_dense_assignment_loop<Eigen::Array<bool, -1, -1, 0, -1, -1>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::Array<bool, -1, -1, 0, -1, -1> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::Array<double, -1, 1, 0, -1, 1> const, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const> const>, Eigen::internal::assign_op<bool, bool> >(Eigen::Array<bool, -1, -1, 0, -1, -1>&, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::Array<bool, -1, -1, 0, -1, -1> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::Array<double, -1, 1, 0, -1, 1> const, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const> const> const&, Eigen::internal::assign_op<bool, bool> const&)
+calls=270000 812 
+* 495537058 136890000 45540000 4 630000 0 4
+fi=(55)
+64 540000 540000
+fi=(41)
+516 270000 270000 0 1 0 0 1
+fi=(56)
+255 540000
++2 540000
+fi=(33)
+1341 270000
+-24 270000 270000
++24 270000 270000
+-18 270000
+1030 540000
+1329 270000
+229 270000
+fi=(79)
+80 540000
+fi=(33)
+1464 180397 0 0 1 0 0 1
+229 180397
+fi=(56)
++36 360794
++1 632372
+fi=(33)
+1341 948558 158093
+-18 158093
+1030 316186
+1329 158093
+229 158093
+fi=(79)
+80 316186
+fi=(33)
+1341 1411278 705639
+-18 705639
+1030 1411278
+1329 705639
+229 705639
+fi=(79)
+80 1411278
+fi=(46)
+394 714918 238306 238306 1 70275 0 1
+cfi=(40)
+cfn=(228)
+calls=238306 527 
+* 342866891 69252174 63841411 0 11033175 10541250 0 0 150
+fe=(39)
+88 238306 238306
+fi=(46)
+394 238306 238306
+fe=(39)
+88 238306 0 238306
+fi=(46)
+394 1191530 0 476612 225 0 0 1
+cfi=(40)
+cfn=(352) Eigen::PlainObjectBase<Eigen::Matrix<double, -1, 3, 1, -1, 3> >::PlainObjectBase<Eigen::MatrixWrapper<Eigen::Array<double, -1, 3, 1, -1, 3> > >(Eigen::DenseBase<Eigen::MatrixWrapper<Eigen::Array<double, -1, 3, 1, -1, 3> > > const&)
+calls=238306 527 
+* 369898279 71296027 65885264 5 1214400 11735952 5 0 167
+fe=(39)
+88 953224 238306 238306 0 70275
+cfn=(238)
+calls=238306 -80 
+* 1136588339 444502999 118847042 0 652201 11665667 0 3 167
+* 1429836 238306 238306 225 0 70275 1
+fi=(43)
+254 953224 238306 238306
+fi=(55)
+51 476612 238306 238306
+fi=(43)
+254 238306 0 238306
+cfi=(40)
+cfn=(268)
+calls=238306 527 
+* 382568146 71561814 66221326 0 2 12211818 0 2 169
+fi=(41)
+368 238306 238306
+fi=(34)
+229 476612
++3 238306 0 238306 225 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 45974600 13427579 8368191 0 210825
+fi=(41)
+368 238306 238306
+fi=(34)
+229 476612
++3 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 49008593 14579460 8719566
+fi=(41)
+368 238306 238306
+fi=(34)
+229 476612
++3 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 47872025 14130329 8579016 0 70275
+fi=(41)
+395 238306 238306
+fi=(49)
+108 476612 238306
+fi=(51)
+-43 238306 238306 0 1 0 0 1
+fi=(77)
++67 238306 238306
+fi=(51)
+-67 238306 0 238306
+fi=(77)
++67 953224 476612 476612
+-75 953224 238306 714918 1 0 0 1
+fi=(49)
++50 1191530 476612 714918 0 0 70275
+fi=(77)
++25 238306 0 238306
+-75 238306 0 238306
+fi=(49)
++50 476612 0 476612 1 0 0 1
++1 476612 238306
+fi=(43)
+254 714918 476612 238306
+cfi=(40)
+cfn=(362) Eigen::PlainObjectBase<Eigen::Array<double, -1, 1, 0, -1, 1> >::PlainObjectBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::MatrixWrapper<Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, 3, 1, -1, 3> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> const> const> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> >(Eigen::DenseBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::MatrixWrapper<Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, 3, 1, -1, 3> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> const> const> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> > const&)
+calls=238306 527 
+* 733816261 260341504 44009372 5 14496377 475726 5 1 5
+fi=(41)
+395 238306 238306
+fi=(78)
+71 476612
+fi=(49)
++36 2383060 953224 1429836 2 0 230551 2 0 1
++1 1429836 714918 0 0 70275
+-1 476612 238306 238306 0 70275
+fi=(47)
+979 238306 0 0 1 0 0 1
+fi=(49)
+107 1668142 953224 714918
+fi=(47)
+979 238306
+fi=(49)
+107 476612 238306 238306 1 0 0 1
+fi=(47)
+979 238306
+fi=(49)
+107 953224 476612 476612
+fi=(47)
+979 238306 238306
+fi=(49)
+107 1191530 714918 476612 1 0 0 1
+fi=(47)
+979 238306 0 238306
+fi=(49)
+107 1191530 0 1191530 0 0 70275
+fi=(47)
+979 238306 0 238306
+cfn=(370) void Eigen::internal::call_dense_assignment_loop<Eigen::Array<bool, -1, -1, 0, -1, -1>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::Array<bool, -1, -1, 0, -1, -1> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, Eigen::Array<double, -1, 1, 0, -1, 1> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const> const>, Eigen::internal::assign_op<bool, bool> >(Eigen::Array<bool, -1, -1, 0, -1, -1>&, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_boolean_and_op<bool>, Eigen::Array<bool, -1, -1, 0, -1, -1> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_cmp_op<double, double, (Eigen::internal::ComparisonName)2, false>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, Eigen::Array<double, -1, 1, 0, -1, 1> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> > const> const> const&, Eigen::internal::assign_op<bool, bool> const&)
+calls=238306 812 
+* 367228940 147017882 36933200 6 4005675 0 6
+fi=(41)
+395 238306 238306 0 1 0 0 1
+fi=(49)
+108 953224 476612 0 0 70275
+fi=(51)
+-43 476612 238306 0 0 70275
+fi=(49)
++42 476612 476612
+fi=(51)
+-42 238306
+fi=(49)
++42 238306 0 238306 1 0 0 1
+fi=(51)
+-42 238306 0 238306
+fi=(49)
++42 1191530 476612 714918
++1 476612 238306
+fi=(43)
+254 953224 238306 238306 1 0 0 1
+cfi=(40)
+cfn=(378) Eigen::PlainObjectBase<Eigen::Array<double, -1, 1, 0, -1, 1> >::PlainObjectBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> >(Eigen::DenseBase<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::PartialReduxExpr<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, Eigen::internal::member_sum<double, double>, 1> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> > const&)
+calls=238306 527 
+* 2390111847 685507946 505058034 1012 10701526 1037940 7 1 6
+fe=(39)
+94 238306 238306
+fi=(41)
+395 476612 476612 0 0 70275
+fi=(78)
+71 476612
+fi=(49)
++36 2144754 714918 1429836 1 0 70275 1
++1 1191530 714918 0 1 0 0 1
+-1 238306 0 238306
+fi=(47)
+979 476612
+fi=(49)
+107 2621366 1429836 1191530 1 0 0 1
+fi=(47)
+979 238306 238306
+fi=(49)
+107 1906448 238306 1668142 1 0 0 1
+fi=(47)
+979 238306 0 238306
+cfn=(344)
+calls=238306 812 
+* 328471383 111037906 36933200
+fi=(41)
+395 238306 238306
+fe=(39)
+97 476612 0 0 1 0 0 1
+fi=(41)
+512 238306 238306
++1 714918 714918
+fi=(58)
+321 1191530
+fe=(39)
+99 71006728 35503364
++1 70957214 35478607 35478607
+-3 177516820 0 0 1 0 0 1
+fi=(58)
+321 70530116
+fi=(56)
+-48 542910 271455
+-2 853444 0 0 225 0 0 1
+fi=(41)
+477 63388 63388 0 0 19725
+fi=(80) /home/tudent/rayTracer/cpp/rtrayintersection.h
+10 31694
+fi=(41)
+477 31694 0 31694 0 0 19725
+364 31694 31694
+477 31694 0 31694
+364 95082 0 63388 0 0 19725
+477 31694 0 31694
+364 63388 31694 31694
+fi=(80)
+10 31694
+fi=(41)
+364 31694 0 31694
+fi=(80)
+10 31694
+fi=(41)
+368 31694 31694
+fi=(34)
+229 63388
+fi=(41)
+368 238306 238306 0 225 0 0 1
+fi=(34)
+229 476612
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 34562475 10361100 5900550 0 270000
+fi=(41)
+368 270000 270000 0 0 70275
+fi=(34)
+229 540000
++3 270000 0 270000 60 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 49950000 14400000 9180000 0 70275
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 33930000 10080000 5760000 0 70275 70275
+fi=(41)
+482 270000 270000 0 0 70275
+fi=(43)
+48 270000
+fi=(33)
+1464 829904
+229 829904
+fi=(79)
+80 1659808
+fi=(56)
+266 2340929
+fi=(41)
+466 714918 0 476612 116 0 0 1
++38 476612
+fi=(34)
+-25 476612 238306
+209 476612 238306 238306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=238306 0 
+* 103546484 20182590 13705534 1 210825 0 1
+* 238306
++3 476612 0 0 225 0 0 1
++8 476612
+fi=(41)
+506 238306 0 238306
+399 238306 238306
+509 238306 0 238306
++1 238306 0 238306
+fi=(47)
+807 476612 238306
+494 1191530 0 0 1 0 0 1
+fi=(33)
+169 476612 238306 238306
+fi=(47)
+494 714918
+fi=(33)
+169 35026752 17513376 17513376 0 0 3373200
+fi=(47)
+494 52540128
+-77 476612
+fi=(41)
+-18 238306 238306 0 1 0 0 1
+fi=(48)
+-80 238306
+fi=(47)
+807 476612 238306
+fi=(34)
+545 238306
+fi=(47)
+-55 238306
+fi=(34)
++55 476612
+fi=(47)
+-55 238306
+fi=(34)
++55 238306
+fi=(47)
+-55 476612
+-73 476612
++77 714918 0 0 225 0 0 1
+fi=(33)
+169 476612 238306 238306 0 0 70275
+fi=(47)
+494 714918
+fi=(33)
+169 35026752 17513376 17513376 0 281100 3302925
+fi=(47)
+494 52540128
+-77 476612
+fi=(41)
+-22 238306 238306 0 1 0 0 1
+fi=(78)
+71 476612
+fi=(49)
++36 2859672 1191530 1668142 1 0 0 1
++1 476612 238306
+fi=(48)
+319 714918 0 0 1 0 0 1
+fi=(52)
+174 238306 0 238306
+fi=(48)
+319 714918 0 238306
++21 238306 238306
+fi=(52)
+174 238306 238306 0 0 70275
+fi=(47)
+979 238306
+fi=(48)
+413 238306 0 238306
+fi=(47)
+979 476612 476612
+fi=(48)
+340 238306 0 238306 225 0 0 1
+fi=(52)
+174 238306 0 238306
+fi=(47)
+979 238306 0 238306
+cfn=(394) void Eigen::internal::call_dense_assignment_loop<Eigen::Block<Eigen::Array<double, -1, -1, 0, -1, -1>, -1, 1, true>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_difference_op<double, double>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_difference_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::Array<double, -1, 1, 0, -1, 1> const>, Eigen::internal::assign_op<double, double> >(Eigen::Block<Eigen::Array<double, -1, -1, 0, -1, -1>, -1, 1, true>&, Eigen::CwiseBinaryOp<Eigen::internal::scalar_difference_op<double, double>, Eigen::CwiseBinaryOp<Eigen::internal::scalar_difference_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const, Eigen::Array<double, -1, 1, 0, -1, 1> const> const&, Eigen::internal::assign_op<double, double> const&)
+calls=238306 812 
+* 167390930 37648118 17751682 228 0 3232650 4
+fi=(41)
+514 1191530 238306
+fi=(34)
+-35 476612
+-82 714918 0 0 1 0 0 1
++84 476612 0 238306
+209 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=238306 0 
+* 93375891 15896227 10247158 0 0 70275
++3 1191530 238306
+fi=(41)
+470 238306 238306
+fi=(34)
+220 476612
+fi=(41)
+468 238306 238306 0 1 0 0 1
+fi=(61) /usr/include/x86_64-linux-gnu/bits/string_fortified.h
+29 714918
+fi=(41)
+468 476612 0 476612 0 0 70275
+fi=(61)
+29 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(402) 0x000000007fd99e00
+calls=238306 -29 
+* 694996087 677975872 676952373 1238 250376 10470975 9 1
+fi=(41)
+397 476612 238306
+fi=(34)
++82 476612
+-82 714918
++84 238306 0 0 1 0 0 1
+209 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=238306 0 
+* 83587711 15868746 10219677 0 281100 140550 0 0 2
++3 953224
+fi=(41)
+357 238306 238306
+fi=(34)
+220 476612
+fi=(41)
+355 238306 238306
+fi=(61)
+29 476612
+fi=(41)
+355 476612 0 476612 0 0 70275
+fi=(61)
+29 238306 0 238306 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(402)
+calls=238306 -29 
+* 698136859 679772396 678748897 0 10611525 10400700 0 0 148
+fi=(41)
+397 238306 238306
+fi=(34)
++82 476612
+-82 714918
++84 238306
+209 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=238306 0 
+* 35164157 6963103 4268317 0 160277 140550 0 1 2
++3 953224
++8 476612 0 0 1 0 0 1
+fi=(41)
+355 238306 238306
+fi=(61)
+29 714918 238306
+fi=(41)
+355 476612 0 476612
+fi=(61)
+29 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(402)
+calls=238306 -29 
+* 34519102 10235402 9282178 0 2670450 3893486 0 0 54
+fi=(34)
+229 476612
++3 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 45974600 13427579 8368191 0 281100
+fi=(41)
+368 238306 238306
+fi=(34)
+229 476612 0 0 1 0 0 1
++3 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 28884522 8585306 4882334 1 140551 0 1 1
+fi=(41)
+368 238306 238306
+fi=(34)
+229 476612
++3 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 28884522 8585306 4882334 0 70275
+fi=(41)
+368 238306 238306
+fi=(34)
+229 476612
++3 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=238306 0 
+* 50310047 15111034 8985353
+fi=(41)
+477 238306 238306 0 0 70275
+364 238306 238306
++4 238306 238306
+fi=(43)
+48 238306 0 0 1 0 0 1
+fe=(39)
+
+fl=(47)
+fn=(394)
+812 238306 0 0 1 0 0 1
+fi=(41)
+399 238306 238306
+fi=(42) /home/tudent/rayTracer/cpp/Eigen/src/Core/CoreEvaluators.h
+516 238306 238306
+fi=(52)
+175 238306 238306
+fi=(41)
+399 238306 238306
+fi=(49)
+125 238306 238306
+fi=(41)
+399 238306 238306
+fe=(47)
+807 476612 238306
+fi=(30)
+236 238306 238306
+fi=(34)
+540 476612
+fi=(33)
+75 476612 0 0 1 0 0 1
+fe=(47)
+494 714918
+fi=(33)
+263 1191530 476612 0 1 0 0 1
+-94 238306 0 238306
+fe=(47)
+494 714918
+fi=(33)
+263 87566880 35026752
+-94 17513376 0 17513376 0 0 3232650
+fe=(47)
+494 52540128
+-77 476612
+fi=(34)
+545 238306 0 0 225 0 0 1
+fe=(47)
+-55 238306
+fi=(34)
++55 476612
++1 476612
+fe=(47)
+-56 714918
+-73 953224 238306
+
+fn=(344)
+812 5083060 0 3049836 1 0 0 1
+fi=(41)
+516 508306 508306
+fi=(52)
+175 508306 508306
+fi=(42)
+516 1524918 1524918
+fi=(41)
+399 2033224 2033224 0 1 0 0 1
+512 508306 508306
+fe=(47)
+807 2033224 508306
+566 1016612 0 0 1 0 0 1
+fi=(50)
+450 508306 508306 0 0 90000
+240 1016612 1016612
+450 79931670 78915058 0 0 540000
+240 157830116 157830116
+450 223783787
+240 24437172
+fi=(54)
+26 12218586 0 12218586
+fe=(47)
+566 36655758
+fi=(54)
+26 67204778 0 67204778
+fe=(47)
+566 201614334
+829 4066448 3558142
+fi=(41)
+516 508306 508306 0 1 0 0 1
+fe=(47)
++50 1016612
+
+fn=(370)
+812 2383060 0 1429836 2 0 0 2
+fi=(41)
+516 238306 238306
+fi=(52)
+175 238306 238306
+fi=(42)
+516 714918 714918
+fi=(41)
+399 1429836 1429836
+512 238306 238306
+fe=(47)
+807 953224 238306 0 1 0 0 1
+566 476612 0 0 1 0 0 1
+fi=(50)
+450 238306 238306 0 0 70275
+41 476612 476612 0 0 70275
+240 238306 238306
+450 35741670 35265058 0 0 421650
+41 70530116 70530116 0 0 3443475
+240 35265058 35265058
+450 72446981
+41 328167
+240 656334
+fi=(54)
+26 328167 0 328167
+fe=(47)
+566 984501
+fi=(54)
+26 35175197 0 35175197
+fe=(47)
+566 105525591
+829 1906448 1668142
+fi=(41)
+516 238306 238306 0 1 0 0 1
+fe=(47)
++50 476612 0 0 1 0 0 1
+
+fl=(52)
+fn=(288) double Eigen::internal::redux_impl<Eigen::internal::scalar_sum_op<double, double>, Eigen::internal::redux_evaluator<Eigen::Block<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, 1, -1, true> >, 3, 0>::run<Eigen::Block<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, 1, -1, true> >(Eigen::internal::redux_evaluator<Eigen::Block<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, 1, -1, true> > const&, Eigen::internal::scalar_sum_op<double, double> const&, Eigen::Block<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, -1, -1, 1, -1, -1> > const, Eigen::Array<double, -1, 3, 1, -1, 3> const> const, 1, -1, true> const&) [clone .isra.0]
+175 158846728 158846728 0 1 0 0 1
+fi=(42)
++46 238270092 158846728 0 4 0 0 1
+fi=(53) /home/tudent/rayTracer/cpp/Eigen/src/Core/Redux.h
++75 79423364
+fi=(42)
+-75 158846728
+fi=(53)
++75 158846728
+-16 79423364 0 79423364
++12 238270092
+-12 158846728 0 79423364
+fi=(33)
+-5 79423364 79423364
+fi=(53)
++17 79423364
+fi=(33)
+-17 158846728 79423364 0 0 16187775
+fi=(53)
++23 158846728 0 0 6 0 0 1
+fi=(33)
+964 158846728 0 0 1 0 0 1
+251 79423364
+fi=(53)
++63 555963548
+fi=(50)
+80 158846728 158846728 0 0 8013750
+fi=(53)
+314 79423364
+fi=(50)
+41 79423364
+fi=(53)
+314 158846728
++9 238270092 238270092
+fe=(52)
+
+fl=(36) /home/tudent/rayTracer/rtEnv/lib/python3.11/site-packages/nanobind/src/nb_ndarray.cpp
+fn=(180) nanobind::detail::ndarray_inc_ref(nanobind::detail::ndarray_handle*)
+609 4050000 0 1620000 2 0 0 2
++1 1620000 810000
++2 3240000 810000 810000
+cob=(4)
+cfi=(6)
+cfn=(182) 0x000000007fd9a9a0
+calls=810000 0 
+* 9720000 4050000 2430000 3 540004 0 3 9
++1 1620000 1620000
++1 1620000 1620000
+
+fn=(414) nanobind::detail::ndarray_dec_ref(nanobind::detail::ndarray_handle*)
+616 6480000 810000 2430000 1 0 0 1
++1 1620000 810000
++2 4050000 810000 810000
+cob=(4)
+cfi=(6)
+cfn=(416) 0x000000007fd9a580
+calls=810000 0 
+* 15390000 5670000 5670000 226 360001 0 2 1
+* 810000 0 810000
++2 1620000 810000
++2 1620000 810000 0 1 0 0 1
++22 4050000 3240000 0 226 0 0 2
+
+fl=(3) /home/tudent/rayTracer/cpp/rtrender.cpp
+fn=(4) render_ppm_image(Eigen::Matrix<double, 1, 3, 1, 1, 3> const&, Eigen::Matrix<double, 1, 3, 1, 1, 3> const&, Eigen::Matrix<double, 2, 3, 1, 2, 3> const&, std::vector<nanobind::ndarray<int const, nanobind::c_contig>, std::allocator<nanobind::ndarray<int const, nanobind::c_contig> > > const&, std::vector<nanobind::ndarray<double const, nanobind::c_contig>, std::allocator<nanobind::ndarray<double const, nanobind::c_contig> > > const&, std::vector<nanobind::ndarray<double const, nanobind::c_contig>, std::allocator<nanobind::ndarray<double const, nanobind::c_contig> > > const&, int, int, int)
+92 2 0 1 1 0 0 1
+fi=(2) /usr/include/c++/13/bits/stl_vector.h
++8 1
+fe=(3)
+-8 20 4 12 2 1 3 2 1 3
++4 1
+fi=(2)
++4 2 0 2 0 0 1 0 0 1
+fe=(3)
+-4 3
+fi=(4) /usr/include/c++/13/bits/vector.tcc
+-26 4
++2 2 0 0 1 0 0 1
+fe=(3)
++26 4 1 1
+fi=(18) /usr/include/c++/13/ostream
+667 4 1 1 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(26) 0x000000007fd9a190
+calls=1 0 
+* 445 126 82 48 17 3 48 17 3
+* 896 224 224 0 224
+cob=(4)
+cfi=(6)
+cfn=(26)
+calls=224 0 
+* 86688 25536 14336 2414 3808 92
+fe=(3)
+99 1125 675 225 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(62) 0x000000007fd9a8f0
+calls=225 -99 
+* 130489 34405 19737 1615 2933 6 44 21 6
+* 225
+fi=(18)
+572 450 225 225
+fi=(81) /usr/include/c++/13/bits/ios_base.h
+756 225 225
+fi=(18)
+572 450 225
+758 450 0 225 117 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(142) 0x000000007fd99cc0
+calls=225 0 
+* 32400 12825 5400 14 675 0 14 3
+fe=(3)
+100 1575 225 450
+fi=(61)
+-41 900 225 450 225 0 1 1 0 1
+fe=(3)
++43 675 225
+fi=(61)
+-43 359100 89775 179550
+fe=(3)
++43 269325 89775
+fi=(30)
++89 90000
+fe=(3)
+-89 180000
+fi=(30)
++89 540000 0 180000
+fe=(3)
+-81 540000 270000 90000 1 0 0 1
+cfn=(172) return_ray_color(Ray const&, std::vector<nanobind::ndarray<int const, nanobind::c_contig>, std::allocator<nanobind::ndarray<int const, nanobind::c_contig> > > const&, std::vector<nanobind::ndarray<double const, nanobind::c_contig>, std::allocator<nanobind::ndarray<double const, nanobind::c_contig> > > const&, std::vector<nanobind::ndarray<double const, nanobind::c_contig>, std::allocator<nanobind::ndarray<double const, nanobind::c_contig> > > const&)
+calls=90000 -82 
+* 25772697407 7737906304 5929080650 9533 160661619 260518545 285 440 2629
+fi=(50)
+-69 90000 90000
+fi=(33)
+251 90000 90000
+fe=(3)
+102 90000
+fi=(33)
+251 90000 90000 0 0 90000
+fi=(50)
+41 90000 90000
+fi=(33)
+176 90000 0 90000
+fi=(54)
+26 90000 0 90000
+fe=(3)
++76 180000 90000 0 0 90000
+fi=(31) /usr/include/c++/13/bits/random.tcc
+3367 180000 0 90000 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(160) 0x000000007fd99e20
+calls=90000 0 
+* 7164802 1151043 516956 675 225163 0 8 82
+* 810000 0 180000 225 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(160)
+calls=90000 0 
+* 2880000 540000 270000
+* 540000 180000 0 1 1 0 1 1
++3 90000 90000
++1 180000 90000 0 0 1 0 0 1
+fi=(32) /usr/include/c++/13/bits/random.h
+1804 90000
+1909 90000 90000
+fi=(31)
+3367 90000
+fi=(32)
+1804 90000 90000
+1909 90000
+1804 90000 0 90000 1 0 0 1
+1909 270000 0 90000
+fe=(3)
+103 180000 90000 90000 0 24597
+fi=(31)
+3367 90000 0 90000
+cob=(4)
+cfi=(6)
+cfn=(160)
+calls=90000 0 
+* 2880000 540000 270000
+* 810000 0 180000 225 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(160)
+calls=90000 0 
+* 2880000 540000 270000
+* 540000 180000
++3 90000 90000
++1 180000 90000 0 1 0 0 1
+fi=(32)
+1909 90000 90000
+fi=(30)
+191 90000 90000
+fi=(32)
+1909 90000 90000
+fe=(3)
+103 90000 90000
+fi=(30)
++88 90000
+fe=(3)
+-85 90000
+fi=(30)
++85 90000 90000
+fe=(3)
+-85 180000 90000 0 1 0 0 1
+fi=(30)
++85 90000
+fe=(3)
+-86 90000
+fi=(33)
+275 180000 180000 0 0 179998
+75 180000
+fe=(3)
++30 180000 180000
+fi=(33)
+251 90000 90000 0 0 89999
++24 90000
+fe=(3)
+108 180000 180000 0 1 0 0 1
+fi=(50)
+-28 90000 90000
+fi=(33)
+-5 90000
+fe=(3)
++33 180000 90000 90000 0 0 1 0 0 1
+fi=(50)
+-28 90000 90000
+fi=(33)
+-5 90000
+fe=(3)
++33 90000 0 90000
+fi=(33)
+275 90000
+-12 90000 90000
+fi=(50)
+41 90000 90000
+fe=(3)
++67 90000 0 90000 225 0 0 1
+fi=(50)
+-67 90000
+373 90000 90000
+fi=(33)
+251 90000
+fe=(3)
+108 180000 0 90000
+fi=(33)
+251 90000
++12 90000
+fi=(82) /home/tudent/rayTracer/cpp/Eigen/src/Core/Dot.h
+25 90000
+fi=(33)
+275 180000
+964 180000
+251 270000 0 0 110 0 0 1
+fi=(50)
+41 90000
+fi=(82)
+-16 90000
++73 180000
+fi=(33)
+-30 90000
+fi=(83) /home/tudent/rayTracer/cpp/Eigen/src/Core/arch/SSE/MathFunctions.h
++10 90000
+fi=(50)
+422 90000
+fi=(33)
+287 270000
+fi=(54)
+26 90000 0 90000
+fi=(33)
+176 90000 0 90000
+fi=(54)
+26 90000 0 0 1 0 0 1
+fe=(3)
++86 630000 270000 0 1 90000 0 1 1
++1 90000
+fi=(4)
++1 180000 180000 0 1 0 0 1
+fe=(3)
+-1 360000 180000
++1 270000 0 90000
+fi=(5) /usr/include/c++/13/bits/new_allocator.h
++77 90000 0 90000 0 0 90000 0 0 1406
+fi=(4)
+-72 180000 0 90000 1 0 0 1
+fe=(3)
+-4 90000 0 90000
+fi=(4)
+-1 180000
+fi=(5)
++77 90000 0 90000 0 0 1406 0 0 1406
+fi=(4)
+-72 180000 0 90000
+fe=(3)
+-3 90000 0 90000
+fi=(4)
+-2 180000
+fi=(5)
++77 90000 0 90000 0 0 1407 0 0 1407
+fi=(4)
+-72 180000 0 90000
+fe=(3)
+-19 360000 180000 90000 1 0 0 1
+-2 900 450 225
+fi=(62) /usr/include/c++/13/bits/basic_ios.h
+462 5 0 2 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(442) 0x000000007fd99830
+calls=1 0 
+* 108 18 33 12 6 4 12 5 4
+* 1 1 0 0 1 0 0 1
+-1 1
+fi=(18)
+-29 1
+fi=(62)
++30 1
+-1 1 0 1 0 0 1
++1 3 0 2
+fi=(18)
+-30 1 1 0 0 1 0 0 1
+fi=(62)
++30 1 0 1
+fi=(18)
+-30 2 2 0 1 1 0 1 1
+fi=(62)
++29 1 0 1
+fi=(18)
+-29 6 1 4 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(462) 0x000000007fd9a440
+calls=1 0 
+* 199 71 43 17 15 1 17 12
+fi=(64) /usr/include/c++/13/fstream
+786 8 1 3 1 1 0 1 1
+cob=(4)
+cfi=(6)
+cfn=(484) 0x000000007fd9a0c0
+calls=1 0 
+* 112 31 40 8 5 2 8 5 2
++1 3 1 1
+cob=(4)
+cfi=(6)
+cfn=(462)
+calls=1 0 
+* 199 71 43
+930 4 0 1
+cob=(4)
+cfi=(6)
+cfn=(492) 0x000000007fd99f00
+calls=1 0 
+* 1682 334 290 66 17 7 62 14 6
++1 3 2 0 1 0 0 1
+-1 2
++5 2 0 1
+cob=(4)
+cfi=(6)
+cfn=(552) 0x000000007fd9a8b0
+calls=1 0 
+* 9 4 1 3 1 0 3 1
+273 4 0 2
+cob=(4)
+cfi=(6)
+cfn=(556) 0x000000007fd99780
+calls=1 0 
+* 6 3 0 1 1 0 1 1
+fe=(3)
+124 2
+fi=(18)
+667 4 0 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(26)
+calls=1 0 
+* 264 83 46 22 9 0 18 5
+fe=(3)
+129 3 1 1
+cob=(4)
+cfi=(6)
+cfn=(62)
+calls=1 0 
+* 399 106 62 14 9
+* 2 0 1
+fi=(18)
+572 1 1
+fi=(81)
+756 1 1
+fi=(18)
+572 2 1
++2 3 0 1
+cob=(4)
+cfi=(6)
+cfn=(104) 0x000000007fd995e0
+calls=1 0 
+* 67 28 14 1 1
+fe=(3)
+129 3 1 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(62)
+calls=1 0 
+* 385 101 59
+* 1
+fi=(18)
+667 3 0 1
+cob=(4)
+cfi=(6)
+cfn=(26)
+calls=1 0 
+* 186 62 35
+fi=(2)
+993 2 2
+fe=(3)
+130 1
+fi=(2)
+993 1
+fe=(3)
+130 2 0 1
+cob=(4)
+cfi=(6)
+cfn=(572) 0x000000007fd9a370
+calls=1 0 
+* 266 80 52 16 4 0 16 4
+fi=(64)
+1002 2 0 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(592) 0x000000007fd99770
+calls=1 0 
+* 806 239 156 57 13 0 57 11
+* 9 1 1
+fi=(18)
+667 4 1 1 1 1 0 1 1
+cob=(4)
+cfi=(6)
+cfn=(26)
+calls=1 0 
+* 1188 318 181 45 15 0 14 11
+fi=(64)
+870 2 1
+256 1
+870 2 0 2
+256 1 0 1
+cob=(4)
+cfi=(6)
+cfn=(592)
+calls=1 0 
+* 35 12 6 1 0 0 1
++3 2 1 1
+cob=(4)
+cfi=(6)
+cfn=(654) 0x000000007fd9aa20
+calls=1 0 
+* 29 10 5 1 1 0 1 1
+fi=(76) /usr/include/c++/13/streambuf
+-54 5 1 2 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(660) 0x000000007fd9a520
+calls=1 0 
+* 14 6 2 1 1 0 1 1
+fi=(18)
+95 3 2 1
+fi=(62)
+282 1 1
+fi=(18)
+95 1 0 1
+fi=(62)
+282 4 1 2 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(662) 0x000000007fd99890
+calls=1 0 
+* 75 25 16 9 3 0 9 3
+fi=(2)
++88 1 1
++19 2
+fi=(5)
+172 3 2
+fi=(2)
+370 1
+fi=(5)
+172 1
+fe=(3)
+-37 7 6 0 1 1 0 1
+fi=(5)
++37 1
+cob=(4)
+cfi=(6)
+cfn=(674) 0x000000007fd9a060
+calls=1 0 
+* 232 70 38 3 5 0 1 1
+fi=(18)
+574 675 0 225
+cob=(4)
+cfi=(6)
+cfn=(104)
+calls=225 0 
+* 77850 23850 12825 2555 450 0 22 2
++1 225
+fi=(5)
+151 2 0 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(10) 0x000000007fd9a020
+calls=1 0 
+* 328 72 46 35 14 9 35 14 9
+fi=(4)
+-55 1
++2 1
+-2 1
++2 1 0 1 1 0 0 1
+-2 2 0 1
+fe=(3)
+
+fn=(172)
+28 1080000 0 630000 2 0 0 2
+fi=(34)
+209 90000
+fe=(3)
+28 450000 90000 270000
+fi=(34)
+209 90000 0 90000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=90000 0 
+* 4230000 1170000 630000 3 4 0 3 4
++3 90000
+-3 90000 0 90000 1 0 0 1
++3 180000
++8 180000 90000
+fi=(35) /home/tudent/rayTracer/cpp/Eigen/src/Core/CommaInitializer.h
+37 270000 180000 0 1 0 0 1
+fi=(61)
++22 90000 0 90000
+fi=(35)
++11 90000 90000
+-33 90000 90000
+fi=(61)
++22 90000 0 90000 0 0 65150
+fi=(35)
+-22 90000 0 90000
++33 90000 0 90000 0 0 90000 0 0 1
+fi=(2)
+993 90000
+fi=(35)
+37 90000 0 90000 1 0 0 1
+fi=(61)
++22 90000
+fi=(35)
+-22 180000 0 180000
+fi=(84) /home/tudent/rayTracer/cpp/rthitrecord.h
+-27 90000 90000
+fi=(61)
++49 90000 0 90000
+fi=(84)
+-49 90000 0 90000
+fi=(2)
+993 90000 90000
+fi=(61)
+59 90000 0 90000
+fi=(2)
+993 180000 180000 0 0 1 0 0 1
+fi=(61)
+59 180000 0 180000 1 0 0 1
+fi=(2)
+993 90000
+fi=(61)
+59 90000 0 90000
+fi=(2)
+993 90000
+fi=(61)
+59 90000 0 90000
+fi=(2)
+993 270000 0 90000
+fe=(3)
+37 450000 0 90000
+fi=(2)
+1145 360000 0 0 1 0 0 1
++3 90000
+fi=(38) /home/tudent/rayTracer/rtEnv/lib/python3.11/site-packages/nanobind/include/nanobind/ndarray.h
+396 540000 270000 270000 0 180000 0 0 2
++1 90000 0 90000
+cfi=(36)
+cfn=(180)
+calls=90000 609 
+* 2430000 990000 540000 5 90001 0 5 2
+fi=(2)
+1145 720000
++3 180000
+fi=(38)
+396 1080000 540000 540000 0 180001 0 0 2
++1 180000 0 180000
+cfi=(36)
+cfn=(180)
+calls=180000 609 
+* 4860000 1980000 1080000 0 90001 0 0 1
+fi=(2)
+1148 810000 540000 0 1 90001 0 1 1
+fi=(38)
+396 2160000 1080000 1080000 0 270006 0 0 3
++1 270000 0 270000
+cfi=(36)
+cfn=(180)
+calls=270000 609 
+* 7290000 2970000 1620000 0 180001 0 0 3
+-1 540000 540000 0 1 262762 0 1 3
++1 540000 0 270000
+cfi=(36)
+cfn=(180)
+calls=270000 609 
+* 7290000 2970000 1620000 0 180001 0 0 3
++48 540000 540000
+fe=(3)
+56 270000 270000
+fi=(38)
+445 810000 540000
+fe=(3)
+56 810000 540000 0 0 270000 0 0 3
+fi=(38)
+445 270000 0 0 1 0 0 1
+fe=(3)
+56 270000 0 270000
+cfi=(39)
+cfn=(190)
+calls=270000 -29 
+* 25312423088 7632149583 5878043563 8303 156579609 260164058 240 261 2628
+fi=(41)
+395 270000 270000
+fi=(60) /home/tudent/rayTracer/cpp/Eigen/src/Core/FindCoeff.h
+-47 540000
+fi=(41)
++51 270000 270000
+fi=(60)
+241 270000
++93 270000
+-95 270000
+353 270000 270000 0 0 19725
+fi=(33)
+75 540000
+fi=(60)
+241 1080000
+fi=(33)
+127 270000 270000 0 1 0 0 1
+367 540000
+988 270000
+fi=(60)
+243 540000
+fi=(33)
+127 21690000 21690000 0 0 986250
+367 43380000
+988 21690000
+fi=(60)
+243 43380000
+fi=(33)
+964 24757
+fi=(60)
+244 24757
++3 24757
+fi=(33)
+964 24757
+313 24757
+189 49514
+fi=(60)
++52 65880000
++10 540000 0 0 1 0 0 1
++9 540000
++5 74271 49514
+-2 45723
+fi=(58)
++58 106687
+fi=(60)
+-58 509518 0 0 1 0 0 1
+fi=(58)
++58 2323313
+fe=(3)
+60 270000 270000
++1 270000 270000
+fi=(42)
+211 270000
+fe=(3)
+61 540000
+fi=(34)
+232 270000 0 270000 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 33870825 10060275 5760000 0 78900 140550
+fi=(41)
+368 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 58005675 17405775 10141650 0 78900 19725
+fi=(41)
+482 270000 270000
+fi=(34)
+229 540000
++3 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=270000 0 
+* 64132416 19565503 10752124
+fi=(38)
+393 270000
+fe=(3)
+37 270000
+fi=(38)
+393 270000 0 270000
+cfi=(36)
+cfn=(414)
+calls=270000 616 
+* 11880000 4320000 3240000 454 180001 0 6 1
+* 540000 270000 270000
+cfi=(36)
+cfn=(414)
+calls=270000 616 
+* 11880000 4320000 3240000 0 90000
+* 540000 270000 270000 1 0 0 1
+cfi=(36)
+cfn=(414)
+calls=270000 616 
+* 11880000 4320000 3240000 0 90000
+fe=(3)
+37 810000 270000 0 0 90000
+fi=(2)
+1148 540000 360000 0 0 87988
+fi=(41)
+515 24757 24757
+-2 24757 24757
+fe=(3)
+62 24757 0 24757 172 0 0 1
+fi=(48)
+319 74271
+fi=(30)
+155 49514
++36 49514
+fi=(41)
+512 24757 24757
+fi=(48)
+125 49514
+fi=(47)
+807 49514
+fi=(54)
+26 24757 24757 0 0 721
+fi=(42)
+1256 24757 0 0 172 0 0 1
+fi=(33)
+275 24757 24757 0 0 2012
+-24 24757 24757 0 0 2012
+fi=(54)
+26 24757 24757 0 0 215
+fi=(41)
+398 24757 24757
+fi=(54)
+26 49514 24757 24757 0 0 19531
+fi=(48)
+342 49514
+fi=(54)
+26 24757 0 24757
+fi=(50)
++54 49514 24757
+fi=(33)
+-5 24757
+275 24757
+fi=(50)
+41 24757 24757 0 172 0 0 1
+fi=(40)
+454 24757 0 24757
+fi=(33)
+251 24757
+fi=(40)
+454 24757 0 24757
+fi=(48)
+319 74271
+fi=(30)
+191 49514
+fi=(48)
+-66 49514 24757
+fi=(54)
+-99 24757 24757
+fi=(33)
+176 24757 24757
+fe=(3)
+17 24757
+fi=(2)
+1148 24757 24757 0 0 2012
+fi=(54)
+26 24757 0 24757
+fi=(2)
+1148 24757
+fi=(33)
+176 24757 0 24757
+fi=(38)
+445 49514 49514 0 0 7238
+fe=(3)
+19 24757 24757 0 0 24757 0 0 113
+-2 24757 24757 0 0 7074 0 0 33
+fi=(40)
+454 24757 0 24757 0 0 19531
+fe=(3)
+17 49514 0 24757
++54 270000 180000 0 226 90000 0 2
+fi=(33)
++63 24757 24757 0 0 5226
+fi=(85) /home/tudent/rayTracer/cpp/Eigen/src/Core/MathFunctions.h
+251 24757 24757
+fi=(33)
++24 49514
+964 49514
+251 74271
+fi=(50)
+41 24757
+fi=(82)
+-16 49514
++73 49514 0 0 1 0 0 1
+fi=(33)
+-30 24757
+fi=(83)
++10 24757
+fi=(50)
+422 24757
+fi=(33)
+287 74271
+fi=(86) /home/tudent/rayTracer/cpp/Eigen/src/Core/functors/NullaryFunctors.h
+22 49514 49514
+fi=(54)
++4 24757 0 24757
+fi=(33)
+134 24757 24757
++42 24757 0 24757
+fi=(86)
+22 24757 24757
+fi=(33)
++53 49514 0 0 1 0 0 1
+176 24757 24757
+75 49514
+275 49514
+-24 24757
+75 49514
+275 24757
+-24 24757
+-75 24757 0 24757
+fi=(50)
+-96 99028 24757 0 0 5226
+-39 49514
+fi=(54)
+-15 24757 24757
+fi=(34)
+232 24757 24757
+fi=(54)
+26 24757 0 24757
+fi=(34)
+232 24757 0 24757
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=24757 0 
+* 2153859 643682 346598 0 24757
+fi=(54)
+26 65243 65243 0 1 0 0 1
+fi=(34)
+232 65243 65243
+fi=(54)
+26 65243 0 65243
+fi=(34)
+232 65243 0 65243
+cob=(4)
+cfi=(6)
+cfn=(256)
+calls=65243 0 
+* 5676141 1696318 913402 0 65243
+fe=(3)
+82 1080000 900000 0 0 155243
+-5 195729 195729 0 1 65243 0 1
++1 391458 130486 0 0 130486 0 0 2
+fi=(35)
+-8 65243 65243 0 1 0 0 1
+-33 65243 65243
+fi=(33)
++38 130486
+fi=(35)
+-38 65243 65243
+fi=(33)
+275 65243
+fe=(3)
+81 65243
+fi=(35)
+-44 65243 0 65243
+fe=(3)
++44 65243
+fi=(35)
+-11 130486 0 130486
+fi=(33)
+176 65243 65243
+fi=(35)
+37 65243 0 65243
+fi=(33)
++38 65243
+fi=(50)
+-34 65243
+fi=(33)
++34 65243
+251 65243
+-75 65243 0 65243
+fi=(50)
+40 65243
+fe=(3)
++38 4 0 2 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(420) 0x000000007fd9a990
+calls=1 -78 
+* 22 7 3 1 1 0 1 1
+* 5 1 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(424) 0x000000007fd99c00
+calls=1 -78 
+* 11 5 1 2 1 0 2 1
+* 6 1 2
+cob=(4)
+cfi=(6)
+cfn=(420)
+calls=1 -78 
+* 22 7 3
+* 5 1 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(424)
+calls=1 -78 
+* 11 5 1
+* 2 1
+
+fl=(40)
+fn=(316)
+527 1890000 0 1350000 1 0 0 1
+fi=(57)
+63 270000 270000
+fe=(40)
+527 270000 0 270000
+fi=(41)
+395 270000 270000
+fe=(40)
+527 270000 0 270000 1 0 0 1
+269 540000
+fi=(41)
+388 270000
+fi=(34)
++9 1080000
++84 270000
+209 540000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 45863014 8530274 5290274 0 199726 0 0 1
++3 540000
++8 540000 0 0 1 0 0 1
+fi=(47)
+494 270000
+fi=(41)
+390 270000 0 270000
++9 270000 270000
+-6 270000 0 270000
+fi=(47)
+494 1620000 270000
+fi=(33)
+287 540000 270000
+169 270000 0 270000
+fi=(47)
+494 810000 0 0 1 0 0 1
+fi=(33)
+287 43380000 21690000
+169 21690000 0 21690000 0 0 3085709 0 0 5
+fi=(47)
+494 65070000
+-77 540000
+fe=(40)
+530 1620000 1620000
+fi=(34)
+212 540000 0 0 1 0 0 1
+fe=(40)
+
+fn=(268)
+527 508306 0 0 1 0 0 1
+59 508306
+527 3558142 0 2541530
+fi=(41)
+395 508306 508306
+fe=(40)
+527 1016612 0 1016612 1 0 160276 1 0 1
+59 1016612
+269 1016612
+fi=(41)
+388 508306
+fi=(34)
++9 508306
+fe=(40)
+286 508306
+fi=(34)
+397 1016612
++84 1016612 0 0 1 0 0 1
+209 508306 0 508306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=508306 0 
+* 223094088 34118350 21731250 0 7 570829 0 7 8
++3 1016612
++8 1016612
+fi=(41)
+393 508306 0 508306
++6 508306
+fi=(47)
++95 508306 0 0 1 0 0 1
+fi=(41)
+390 508306 0 508306
++9 508306 508306
+fi=(47)
++88 508306
++7 508306
+fi=(33)
+169 1016612 508306 508306
+fi=(47)
+494 1524918
+fi=(33)
+169 237253480 118626740 118626740 0 0 26195130 0 0 327
+fi=(47)
+494 355880220
+-77 1016612
+fe=(40)
+530 3049836 3049836 0 1 0 0 1
+
+fn=(282)
+527 2430000 0 1620000 1 0 0 1
+fi=(49)
+113 270000 270000
+fe=(40)
+527 1080000 270000 540000
+fi=(41)
+395 270000 270000
+fe=(40)
+527 270000 0 270000
+269 540000 0 0 1 0 0 1
+fi=(41)
+388 270000
+fi=(34)
++9 1080000
++84 540000 0 270000
+209 810000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 45450000 9360000 6030000 0 450001 360000 0 1 4
++3 540000 270000 0 1 0 0 1
+-3 270000
++3 270000
++8 1080000 270000
+fi=(41)
+390 270000 0 270000
++3 270000 0 270000
+fi=(47)
+566 540000
+fi=(41)
+-53 270000 270000
++3 270000 270000
+399 2160000 270000 810000 1 0 0 1
+fi=(42)
+146 270000 270000
+fi=(53)
+452 270000 270000
+fi=(52)
+174 270000 0 270000
+fi=(42)
+1447 270000
+fi=(53)
+452 270000 270000
+fi=(52)
+174 810000 0 810000 1 0 0 1
+fi=(42)
+-14 540000 0 540000
+-14 270000 0 270000
+fi=(52)
++28 540000 0 540000
+fi=(48)
++30 270000 0 270000
+fi=(53)
+452 270000 0 270000
+cfi=(52)
+cfn=(288)
+calls=270000 175 
+* 11070000 2970000 540000 12 90000 0 4
+fi=(42)
+146 43650000 43650000
+fi=(53)
+452 43650000 43650000
+fi=(52)
+174 43650000 0 43650000
+fi=(42)
+1447 43650000
+fi=(53)
+452 43650000 43650000
+fi=(52)
+174 130950000 0 130950000
+fi=(42)
+-14 87300000 0 87300000
+-14 43650000 0 43650000
+fi=(52)
++28 87300000 0 87300000
+fi=(48)
++30 43650000 0 43650000
+fi=(53)
+452 43650000 0 43650000
+cfi=(52)
+cfn=(288)
+calls=43650000 175 
+* 1789650000 480150000 87300000 0 13500000
+fi=(54)
+26 43920000 0 43920000 0 0 4885738 0 0 37
+fi=(47)
+566 131760000
+fe=(40)
+-36 2970000 2430000
+fi=(34)
+212 540000 0 0 1 0 0 1
+fe=(40)
+
+fn=(336)
+527 2430000 0 1620000 225 0 0 1
+fi=(49)
+113 270000 270000
+fe=(40)
+527 540000 0 540000 1 0 90001 1 0 1
+fi=(41)
+395 270000 270000
+fe=(40)
+269 540000
+fi=(41)
+388 270000
+fi=(34)
++9 1080000
++84 540000
+209 540000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 39600000 8280000 5130000 0 160276 180000 0 2
+* 270000 0 0 1 0 0 1
++3 540000
++8 810000 270000
+fi=(41)
+393 270000 0 270000
++2 270000
+fi=(47)
+566 270000
+fi=(41)
+390 540000 270000 270000
++9 270000 270000
+-4 540000 270000
+fi=(48)
+125 87840000 0 0 1 0 0 1
+fi=(41)
+399 87840000 87840000
+fi=(33)
+275 87840000 87840000 0 0 5850001
+fi=(50)
+80 87840000 87840000 0 0 3150002
+fi=(47)
+566 43920000
+fi=(33)
+275 43920000
+964 87840000
+251 43920000
+fi=(50)
+41 43920000
++39 43920000 43920000 0 0 630000
+fi=(54)
+-54 43920000 0 43920000 0 0 4885742 0 0 5
+fi=(47)
+566 131760000
+fe=(40)
+-36 2160000 1890000
+fi=(34)
+212 540000 0 0 1 0 0 1
+fe=(40)
+
+fn=(228)
+527 1048306 0 0 1 0 0 1
+59 1048306
+527 7338142 0 5241530 1 0 0 1
+fi=(41)
+-15 1048306 1048306 0 0 70275
+fe=(40)
++15 2096612 0 2096612 0 0 250276 0 0 1
+59 2096612
+269 5241530 1048306
+fi=(41)
+388 1048306 0 0 1 0 0 1
+fi=(34)
++9 1048306
+fe=(40)
+286 1048306
+fi=(34)
+397 2096612
++84 1048306
+209 1048306 0 1048306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=1048306 0 
+* 354677891 66232374 41863305 225 801379 610279 1 4 6
++3 2096612
++8 2096612 0 0 1 0 0 1
+fi=(41)
+390 2096612 0 1048306
+516 1048306 1048306
+fi=(47)
+-22 1048306
+fi=(41)
+393 1048306 0 1048306
+fi=(47)
++94 1048306
++7 1048306
+fi=(33)
+169 2096612 1048306 1048306 0 70275
+fi=(47)
+494 3144918 0 0 1 0 0 1
+fi=(33)
+169 499693480 249846740 249846740 0 18191250 40171007 0 0 479
+fi=(47)
+494 749540220
+-77 2096612
+fe=(40)
+530 6289836 6289836
+
+fn=(352)
+527 238306 0 0 1 0 0 1
+59 238306
+527 1668142 0 1191530
+fi=(77)
+134 238306 238306
+fe=(40)
+527 238306 0 238306 1 0 0 1
+fi=(41)
+395 238306 238306
+fe=(40)
+527 238306 0 238306
+59 476612
+269 476612
+fi=(41)
+388 238306
+fi=(34)
++9 238306
+fe=(40)
+286 238306
+fi=(34)
+397 476612 0 0 1 0 0 1
++84 238306
+209 238306 0 238306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=238306 0 
+* 93375891 15896227 10247158 0 90000 140551 0 0 2
++3 476612
++8 476612
+fi=(41)
+393 238306 0 238306
++6 238306
+fi=(47)
++95 238306 0 0 1 0 0 1
+fi=(41)
+390 238306 0 238306
++9 238306 238306
+fi=(47)
++88 238306
++7 238306
+fi=(33)
+169 476612 238306 238306
+fi=(47)
+494 714918
+fi=(33)
+169 106033480 53016740 53016740 0 1124400 11595401 0 0 165
+fi=(47)
+494 159050220
+-77 476612
+fe=(40)
+530 1429836 1429836 0 1 0 0 1
+
+fn=(202)
+527 270000 0 0 1 0 0 1
+59 270000
+527 1890000 0 1080000
+fi=(52)
+175 270000 270000
+fe=(40)
+527 540000 0 540000 225 0 0 1
+fi=(52)
+175 270000 270000
+fe=(40)
+59 540000
+269 1080000
+fi=(41)
+388 270000
+fi=(34)
++9 270000
+fe=(40)
+286 270000
+fi=(34)
+397 540000
++84 540000 0 0 1 0 0 1
+209 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 90810000 18000000 11430000 0 340278 202507 0 4 4
++3 540000
++8 540000
+fi=(41)
+390 270000 0 270000
+fi=(87) /home/tudent/rayTracer/cpp/Eigen/src/Core/Replicate.h
+91 270000 270000
+fi=(47)
+372 270000
+fi=(41)
++21 270000 0 270000 1 0 0 1
+fi=(47)
+-21 270000
+fi=(42)
+1610 270000 270000 0 0 87988
+fi=(47)
+372 540000
+fi=(54)
+26 270000 0 270000
+fi=(42)
+1610 270000 270000
+fi=(54)
+26 270000 0 270000
+fi=(42)
+1610 270000 270000
+fi=(54)
+26 270000 0 270000
+fi=(47)
+372 540000
+fi=(42)
+1610 43650000 43650000
+fi=(47)
+372 87300000
+fi=(54)
+26 43650000 0 43650000 0 0 4950005 0 0 55
+fi=(42)
+1610 43650000 43650000
+fi=(54)
+26 43650000 0 43650000 0 0 4950005 0 0 55
+fi=(42)
+1610 43650000 43650000
+fi=(54)
+26 43650000 0 43650000 0 0 4860005 0 0 54
+fi=(47)
+372 87300000
+fe=(40)
+530 1620000 1350000
+
+fn=(298)
+527 2160000 0 1350000 1 0 0 1
+fi=(49)
+113 270000 270000
+fe=(40)
+527 270000 0 270000 0 0 90000
+fi=(41)
+395 270000 270000
+fe=(40)
+527 270000 0 270000
+269 810000
+fi=(41)
+504 270000
+fi=(34)
+209 810000 0 270000 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 12690121 3510027 1890018 6 450004 2 6 6 2
++3 540000
++8 540000
+fi=(41)
+399 270000 270000
+506 270000 0 270000
+fi=(42)
++10 270000 270000
+fi=(41)
+399 270000 270000
+509 270000 0 270000
++1 270000 0 270000
+fi=(42)
++6 270000 270000
+fi=(41)
+399 270000 270000
+fi=(47)
+566 540000
+fi=(50)
+450 540000 270000
+227 270000 270000
+450 87840000 43650000
+227 43650000 43650000
+450 87300000
+227 43919600
+fi=(54)
+26 21959800 0 21959800 0 0 250772 0 0 1
+fi=(47)
+566 65879400
+fi=(54)
+26 21960200 0 21960200 0 0 289227 0 0 4
+fi=(47)
+566 65880600
+fe=(40)
+-36 1620000 1620000
+fi=(34)
+212 540000 0 0 1 0 0 1
+fe=(40)
+
+fn=(326)
+527 270000 0 0 1 0 0 1
+59 270000
+527 2430000 0 1620000 1 0 0 1
+fi=(49)
+113 270000 270000
+fe=(40)
+527 540000 0 540000
+fi=(41)
+-15 270000 270000
+fe=(40)
+59 540000
+269 540000
+fi=(41)
+388 270000
+fi=(34)
++9 270000
+fe=(40)
+286 270000
+fi=(34)
+397 540000 0 0 1 0 0 1
++84 540000
+209 270000 0 270000
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 87030000 17280000 11430000 0 109726
++3 540000
++8 540000 0 0 225 0 0 1
+fi=(41)
+399 270000 270000
+516 270000 270000
+393 270000 0 270000
+fi=(47)
+494 270000
+fi=(41)
+390 270000 0 270000
++9 270000 270000
+fi=(47)
++88 540000
++7 270000
+fi=(33)
+263 540000 540000 0 0 90000
+-94 270000 0 270000
+fi=(47)
+494 810000
+fi=(33)
+263 131220000 131220000 0 0 26910000
+-94 65610000 0 65610000 0 0 9090002
+fi=(47)
+494 196830000
+-77 540000
+fe=(40)
+530 2160000 1890000 0 225 0 0 1
+
+fn=(378)
+527 2144754 0 1429836 1 0 0 1
+fi=(49)
+113 238306 238306
+fe=(40)
+527 953224 238306 476612
+fi=(41)
+395 238306 238306
+fe=(40)
+527 238306 0 238306
+269 476612 0 0 110 0 0 1
+fi=(41)
+388 238306
+fi=(34)
++9 953224
++84 476612
+209 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=238306 0 
+* 32353157 6892828 4198042 0 90001 210825 0 1
+* 238306 0 238306
++3 476612 0 0 225 0 0 1
++8 476612 238306
+fi=(41)
+390 238306 238306
++3 238306 0 238306
+-3 476612 238306 238306
+fi=(47)
+566 238306
+fi=(41)
+399 714918 238306
+fi=(47)
+566 238306
+fi=(41)
+395 476612 238306 238306 225 0 0 1
+fi=(53)
++57 1191530 0 476612
+fi=(52)
+174 714918 0 714918
+fi=(48)
++30 238306 0 238306 225 0 0 1
+-79 476612 238306
+fi=(52)
++49 105795174 0 105795174
+fi=(48)
++30 35265058 0 35265058
+-79 70530116 35265058
+fi=(41)
+513 35503364 35503364
++3 35503364 35503364
+fi=(53)
+-64 35503364 35503364
+fi=(42)
+160 35503364 0 35503364
+fi=(41)
+399 35503364 35503364
+fi=(42)
+160 35503364 0 35503364
+fi=(53)
+452 35503364 35503364
+fi=(42)
+146 35503364 0 35503364
+1447 35503364
+fi=(52)
+174 106510092 0 106510092 225 0 0 1
+fi=(53)
+452 35503364 0 35503364
+cfi=(52)
+cfn=(288)
+calls=35503364 175 
+* 1455637924 390537004 71006728 0 10611525
+fi=(50)
+80 35503364 35503364
+fi=(54)
+-54 71006728 35503364 35503364 0 0 827115 0 0 6
+fi=(47)
+566 106510092
+fe=(40)
+-36 2621366 2144754
+fi=(34)
+212 476612 0 0 1 0 0 1
+fe=(40)
+
+fn=(362)
+527 2144754 0 1429836 1 0 0 1
+fi=(49)
+113 238306 238306
+fe=(40)
+527 476612 0 476612
+fi=(41)
+395 238306 238306
+fe=(40)
+269 476612
+fi=(41)
+388 238306
+fi=(34)
++9 953224 0 0 1 0 0 1
++84 476612
+209 476612 0 238306
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=238306 0 
+* 47813657 8719978 5884642 0 371102 0 0 1
+* 238306
++3 476612
++8 714918 238306
+fi=(41)
+393 238306 0 238306
++2 238306 0 0 1 0 0 1
+fi=(47)
+566 238306
+fi=(41)
+390 476612 238306 238306
++9 238306 238306
+-4 476612 238306
+fi=(48)
+125 71006728
+fi=(41)
+399 71006728 71006728
+fi=(33)
+275 71006728 71006728 0 0 7097775
+fi=(50)
+80 71006728 71006728 0 0 3513750
+fi=(47)
+566 35503364 0 0 1 0 0 1
+fi=(33)
+275 35503364
+964 71006728
+251 35503364
+fi=(50)
+41 35503364
++39 35503364 35503364 0 0 3513750
+fi=(54)
+-54 35503364 0 35503364 0 0 475726 0 0 5
+fi=(47)
+566 106510092
+fe=(40)
+-36 1906448 1668142
+fi=(34)
+212 476612 0 0 1 0 0 1
+fe=(40)
+
+fn=(192)
+527 270000 0 0 1 0 0 1
+59 270000
+527 1890000 0 1080000 1 0 0 1
+fi=(52)
+175 270000 270000
+fe=(40)
+527 540000 0 540000
+fi=(52)
+175 270000 270000
+fe=(40)
+59 540000
+269 1080000 0 0 225 0 0 1
+fi=(41)
+388 270000
+fi=(34)
++9 270000
+fe=(40)
+286 270000
+fi=(34)
+397 540000
++84 540000
+209 270000 0 270000 0 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(174)
+calls=270000 0 
+* 227082404 39638751 31300454 13 438910 251087 12 10 6
++3 540000
++8 540000 0 0 1 0 0 1
+fi=(41)
+390 270000 0 270000
+fi=(87)
+91 270000 270000
+fi=(47)
+372 270000
+fi=(41)
++21 270000 0 270000
+fi=(47)
+-21 270000
+fi=(42)
+1610 270000 270000 0 0 87988
+fi=(47)
+372 540000
+fi=(54)
+26 270000 0 270000
+fi=(42)
+1610 270000 270000
+fi=(54)
+26 270000 0 270000 1 0 0 1
+fi=(42)
+1610 270000 270000
+fi=(54)
+26 270000 0 270000
+fi=(47)
+372 540000
+fi=(42)
+1610 43650000 43650000
+fi=(47)
+372 87300000
+fi=(54)
+26 43650000 0 43650000 0 0 4950005 0 0 55
+fi=(42)
+1610 43650000 43650000
+fi=(54)
+26 43650000 0 43650000 0 0 4860005 0 0 54
+fi=(42)
+1610 43650000 43650000
+fi=(54)
+26 43650000 0 43650000 0 0 4950005 0 0 55
+fi=(47)
+372 87300000
+fe=(40)
+530 1620000 1350000
+
+fl=(37) /usr/include/c++/13/bits/atomic_base.h
+fn=(418) std::__atomic_base<unsigned long>::operator--(int)
+393 7290000 810000 4860000
+645 4050000 2430000 810000 1 270000 0 1
+394 2430000 1620000
+
+fn=(184) std::__atomic_base<unsigned long>::operator++()
+401 3240000 0 1620000 2 0 0 2
++1 4860000 3240000 810000 0 450003 0 0 8
+
+fl=(31)
+fn=(162) std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()()
+453 2160000 0 720000 1 0 0 1
++5 1080000 360000 0 0 90000 0 0 1
++4 1080000 360000 360000 1 89423 0 1
++7 720000 720000
+-6 1440000
++1 1440000
++1 1440000
++1 1080000
++3 360000 360000
+-10 577 0 577 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(164) 0x000000007fd995f0
+calls=577 0 
+* 4283071 610466 246379 671 45739 0 4 80
++3 1154 577
+
+fn=(166) std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand()
+397 3462 577 0 225 577 0 1 1
++9 577
+-2 577
++2 577
++1 1731 577
+-1 577
++3 1154
+-1 1154 577 0 225 577 0 1 1
++1 1731 0 577
+-5 1154
++2 130402
+-2 130402
++2 130402
++1 391206 130402 0 0 16156 0 0 28
+-1 130402
++3 260804
+-1 260804 130402 0 0 16156 0 0 28
++1 391206 0 130402
+-5 262535 1154 0 0 161 0 0 1
++12 1731 1154 0 0 1 0 0 1
+-2 577 577 0 1 0 0 1
++1 1154 577
++1 577 577
+-1 577
+-1 1154
++2 577
++1 577
+-1 4616 0 577 1 0 0 1
+-4 1154
++2 113669 113669 0 0 11540 0 0 20
++1 227338 113669
++1 113669 113669
+-1 113669
+-1 227338
++2 113669
++1 113669
+-1 909352 0 113669
+-4 227338
++8 577 577
++1 577 577
++3 577 0 577
+-3 577
+-1 1154
++2 577
++1 1154
+-1 1154 577
++1 1731 0 577
++2 577 577
+
+fl=(1) /home/tudent/rayTracer/cpp/rtmain.cpp
+fn=(0) render_scene(int, int, int, std::vector<nanobind::ndarray<int const, nanobind::c_contig>, std::allocator<nanobind::ndarray<int const, nanobind::c_contig> > > const&, std::vector<nanobind::ndarray<double const, nanobind::c_contig>, std::allocator<nanobind::ndarray<double const, nanobind::c_contig> > > const&, std::vector<nanobind::ndarray<double const, nanobind::c_contig>, std::allocator<nanobind::ndarray<double const, nanobind::c_contig> > > const&, std::vector<Eigen::Ref<Eigen::Matrix<double, 1, 3, 1, 1, 3>, 0, Eigen::Stride<-1, -1> >, std::allocator<Eigen::Ref<Eigen::Matrix<double, 1, 3, 1, 1, 3>, 0, Eigen::Stride<-1, -1> > > >, std::vector<Eigen::Ref<Eigen::Matrix<double, 1, 3, 1, 1, 3>, 0, Eigen::Stride<-1, -1> >, std::allocator<Eigen::Ref<Eigen::Matrix<double, 1, 3, 1, 1, 3>, 0, Eigen::Stride<-1, -1> > > >, std::vector<Eigen::Ref<Eigen::Matrix<double, 2, 3, 1, 2, 3>, 0, Eigen::Stride<-1, -1> >, std::allocator<Eigen::Ref<Eigen::Matrix<double, 2, 3, 1, 2, 3>, 0, Eigen::Stride<-1, -1> > > >)
+37 1 0 1 1 0 1 1 0 1
+fi=(2)
+993 2 1 0 0 1 0 0 1
+fe=(1)
+37 1
+fi=(2)
+993 5 1 1 1 0 0 1
+fe=(1)
+65 16 0 7 1 0 1 1 0 1
+fi=(2)
+1145 1
++3 1 1 0 1 0 0 1
+fe=(1)
+70 1
+-5 2
+fi=(2)
+1148 1
+fi=(88) /home/tudent/rayTracer/cpp/./Eigen/src/Core/MapBase.h
+236 1 1 0 0 1 0 0 1
+fi=(89) /home/tudent/rayTracer/cpp/./Eigen/src/Core/util/XprHelper.h
+-61 1 1
+fi=(90) /home/tudent/rayTracer/cpp/./Eigen/src/Core/functors/AssignmentFunctors.h
+26 1 1 0 0 1 0 0 1
+fi=(91) /home/tudent/rayTracer/cpp/./Eigen/src/Core/CoreEvaluators.h
+1256 1
+fi=(90)
+26 4 2 2 0 1 1 0 1 1
+fi=(2)
+1148 2 1 0 1 0 0 1
+fi=(90)
+26 1 0 1
+fi=(2)
+1148 1 1 0 0 1 0 0 1
+fi=(88)
+236 1 1 0 0 1 0 0 1
+fi=(89)
+-61 1 1
+fi=(90)
+26 1 1 0 0 1 0 0 1
+fi=(91)
+1256 1
+fi=(90)
+26 4 2 2 0 1 0 0 1
+fi=(88)
+236 1 1 0 0 1 0 0 1
+fi=(89)
+-61 2 2
+fi=(90)
+26 2 1 1 1 1 0 1 1
+fi=(91)
+1252 1
+fi=(90)
+26 6 3 3 0 0 2 0 0 2
+fi=(91)
+1252 2
+fi=(90)
+26 4 2 2 1 0 0 1
+fe=(1)
++44 3 3
+fi=(90)
+-44 1 0 1
+fe=(1)
++44 7 3 4 0 0 1 0 0 1
+cfi=(3)
+cfn=(4)
+calls=1 +22 
+* 25804774051 7745188122 5933343012 18323 161459614 260611489 713 665 6884
+-5 4 1 0 1 1 0 1
+
+ob=(3) /usr/lib/x86_64-linux-gnu/libc.so.6
+fl=(59) ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
+fn=(404) __memcpy_avx_unaligned_erms
+255 714922 0 0 110 0 0 1
++1 714922
++6 714922
++1 714922
++2 714918 714918 0 0 70275
++1 714918
++1 714918
++38 4
++1 4
++2 4
++1 4
++2 4
++4 4
++1 3 0 0 1 0 0 1
++1 3
++1 3 3
++1 3
++1 3 3
++1 3 0 3
++2 3 0 3
++2 3 3
++6 1 1
++1 1 1
++1 1 0 1
++1 1 0 1
++1 1 1
++51 714918 714918 0 225 70275 0 1
++1 714918
++5 574368
++1 574368
++24 574368 0 0 225 0 0 1
++1 574368
++4 574368
++2 574368 0 0 1 0 0 1
++4 574368 574368 0 0 19826 0 0 1
++1 574368
++11 574368
++3 574368
++2 574368
++2 574368
++4 574368
++1 574368
++9 574368 574368
++1 574368 574368
++2 574368
++2 574368
++1 574368 574368 0 1 0 0 1
++1 574368 574368
++3 574368
++2 574368
++2 574368
++2 1148736
++6 574368 574368 0 0 70275
++1 574368 574368
++1 574368 574368 0 0 70275
++1 574368 574368
++1 574368
++1 574368 0 574368 0 0 160276 0 0 2
++1 574368 0 574368
++1 574368 0 574368 225 0 160276 1 0 2
++1 574368 0 574368
++1 574368
++1 574368
++1 574368
+-11 3968759 3968759 0 0 1194675
++1 3968759 3968759
++1 3968759 3968759 0 0 1335225
++1 3968759 3968759
++1 3968759
++1 3968759 0 3968759 0 0 1706328 0 0 24
++1 3968759 0 3968759
++1 3968759 0 3968759 0 0 1706327 0 0 24
++1 3968759 0 3968759
++1 3968759
++1 3968759
++1 3968759
++2 574368 0 574368 0 0 90004 0 0 1
++1 574368 0 574368 0 0 70275 0 0 1
++1 574368 0 574368
++1 574368 0 574368
++2 574368 0 574368
++4 1148736 574368
++58 140550 140550 0 1 70275 0 1
++7 140550
++1 140550
++6 70275
++3 70275
++2 70275
++3 70275
++1 70275
++2 70275
++2 672461475 672391200 672391200 0 10470975 10400700 0 0 148
++2 70275 0 70275
++2 70275 0 70275
++2 140550 70275
++5 140550 0 0 225 0 0 1
++1 140550
++4 140550
++2 140550
++3 140550
++4 140550 140550 0 0 70275
++1 140550
++4 140550 140550
++4 140550
++24 70275
++2 70275
++2 70275
++2 70275 0 0 225 0 0 1
++3 70275
++1 70275
++2 671337075 671266800 671266800 0 0 10470975
++3 70275 0 70275
++2 70275 0 70275
++2 140550 70275
+
+fl=(44) ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S
+fn=(222) __memset_avx2_unaligned_erms
+158 270000 0 0 1 0 0 1
++1 540000
++5 270000
++1 270000
++1 270000
++1 270000
++1 270000
++69 270000 270000 0 1 19726 0 1 1
++1 270000
++6 180000 0 180000
++1 180000 0 180000 0 0 90001 0 0 1
++12 180000
++3 180000
++1 180000
++12 180000 0 180000
++1 180000 0 180000 0 0 90001 0 0 1
++13 180000
++1 180000
++2 180000
++3 180000
++3 180000
++3 180000 0 180000 1 0 0 1
++1 180000 0 180000
++1 180000 0 180000 0 0 90001 0 0 1
++1 180000 0 180000
++1 180000
++1 180000
++1 180000
+-6 1080000 0 1080000 0 0 540006 0 0 6
++1 1080000 0 1080000
++1 1080000 0 1080000 0 0 540014 0 0 6
++1 1080000 0 1080000
++1 1080000
++1 1080000
++1 1260000
++3 180000 0 180000
++1 180000 0 180000
++1 180000 0 180000
++1 180000 0 180000
++3 360000 180000
++11 90000 0 0 133 0 0 1
++1 90000
++1 90000
++1 864810000 0 864720000 0 0 13410000 0 0 149
++1 90000
++1 180000 90000
+
+fl=(29) ./libio/./libio/iofflush.c
+fn=(150) fflush
+32 225 0 0 1 0 0 1
++1 450
+-1 1125 0 675 1 0 0 1
++7 450 225
++1 225 225
+fi=(13) ./libio/./libio/libioP.h
+1025 675
++1 450
+fe=(29)
+40 450 225 225
+cfi=(11) ./libio/./libio/fileops.c
+cfn=(152) _IO_file_sync@@GLIBC_2.2.5
+calls=225 793 
+* 4725 1800 900 3 0 0 3
+* 450
+fi=(13)
+979 450 225
++1 900 675
+fe=(29)
+44 1125 900
+-5 3150 1125 450 2 0 0 2
+fi=(13)
+980 1350 225 450 1 0 0 1
+fe=(29)
+
+fl=(23) ./nptl/./nptl/pthread_cond_wait.c
+fn=(128) pthread_cond_wait@@GLIBC_2.3.2
+625 42 3 21 2 3 3 2 3 3
+386 3
+fi=(25) ./nptl/../include/atomic_wide_counter.h
+50 6 3 3
+fe=(23)
+404 3
+fi=(25)
+50 3 0 3 0 0 3 0 0 3
+fe=(23)
+405 3
++4 3
+-5 3
++1 3 0 3
++4 3
+-5 3 0 3
++5 3 3 3 1 3 0 1 3
++10 3
+fi=(92) ./nptl/./nptl/pthread_cond_common.c
+186 3
+fe=(23)
+419 3
+fi=(92)
+186 6 0 3
+fe=(23)
+419 3 0 3 0 0 3 0 0 3
+cfi=(24) ./nptl/./nptl/pthread_mutex_unlock.c
+cfn=(130) __pthread_mutex_unlock_usercnt
+calls=3 48 
+* 81 18 9 2 0 0 2
+* 3
++1 6
++12 12 6
++33 9 0 3 1 0 0 1
++4 6
++15 9 6 3 1 0 0 1
++1 9 3
+fi=(25)
+30 3 3
+fe=(23)
+486 9 3 0 1 0 0 1
++11 3 3
++4 15 0 3
+-3 3 0 3
+-1 3 0 3
++3 6 3 3 1 0 0 1
++1 3 0 3
+-1 3 0 3
+-1 3 0 3
++2 3 0 3
+cfi=(26) ./nptl/./nptl/cleanup_compat.c
+cfn=(134) _pthread_cleanup_push@@GLIBC_2.34
+calls=3 25 
+* 21 6 12 2 0 0 2
++2 18 3 3
+cfi=(27) ./nptl/./nptl/futex-internal.c
+cfn=(136) __futex_abstimed_wait_cancelable64
+calls=3 138 
+* 150 21 27 3 3 3 3 3 3
+
+fl=(70) ./libio/./libio/fileno.c
+fn=(586) fileno
+32 1 0 0 1 0 0 1
++3 5 2
++7 1 1
+
+fl=(75) ./io/../sysdeps/unix/sysv/linux/fstat64.c
+fn=(650) fstat
+30 1 0 0 1 0 0 1
++9 4 0 0 1 0 0 1
++33 1 1
+
+fl=(67) ./io/../sysdeps/unix/sysv/linux/open64.c
+fn=(534) open
+30 2 0 1 1 0 0 1
++3 1
+-3 10 1 4
++3 2
++10 8 6 0 1 0 0 1
+-7 1 0 0 1 0 0 1
++5 1 1
+-5 3 0 2
++1 1 1
+-1 1 0 1
++5 3 0 2
+cfi=(15) ./nptl/./nptl/cancellation.c
+cfn=(54) __pthread_enable_asynccancel
+calls=1 -10 
+* 18 3 1 1
+* 12 1 2 1 0 0 1
+cfi=(15)
+cfn=(58) __pthread_disable_asynccancel
+calls=1 +22 
+* 15 3 1 1
+* 2 1
+
+fl=(63) ./nptl/./nptl/pthread_once.c
+fn=(456) pthread_once@@GLIBC_2.34
+136 4 0 0 1 0 0 1
++3 4 4 0 0 1 0 0 1
++1 8
++4 8 4
+
+fl=(72) ./libio/./libio/iofclose.c
+fn=(620) fclose@@GLIBC_2.2.5
+34 8 0 4 1 0 0 1
++14 3 1
++9 1 1 0 1 0 0 1
+fi=(13)
+1025 3
++1 2
+fe=(72)
+57 3 1 1 0 1
+cfi=(11)
+cfn=(638) _IO_file_finish@@GLIBC_2.2.5
+calls=1 168 
+* 34 11 5 4 0 0 4
++1 3 1
++13 2 1
+fi=(13)
+951 4 2 0 1 2 0 1 2
++1 4 1 0 0 1 0 0 1
++6 2 0 1
+cob=(4)
+cfi=(6)
+cfn=(642) 0x00000000049a13e0
+calls=1 0 
+* 89 27 14 1 2 0 1 2
+fe=(72)
+76 7 5
+-27 1 0 1 1 0 0 1
+cfi=(12) ./libio/./libio/genops.c
+cfn=(622) _IO_un_link
+calls=1 +4 
+* 122 37 25 13 0 0 13
++2 16 6 2 1 0 0 1
++1 3 1
++1 2 0 1
+cfi=(11)
+cfn=(626) _IO_file_close_it@@GLIBC_2.2.5
+calls=1 +75 
+* 112 28 24 12 1 0 12
+fi=(13)
+979 1 1
+fe=(72)
+53 1
+fi=(13)
+979 3
++1 10 4 2 2 0 0 2
+fe=(72)
+
+fl=(10) ./libio/./libio/iofwrite.c
+fn=(38) fwrite
+31 2706 0 1804 2 0 0 1
++1 451
+-1 451 0 451
++1 451
+-1 902 0 451
++4 2706
++2 7667 3608 1353 5 678 0 2 5
++1 1355 451 2 0 226 0 0 2
++1 2 2
+fi=(13)
+1025 2
+fe=(10)
+39 2 0 2
+fi=(13)
+1025 2
++1 4 0 0 2 0 0 1
+fe=(10)
+39 449 449
+fi=(13)
+1025 449
+fe=(10)
+39 449 0 449
+fi=(13)
+1025 449
++1 898
+fe=(10)
+39 2255 902 451 0 225 0 0 1
+cfi=(11)
+cfn=(40) _IO_file_xsputn@@GLIBC_2.2.5
+calls=451 1198 
+* 100081 24570 14565 1583 679 4 43 7 4
++6 902
+fi=(13)
+979 902 451
+fe=(10)
+45 902
++1 451
++3 4059 3157
+-11 898
+fi=(13)
+980 4510 1804 902 4 0 0 2
+fe=(10)
+
+fl=(11)
+fn=(152)
+793 1575 0 675 1 0 0 1
++5 900 450
++2 225 225 0 1 0 0 1
++1 450 225
++11 450 0 225 1 0 0 1
++4 1125 900
+
+fn=(648) _IO_file_stat
+1147 1 0 0 1 0 0 1
++1 2 1
+cfi=(75)
+cfn=(650)
+calls=1 30 
+* 6 1 0 2 0 0 2
+
+fn=(522) _IO_new_file_init_internal
+106 6 0 2 1 0 0 1
++5 1 0 1
+-1 1 0 1
++3 1 0 1
+cfi=(12)
+cfn=(524) _IO_link_in
+calls=1 -26 
+* 112 35 26 11 3 0 11 1
++1 1 0 1
++1 3 3
+
+fn=(532) _IO_file_open
+182 2 0 1 1 0 0 1
++3 1
+-3 10 0 3
++2 2 1 0 1 0 0 1
++4 1 0 1
+cfi=(67)
+cfn=(534)
+calls=1 30 
+* 80 17 14 6 0 0 4
+* 1
++1 2
++3 2 1
++3 1
+-4 1 0 1
++1 3
++3 1
+-3 1 0 1
++3 1
++10 2 0 1 1 0 0 1
+cfi=(12)
+cfn=(524)
+calls=1 87 
+* 21 9 5
++1 1
++1 6 5 0 1 0 0 1
+
+fn=(42) _IO_file_overflow@@GLIBC_2.2.5
+732 5480 0 2740 4 0 1 2 0 1
++1 2740 685
++7 3421 685
++37 683 683
+-2 1366
++3 468 234
++3 702 0 468
++1 702 234
++1 36
++4 234
++1 1404 1170
+-45 4 0 0 2 0 0 1
++12 4 0 0 2 0 0 1
++9 6 2
++5 6 2 4
++2 4
+-5 2 0 2
++5 2 0 2
++1 2 2
+-5 2 0 2
++1 2 0 2
++4 4
+-7 2
++10 4 0 0 2 0 0 1
++13 451
+-12 451
++1 451
++11 1804 1804
+-12 451
+cfn=(46) _IO_do_write@@GLIBC_2.2.5
+calls=451 424 
+* 2255 451 0 2 0 0 1
++9 452 452
+-1 226
++1 226
+-1 226 0 226
+cfn=(46)
+calls=226 424 
+* 34804 8588 5876 856 0 0 4
+* 452
+-12 4 0 0 2 0 0 1
++1 4 0 2
+-28 4 0 2 2 0 0 1
+cfi=(12)
+cfn=(44) _IO_doallocbuf
+calls=2 343 
+* 209 55 36 14 4 0 12 4
++1 2 2
++9 2 2
+-9 10 0 4
+
+fn=(50) _IO_file_write@@GLIBC_2.2.5
+1174 5408 0 3380 2 0 0 1
++2 2704
+-1 1352
++6 676 0 676
+cfi=(14) ./io/../sysdeps/unix/sysv/linux/write.c
+cfn=(52) write
+calls=676 25 
+* 38532 8788 6084 1076 225 2 6 1 2
++1 1352
++5 676
++1 676
+-12 1352
++4 2028 676 0 2 0 0 1
++1 1352 676
++10 2028 676
++3 4056 4056
+-4 2028
+
+fn=(638)
+168 5 0 3 1 0 0 1
++1 1 1
+-1 1
++1 1
++6 2 0 0 1 0 0 1
++1 3 3
+-1 1
+cfi=(12)
+cfn=(640) _IO_default_finish
+calls=1 601 
+* 20 7 2 2 0 0 2
+
+fn=(40)
+1198 3157 0 2255 2 0 0 1
++7 451
+-7 902 0 451 0 0 1 0 0 1
++6 1804 0 0 2 0 0 1
++9 902 451 0 0 225 0 0 1
+-2 1804 451
++17 1353 451
++40 4059 3157 0 2 0 0 1
+-68 451 0 0 2 0 0 1
++44 451 451
+fi=(13)
+1025 1353
++1 902
+fe=(11)
+1244 1353 451 451
+cfn=(42)
+calls=451 732 
+* 15152 3671 1860 30 4 1 20 4 1
+* 902
++6 902 902
++1 905 0 0 2 0 0 1
++2 3
++11 902
++1 4 0 1
+cfi=(12)
+cfn=(652) _IO_default_xsputn
+calls=1 371 
+* 716 185 97 12 0 0 4
++2 3
+-14 900 0 0 225 0 0 1
+446 900
+1251 450 0 0 225 0 0 1
+444 450 450
+-10 900 450
++7 1800 900
+fi=(13)
+1025 900 0 0 1 0 0 1
++1 900 0 0 1 0 0 1
+fe=(11)
+449 2250 450 900 0 225 0 0 1
+cfn=(50)
+calls=450 1174 
+* 42750 9900 6750 1076 225 2 8 1 2
++1 450 450
+-1 450
++1 1350 450
++2 450 450
++4 900 450 0 2 0 0 1
+-3 900 0 450
+-1 900 0 900
++4 900
+-2 450 0 450
+1257 900
+-1 900
+455 900 450 0 1 0 0 1
+
+fn=(46)
+424 677 0 0 2 0 0 1
++2 2031
++1 451 451
+-3 678 0 452
+fi=(13)
+1025 226
+fe=(11)
+424 1808 0 904
++20 226 226
+-10 452 226 0 174 0 0 1
++7 904 452
+fi=(13)
+1025 452 0 0 226 0 0 1
++1 452
+fe=(11)
+449 904 226 226
+cfn=(50)
+calls=226 1174 
+* 21470 4972 3390 4
+* 226
++1 678 226
++2 226 226 0 226 0 0 1
++4 452 226
+-3 452 0 226
+-1 452 0 452
++4 452
+-30 452
++28 226 0 226
+-28 452
++1 1808 1582
++28 452 226 0 226 0 0 1
+
+fn=(630) _IO_file_close
+1165 1 0 0 1 0 0 1
++3 2 1
+cfi=(73) ./io/../sysdeps/unix/sysv/linux/close_nocancel.c
+cfn=(632) __close_nocancel
+calls=1 25 
+* 6 1 0 2 0 0 2
+
+fn=(530) _IO_file_fopen@@GLIBC_2.2.5
+213 12 1 7 1 0 0 1
++9 2 1
++2 8 1 0 1 1 0 1 1
++23 6 1 0 1 0 0 1
+357 12 9
+224 4 0 0 1 0 0 1
++57 4 0 1 1 0 0 1
+cfn=(532)
+calls=1 -99 
+* 139 33 27 10 0 0 8
+* 1
++3 2
++3 3 0 1
+cfi=(68) ./string/../string/strstr.c
+cfn=(536) __GI_strstr
+calls=1 77 
+* 59 15 8 6 2 0 6 2
+* 1
++1 2
+-41 6 0 0 1 0 0 1
+
+fn=(626)
+128 7 0 4 1 0 0 1
++2 3 1
++4 2 1
++3 1
+-3 1
+-1 2 0 0 1 0 0 1
++6 1
++3 1
+-3 1 0 1
+cfi=(12)
+cfn=(628) _IO_unsave_markers
+calls=1 937 
+* 14 5 2 2 0 0 2
++3 3 2
+fi=(13)
+1025 3
++1 2
+fe=(11)
+142 2 1 1 1 1 0 1
+cfn=(630)
+calls=1 1165 
+* 9 2 0 3 0 0 3
+* 1
++3 3 1
++8 5 0 1 1 0 0 1
+cfi=(12)
+cfn=(634) _IO_setb
+calls=1 329 
+* 29 8 8 2 0 0 2
++1 1
++3 1
+-3 3 0 3
++3 1 0 1
+cfi=(12)
+cfn=(622)
+calls=1 53 
+* 4 2
++5 1
+-4 1 0 1
++1 1 0 1
++3 1 0 0 1 0 0 1
+-2 1 0 1
++3 7 5
+
+fl=(17) ./string/../sysdeps/x86_64/multiarch/memcmp-avx2-movbe.S
+fn=(76) __memcmp_avx2_movbe
+73 1 0 0 1 0 0 1
++7 1
++1 1
++3 1 1
++1 1 1
++1 1
++4 1
++1 1 0 0 1 0 0 1
++2 1
++1 1
++3 1 1
++1 1 1
++1 1
++3 1
++1 1
++3 1
++1 1
++3 1 1
++1 1 1
++1 1
++1 1
++1 1 0 0 1 0 0 1
++1 1 1
++1 1 1
++1 1
++1 1
++1 1
++3 1
++1 1
++6 1 1
++1 1 1
++1 1
++1 1
++4 1 1 0 1 0 0 1
++1 1 1
++2 1 1
++1 1 1
++1 1 1
++1 1 1
++3 1
++1 1
++1 1
++1 1
++1 1
++1 1
++2 2 1
+
+fl=(19) ./libio/./libio/putc.c
+fn=(112) putc
+25 2025 0 900 2 0 0 2
++3 450 225
++2 450 225
++1 900 450
+fi=(13)
+979 450 225
++1 900 675 0 1 0 0 1
+fe=(19)
+34 1350 1125
+-4 3150 1125 450 398 0 0 2
+fi=(13)
+980 1350 225 450 225 0 0 1
+fe=(19)
+31 675 0 225 225 0 0 1
+cfi=(12)
+cfn=(114) __overflow
+calls=225 199 
+* 48150 12375 7875 851 0 0 6
+* 225
+
+fl=(24)
+fn=(130)
+48 3 0 0 1 0 0 1
++3 9 3
++1 6
+-4 9 0 3
++9 6
++5 3 0 3
++1 6
+-24 3 3
++1 12 3 0 1 0 0 1
++30 3
++2 3
++32 6 6
+-61 12 3 3
+
+fl=(73)
+fn=(632)
+25 1 0 0 1 0 0 1
++1 4 0 0 1 0 0 1
++1 1 1
+
+fl=(27)
+fn=(136)
+138 24 0 12 1 0 0 1
+-61 6
++3 6
++3 9
++1 6 0 0 1 0 0 1
+-27 6 3
+fi=(28) ./nptl/../sysdeps/nptl/futex-internal.h
++30 6 0 6 1 0 3 1 0 3
+fe=(27)
+-30 6 0 6
+cfi=(15)
+cfn=(54)
+calls=3 -26 
+* 54 9 3 0 3 0 0 3
+
+fl=(12)
+fn=(520) _IO_old_init
+531 1 0 0 1 0 0 1
++3 1 1 0 0 1 0 0 1
+-2 1
++2 1 0 0 1 0 0 1
++5 1
+-7 1 0 1
++2 1
++10 1 0 1
+-10 1
++16 1
+-11 1 0 1
+-5 1
++16 1 0 1
+-16 1 0 1
++21 1 1
+-16 5 0 5 0 0 1 0 0 1
++16 2
++1 2 0 2 0 0 1 0 0 1
++2 1 1
+
+fn=(628)
+937 6 0 2 1 0 0 1
++2 2 1
++5 3 1
++2 3 3 0 1 0 0 1
+
+fn=(44)
+343 2 0 0 2 0 0 1
++1 4 2
+-1 14 0 8
++3 9 3
++1 1 1 0 1 0 0 1
+fi=(13)
+1025 3
++1 2
+fe=(12)
+347 2 1 1
+cfi=(74) ./libio/./libio/filedoalloc.c
+cfn=(646) _IO_file_doallocate
+calls=1 78 
+* 151 38 24 9 4 0 9 4
+* 2
+-10 1
+-5 1 0 1
++1 1 0 1
++4 1 0 1
++13 12 10 0 1
+-1 2 0 0 1 0 0 1
+-19 1
+
+fn=(652)
+371 11 0 7 1 0 0 1
++3 4
+fi=(13)
+1025 1
+fe=(12)
+373 2
++26 29 9 0 1 0 0 1
+fi=(13)
+1025 18
++1 18
+fe=(12)
+399 36 18 9
+cfi=(11)
+cfn=(42)
+calls=9 732 
+* 512 130 81 8
+* 18
++2 9
+-2 9
+-20 40 20 0 1 0 0 1
+-4 1 1 0 1 0 0 1
++29 8 7
+
+fn=(114)
+199 1125 0 450 2 0 0 1
++2 675 225
++2 225 225
+fi=(13)
+1025 675
++1 450
+fe=(12)
+203 225 225 0 1 0 0 1
++1 450 450
+-1 225
+cfi=(11)
+cfn=(42)
+calls=225 732 
+* 44100 11250 7425 848 0 0 4
+
+fn=(634)
+329 22 0 10 2 0 0 2
++1 8 4
++5 4
+-3 2 0 2
++3 4
+-2 2 0 2
++2 4 0 2
++3 12 12
+
+fn=(640)
+601 6 0 2 1 0 0 1
++2 3 1
++6 3 1
++3 3 1 0 1 0 0 1
+54 2 1
+624 3 3
+
+fn=(518) _IO_no_init
+563 11 0 5 1 0 0 1
++1 1 0 1
+cfn=(520)
+calls=1 -33 
+* 25 3 12 2 1 2 2 1 2
++1 1 0 1 1 0 1 1 0 1
++1 2
++2 1 0 1
++4 1
++7 1 0 1 0 0 1 0 0 1
++2 1 0 1 0 0 1 0 0 1
+-9 5 0 5
++15 1 0 1 1 0 0 1
++1 6 6
+
+fn=(524)
+87 14 0 8 1 0 0 1
++1 10 4 2
++18 18 14
+-16 1 0 0 1 0 0 1
++2 3 0 1
+-2 1 0 1
++2 4 0 2
+cfi=(66) ./nptl/./nptl/libc-cleanup.c
+cfn=(526) __libc_cleanup_push_defer
+calls=1 -68 
+* 13 4 3 2 2 0 2 1
++1 12 3 2 1 0 0 1
++2 1 1
+-1 1 0 1 1 0 0 1
++1 2 1
++6 1 0 1
++1 9 2 2 1 0 0 1
++1 2 0 1
+cfi=(66)
+cfn=(528) __libc_cleanup_pop_restore
+calls=1 -49 
+* 9 5 1 1 0 0 1
++3 1
+-11 11 3 1 1 0 0 1
++2 1 1 0 1 1 0 1
+-2 1 1
++5 2 2
+-2 1 0 1
+-3 1 0 1
++2 1 0 1
++3 11 2 2 1 0 0 1
++2 2 1
+
+fn=(622)
+53 2 0 0 1 0 0 1
++1 4 2
++28 2 1
+cfn=(624) __GI__IO_un_link.part.0
+calls=1 -30 
+* 118 36 25 12 0 0 12
+
+fn=(624)
+52 4 0 3 1 0 0 1
++6 1
+-6 2 0 1
++6 1 0 0 1 0 0 1
+-6 4 1 1
++6 4 0 3
+cfi=(66)
+cfn=(526)
+calls=1 -34 
+* 13 4 3
++1 12 3 2 1 0 0 1
++2 2 2 0 1 0 0 1
+-1 1 0 1
++1 14 3 1 1 0 0 1
++13 1 1
+-13 1 1
++2 1 1
++13 2 1
+-15 1 0 1
++15 1
+-13 2
++2 2 0 0 1 0 0 1
++9 2 0 1
++2 8 2 0 1 0 0 1
++1 1 0 1 1 0 0 1
++1 9 2 2 1 0 0 1
++1 2 0 1
+cfi=(66)
+cfn=(528)
+calls=1 -25 
+* 9 5 1
++3 9 7 0 1 0 0 1
+-16 3 1 1 1 0 0 1
++10 4 1 2 1 0 0 1
++2 2 1
+
+fl=(65) ./libio/./libio/iofopen.c
+fn=(512) fopen@@GLIBC_2.2.5
+85 7 0 3 1 0 0 1
+-20 1
++20 2 0 2
+-20 1 0 1
+cob=(4)
+cfi=(6)
+cfn=(514) 0x00000000049a13f0
+calls=1 -65 
+* 49 14 7 2 3 0 2 3
++2 3 0 0 1 0 0 1
++3 1
++2 2
+-2 1 0 1 0 0 1 0 0 1
++2 5 0 1
+cfi=(12)
+cfn=(518)
+calls=1 563 
+* 56 9 28 5 1 5 5 1 5
++1 1
++1 1 0 0 1 0 0 1
+-1 1 0 1
++1 1 0 1
+cfi=(11)
+cfn=(522)
+calls=1 +32 
+* 125 38 32 12 3 0 12 1
++1 5 0 1
+cfi=(11)
+cfn=(530)
+calls=1 213 
+* 261 61 44 22 3 0 20 3
+* 2
+-38 2 1
++50 7 6 0 1 0 0 1
+
+fl=(68)
+fn=(536)
+77 9 0 6 1 0 0 1
++5 1 1 0 0 1 0 0 1
+-5 3 1 1
++5 2 0 0 1 0 0 1
++2 4 0 1
+cob=(4)
+cfi=(6)
+cfn=(538) 0x00000000049a1680
+calls=1 -84 
+* 23 4 0 3 1 0 3 1
+* 1
++1 2
++1 2 0 0 1 0 0 1
++75 12 9
+
+fl=(8) ./malloc/./malloc/malloc.c
+fn=(266) _int_free_maybe_consolidate
+4770 66208659 6018969 42132783 1 0 0 1
++6 12037938
++22 66208659 54170721 0 1 0 0 1
+-20 1440004 360001
++3 1080003
++3 1800005 1080003 0 4 180000 0 2 1
+
+fn=(262) _int_free
+4495 53221441 0 30412252 1 0 0 1
++4 22809189 7603063 0 1 0 0 1
++6 30412252
++1 15206126
++4 38015315
++8 30412252 15206126 0 1 0 0 1
+-1 15206126
++1 15206126 7603063
++29 1584094 1584094
+-20 1584094 1584094 0 0 90001 0 0 1
+-6 1584094
++6 3168188 1584094
++20 6336376 1584094 0 0 90000
+1792 6018969 6018969 0 1 0 0 1
+4561 12037938
++97 45618378 38015315
+-21 12037938 6018969 0 1 0 0 1
++3 12037938 6018969
++3 12037938 0 0 1 0 0 1
+3163 1584094 1584094 0 1 0 0 1
++4 1584094
+-4 1584094 0 1584094
++2 6336376 1584094 1584094 0 90000
++1 1584094 0 1584094
++1 1584094 0 1584094
+4550 1584094
++94 24075876 0 6018969 1 0 0 1
++2 12037938 0 6018969 0 0 70275
+cfn=(264) _int_free_merge_chunk
+calls=6018969 +19 
+* 691038210 214268006 138599908 12 1580553 511650 10 1
++3 24075876 6018969 6018969 1 0 0 1
+
+fn=(20) unlink_chunk.isra.0
+1608 11137938 0 11137938 1 0 0 1
++2 33413814 11137938
+-2 11137938
++2 22275876 11137938 0 0 1091111 0 0 13
++3 11137938 11137938 0 0 340276 0 0 1
++1 22275876 11137938
++2 44551752 22275876 0 1 559726 0 1 1
+-3 11137938 11137938
++6 11137938 0 11137938
++1 11137938 0 11137938
++1 48543318 8755814 0 0 390829 0 0 3
++2 11982978 5991489 0 0 90001 0 0 1
++1 17974467 11982978
++3 11982978 5991489 0 0 516246 0 0 4
++14 5991489 0 5991489
++1 5991489 0 5991489 1 0 0 1
++3 22275876 22275876
+
+fn=(18) _int_malloc
+3846 66208670 6018970 42132790 2 0 160277 2 0 3
+1326 12037940
++19 36113820
+3887 12037940
+1794 6018970 6018970 0 2 0 0 1
+3914 12037940
++63 12037940 0 0 1 0 0 1
++62 41708622 0 0 2 0 0 2
++1 18056907 6018969
++20 6018969 6018969
+-1 6018969
+-1 6018969
++1 12037938 0 6018969 0 0 160275 0 0 1
++1 12037938 6018969
+-2 12037938 6018969 0 1 0 0 1
++12 30094845 6018969 6018969 0 1 0 0 1
+-1 11521876 0 5760938
++4 11521876 5760938 0 0 1 0 0 1
++1 5760938
++2 11521876
+-3 5929836 2964918
++1 2964918
++2 5929836
++1 26177568 8725856 0 1 1 0 1 1
++2 8725856 8725856 0 0 1 0 0 1
++1 34903424
++2 34903424 8725856
+-10 8725856 8725856
++12 17451712 8725856 0 1 0 0 1
++1 17451712 8725856
++2 17451712
++11 28613588
++29 8725856 0 8725856
++1 8725856 0 8725856
++4 17451712
++29 16551712 0 0 1 0 0 1
++8 41421881 0 1129681
++1 1129681
++1 1129681 1129681 0 0 160274 0 0 1
+-1 1129681
++4 2259362
+-4 4932081 0 0 1 0 0 1
++1 4932081 4932081 0 0 269999
+-1 4932081
++4 9864162
++5 250275 250275
+-2 250275
++2 750825 250275
++1 500550
++7 180000 180000
+-1 720000 0 180000 1 0 0 1
++2 540000 0 360000
+3980 1 0 0 1 0 0 1
++2 1 1 0 0 1 0 0 1
+-2 1
++2 2
++2 1 1 0 0 1 0 0 1
++1 2 1 0 0 1 0 0 1
++6 1 0 0 1 0 0 1
+-4 1 0 1 0 0 1 0 0 1
++1 1 0 1
++1 1 0 1
++2 2
++7 4 2
+-1 2
++1 2 1 0 1 0 0 1
++5 8 2
++1 4
++2 2
+4134 450000 0 0 225 0 0 1
++1 450000
+-1 450000 0 450000
++1 900000
+-14 450000
++19 900000
+1985 1350000 450000
+4487 72227640 54170730 0 2 0 0 2
+1985 1 1
+4020 1
+1985 2
+4163 4428188 0 2214094 1 0 0 1
++1 6642282
++1 2214094 2214094 0 0 270005 0 0 5
+-1 2214094
++57 4428188 2214094
++9 2214094 0 2214094
+-9 4428188
++9 2214094 2214094
+-9 6642282 0 2214094 1 0 1 1 0 1
++1 2214094 0 2214094
++1 2214094 0 2214094
++1 2214094 0 2214094 0 0 372398 0 0 6
++1 2214094 0 2214094
++6 4428188
+-10 12123524 6061762
++9 6061762 0 6061762
+-9 12123524
++9 6061762 6061762
+-9 18185286 0 6061762
++1 6061762 0 6061762
++1 6061762 0 6061762
++1 6061762 0 6061762
++1 6061762 0 6061762
++6 12123524
+4070 24827568 8275856 0 1 0 0 1
+4246 10621876
++11 16706907
++2 16706907
++3 5568969 5568969 0 0 360003 0 0 2
+-3 5568969
++3 11137938
++1 6080620 300826 0 1 70276 0 1 1
++71 16436904
+-4 5478968
++1 5478968
++1 5478968
+-1 5478968
++1 5478968
++1 10957936 5478968
++1 16436904
++5 31121017 0 0 1 0 0 1
++16 48557611
++2 97115222
+-4 117630546
++8 10257662 10257662 0 0 981384 0 0 9
++3 20515324
++2 4778694
++1 4778694
++1 4778694
+-2 19114776 0 4778694
+-27 4778694
+-99 33103424 8275856 8275856 1 0 0 1
+-79 3180155 0 0 1 0 0 1
++8 15900775 0 3180155 2 0 0 1
+4008 1 1
++1 1 0 1 0 0 1 0 0 1
++1 2
+3159 1 0 0 1 0 0 1
+4012 1 0 1
+3167 1
+-8 1 0 1
++4 1 1 0 0 1
+4013 1 0 1
+3163 1 0 1
++2 4 1 1 0 1 0 0 1
++1 1 1
++2 1
+-2 1 0 1 1 0 0 1
++1 1 0 1
++1 1
+4218 5811487 0 0 1 0 0 1
+-48 5811487
++48 17434461 0 5811487
+4343 1044093
++3 1392124 348031
+4070 1 0 0 1 0 0 1
+-91 6
+4169 12592654 0 930825 1 0 0 1
++23 210825 70275 0 1 0 0 1
++1 140550
++6 70275
++13 70275 70275
++1 140550 70275
+-44 8211004 0 821100 2 0 0 2
++33 140550 70275
+-33 11 0 1 2 0 0 2
+4343 348031
++5 1392124
++1 696062
++24 21915872 5478968 0 0 860559 0 0 11
++3 10957936
++2 5478968 0 0 1 0 0 1
++3 10957936 0 5478968
+-3 10957936 0 5478968
++3 5478968 0 5478968 0 0 320551 0 0 2
+cfn=(20)
+calls=5478968 1608 
+* 180805944 76705552 27394840 0 2185943 0 0 22
++3 21915872 10957936
++15 10957936 5478968
+-5 5478968
++5 10957936
++1 10957936 5478968 0 1 0 0 1
++3 5478968 0 5478968 0 0 2433382 0 0 32
++1 5478968 0 5478968
++1 5478968 0 5478968
++3 10957936
++2 10957936
++2 6373688 0 3186844 0 0 503958 0 0 6
++3 25494752 0 3186844
++2 9560532 0 3186844 0 0 342858 0 0 5
++1 3186844 0 3186844
+1985 3186844 3186844
+4421 3186844
+1985 6373688
+4415 18336992 0 2292124 1 0 0 1
++2 6876372 0 2292124 0 0 270004 0 0 4
++1 2292124 0 2292124
+1985 2292124 2292124
+4421 2292124
+1985 4584248
+4460 270003 0 90001 2 0 0 1
+cfn=(22) alloc_perturb
+calls=90001 1985 
+* 360004 180002 0 1 0 0 1
++1 90001
+-2 180002
+4266 90001 90001 0 133 0 0 1
++1 540006 90001
++6 180002 90001 0 226 0 0 1
++5 90001
++1 180002 0 90001
+-1 180002 0 90001
++1 90001 0 90001 0 0 1 0 0 1
+cfn=(20)
+calls=90001 1608 
+* 2970033 1260014 450005 3 11970 0 3 1
++3 360004 180002
++13 180002 90001 0 226 0 0 1
+-4 90001
++4 180002
++1 180002 90001
++3 90001 0 90001 0 0 2099 0 0 1
++1 90001 0 90001
++1 90001 0 90001
++1 180002
++2 2 0 1 0 0 1 0 0 1
++3 8 0 1 1 0 0 1
++2 3 0 1
++1 1 0 1
++3 1
+-6 720000 0 90000 225
++2 270000 0 90000 0 0 2037
++1 90000 0 90000
++3 90000
+
+fn=(22)
+1985 270003 90001 0 1 0 0 1
++2 90001 90001
+
+fn=(16) malloc
+3294 58664512 0 29332256 1 0 0 1
++7 14666128 7333064 0 0 1 0 0 1
+1326 14666128
++19 36665320 0 0 1 0 0 1
+3311 14666128
++2 29332256 14666128 0 0 2 0 0 2
++3 14666128 7333064 0 0 1 0 0 1
++10 11497940 5748970 0 1 1 0 1 1
++8 45991760 11497940 5748970 0 0 1 0 0 1
++2 17246910 0 5748970 0 0 2 0 0 2
+cfn=(18)
+calls=5748970 3846 
+* 1899148718 319829289 226962830 1082 4830145 4297785 48 57 61
++3 11497940
++8 22995880 5748970 5748970 1 0 0 1
++4 17246910 5748970
+fi=(9) ./malloc/./malloc/arena.c
+153 17246910
+fe=(8)
+3351 11497940 0 0 1 0 0 1
++3 34493820 28744850
+-36 4752285 1584095 0 1 180001 0 1 2
+3178 3168188 1584094 0 0 270002 0 0 3
++4 3168188
++4 1584094
++4 1584094
+-4 4752282 1584094 1584094 1 810012 0 1 11
++4 1584094 0 1584094
++1 1584094 0 1584094
+3354 9504564 7920470
+
+fn=(218) calloc
+3699 540000 0 270000 1 0 0 1
++10 270000
+-10 1890000 0 1350000
++10 2160000 0 0 1 0 0 1
++8 540000 270000
++3 810000 540000
++2 540000 270000 0 1 0 0 1
++3 2160000 540000 270000
++7 270000 270000
++8 270000
+-7 540000 270000 0 0 79739 0 0 1
++7 540000 0 0 1 0 0 1
++14 810000 0 270000
+cfn=(18)
+calls=270000 +92 
+* 80730000 13950000 9450000 0 340277 270059 0 3 4
++2 1890000 270000 0 1 0 0 1
+fi=(9)
+153 540000
+fe=(8)
+3769 1080000 270000 270000 1 0 0 1
++15 270000 270000
++3 1080000
++9 270000 270000
+-12 270000
++12 540000
++3 1350000
++8 270000 0 0 1 0 0 1
++2 540000
++2 540000
+-55 810000 0 0 2 0 0 1
++3 540000 270000 0 225 0 0 1
++78 270000 0 0 225 0 0 1
+fi=(93) ./malloc/../string/bits/string_fortified.h
+59 540000
+fe=(8)
+3837 1620000 1620000
+fi=(93)
+59 270000
+cob=(4)
+cfi=(6)
+cfn=(220) 0x00000000049a1740
+calls=270000 -59 
+* 880830000 810000 871200000 137 109727 14760023 5 2 164
+fe=(8)
+
+fn=(264)
+4665 30094845 0 24075876 1 0 70275 1
++1 6018969
+-1 18056907 0 12037938
++5 36113814 6018969
++3 12037938 6018969 0 1 0 0 1
++5 18056907 6018969 0 0 230551
++3 12037938
++1 12037938
++1 12037938 6018969
+1992 18056907 6018969
+4689 12037938 6018969 0 1 0 0 1
++2 668581 668581
++2 668581
+-1 668581
++2 2674324 668581
++2 1337162 0 668581
+cfn=(20)
+calls=668581 1608 
+* 16045944 6685810 2005743
++18 12037938 6018969
++6 12037938 6018969 0 0 379726
++4 1118581 0 1118581
++9 1118581 1118581 0 1 0 0 1
+-1 1118581
++1 3355743
++1 2237162 1118581
+-1 4900388 4900388
+-1 4900388
++1 14701164
++1 9800776 4900388
++2 6018969 0 6018969 0 0 160275
++2 12037938
++5 6018969 0 6018969
++1 6018969 0 6018969
++2 18056907 0 6018969
++1 6018969 0 6018969
+-45 6018969
+-1 12037938
++1 36113814 36113814
+-1 6018969
+cfn=(266)
+calls=6018969 +69 
+* 148775268 61629694 42132783 6 180000 0 4 1
++39 18056907 0 6018969 1 0 281100 1
+-19 4900388 0 0 1 0 0 1
++1 4900388
+-1 4900388 0 4900388
+cfn=(20)
+calls=4900388 1608 
+* 114265620 48311836 15546204 0 790276
++1 4900388
+
+fn=(258) free
+3359 7603063 0 0 1 0 0 1
++4 15206126
+-4 22809189 0 15206126 1 0 0 1
++14 7603063
+-14 22809189 0 15206126
++12 7603063 7603063 0 0 250276 0 0 1
++4 7603063 7603063 0 0 1383301
+-4 7603063 7603063 0 0 340276 0 0 1
++4 15206126
++17 22809189 15206126
+fi=(9)
+153 22809189
+fe=(8)
+3398 22809189 0 7603063 1 0 0 1
+cfn=(262)
+calls=7603063 4495 
+* 1101603612 316276013 193405443 21 1850554 581925 19 2
++3 7603063 0 7603063
++1 45618378 38015315
+
+fl=(15)
+fn=(54)
+31 681 0 0 173 0 0 1
++1 681 681
++1 1362 681 0 0 228 0 0 4
++4 1362
++2 1362
++3 2724 0 681
+fi=(16) ./nptl/../nptl/descr.h
+439 1362 0 0 226 0 0 1
+fe=(15)
+45 1362
++11 1362 681
+
+fn=(58)
+63 678 0 0 226 0 0 1
++3 2034 678
++5 2034 1356
++3 678
++2 678
+-2 678
++2 1356 0 678 1 0 0 1
++7 2034
+
+fl=(26)
+fn=(134)
+25 3 0 0 1 0 0 1
++3 3 0 3
++1 3 0 3
++1 6 3 3 1 0 0 1
++2 3 0 3
++1 3 3
+
+fl=(71) ./misc/../sysdeps/unix/sysv/linux/writev.c
+fn=(590) writev
+25 1 0 0 1 0 0 1
++1 2 1
+-1 6 0 4
++1 1 0 1
+cfi=(15)
+cfn=(54)
+calls=1 +5 
+* 18 3 1
+* 11 3 2 1 0 0 1
+cfi=(15)
+cfn=(58)
+calls=1 +37 
+* 15 3 1
+* 1 1
++1 2 2
+
+fl=(22) ./nptl/./nptl/pthread_mutex_lock.c
+fn=(124) pthread_mutex_lock@@GLIBC_2.2.5
+77 3 0 0 1 0 0 1
++3 9 3
++2 3
++2 6 0 0 1 0 0 1
+-7 12 0 6
++11 6
++2 9 3
+-46 3 3
++1 12 3
++3 12 0 3 1 0 0 1
++46 9 3
++85 3 3 0 0 3 0 0 3
++3 3 0 3
++2 3 0 3
++3 3
+-63 3
++66 9 9
+
+fl=(74)
+fn=(646)
+78 11 1 5 2 0 0 2
++6 4 2 0 0 1 0 0 1
+fi=(13)
+1025 3
++1 2
+fe=(74)
+84 3 1 1 1 1 0 1 1
+cfi=(11)
+cfn=(648)
+calls=1 1147 
+* 9 2 0 3 0 0 3
+* 2
++2 4 1
++11 4 1
++4 2 0 1
+cob=(4)
+cfi=(6)
+cfn=(514)
+calls=1 0 
+* 49 14 7 0 2 0 0 2
+* 1
++1 2
++2 4 0 1 1 0 0 1
+cfi=(12)
+cfn=(634)
+calls=1 329 
+* 29 8 8
++1 1
++1 9 7
+-15 1 1 0 1 0 0 1
+fi=(94) ./libio/../include/sys/sysmacros.h
+-44 6
+fe=(74)
++44 1
+-2 2 0 0 1 0 0 1
++5 2 0 1
+
+fl=(69) ./string/../sysdeps/x86_64/multiarch/strchr-avx2.S
+fn=(540) __strchr_avx2
+53 1 0 0 1 0 0 1
++2 1
++1 1
++1 1
++1 1
++1 1
++3 1
++1 1 0 0 1 0 0 1
++4 1 1
++1 1
++1 1
++1 1
++1 1
++1 1
++1 1
++1 1
++3 1 1
++8 1
++8 1
++1 2 1
+
+fl=(14)
+fn=(52)
+25 676 0 0 226 0 0 1
++1 1352 676
+-1 4056 0 2704 226 0 1 1 0 1
++1 676 0 676 0 0 1 0 0 1
+cfi=(15)
+cfn=(54)
+calls=676 +5 
+* 12168 2028 676 398 225 0 2 1
+* 7436 2028 1352
+cfi=(15)
+cfn=(58)
+calls=676 +37 
+* 10140 2028 676 226 0 0 2
+* 676 676
++1 1352 1352
+
+fl=(66)
+fn=(528)
+54 2
++1 2 2
++2 4 2 2
++2 2 2
++1 6 2 0 1 0 0 1
++11 2 2
+
+fn=(526)
+24 2 0 0 1 0 0 1
++1 2 2
++2 4 2 2 0 1 0 0 1
++2 4 2 0 0 1
++3 4
++14 6 0 2 1 0 0 1
++2 2 0 2
++1 2 2
+
+fl=(20) ./posix/../sysdeps/unix/syscall-template.S
+fn=(118) sched_yield
+120 6 0 0 1 0 0 1
++2 3 3 0 0 3 0 0 3
+
+ob=(43) /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33
+fl=(7) ???
+fn=(12) operator new(unsigned long)
+0 22 0 6 3 0 1 2 0 1
+cob=(4)
+cfi=(6)
+cfn=(14) 0x0000000024643210
+calls=2 0 
+0 1302 234 177 33 13 9 32 13 8
+0 10 6
+
+fn=(146) __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::sync()
+0 675 225 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(148) 0x00000000246464b0
+calls=225 0 
+0 16650 5850 2700 9 225 0 9 1
+
+fn=(64) std::ostream::operator<<(int)
+0 2497 681 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(66) 0x00000000246434c0
+calls=227 0 
+0 128322 33704 19858 1626 2716 6 42 20 6
+
+fn=(84) 0x0000000000142070
+0 2043 227 1362 5 226 0 2 1
+cob=(4)
+cfi=(6)
+cfn=(86) 0x0000000024643800
+calls=227 0 
+0 1816 681 0 4 450 0 3 2
+0 2951 2043 0 0 451 0 0 2
+
+fn=(578) std::__basic_file<char>::xsputn_2(char const*, long, char const*, long)
+0 19 1 10 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(580) 0x00000000246430d0
+calls=1 0 
+0 14 6 0 3 2 0 3 2
+0 14 1 6 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(588) 0x0000000024645750
+calls=1 0 
+0 59 14 9 3 0 0 3
+0 16 9 0 1 0 0 1
+
+fn=(602) std::basic_filebuf<char, std::char_traits<char> >::_M_destroy_internal_buffer()
+0 12 2 3 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(604) 0x0000000024642230
+calls=1 0 
+0 211 62 36 5 3 0 5 3
+0 12 4 5 1 0 0 1
+
+fn=(34) __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::xsputn(char const*, long)
+0 2706 451 0 2 226 0 1 2
+cob=(4)
+cfi=(6)
+cfn=(36) 0x0000000024645d00
+calls=451 0 
+0 135257 35845 20430 1822 2034 4 50 16 4
+
+fn=(144) std::ostream::flush()
+0 3825 900 1125 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(30) 0x0000000024646360
+calls=225 0 
+0 5400 2025 1350
+0 1575 1350 225 1 225 0 1 1
+cfn=(146)
+calls=225 0 
+0 17325 6075 2700 10 225 0 10 1
+0 3825 2250 0 1 0 0 1
+
+fn=(72) std::ctype<char>::_M_widen_init() const
+0 741 53 40 11 4 5 11 4 5
+cob=(4)
+cfi=(6)
+cfn=(74) 0x0000000024645620
+calls=1 0 
+0 49 18 0 5 1 0 5 1
+0 13 7 1
+
+fn=(486) std::basic_filebuf<char, std::char_traits<char> >::basic_filebuf()
+0 17 1 10 2 1 0 2 1
+cob=(4)
+cfi=(6)
+cfn=(446) 0x00000000246438d0
+calls=1 0 
+0 46 16 9
+0 10 1 5 1 0 1 1 0 1
+cob=(4)
+cfi=(6)
+cfn=(488) 0x0000000024645f80
+calls=1 0 
+0 6 2 2 2 1 0 2 1
+0 15 1 13 2 1 1 2 1 1
+cob=(4)
+cfi=(6)
+cfn=(86)
+calls=1 0 
+0 8 3 0 0 1 0 0 1
+0 8 6 1
+
+fn=(566) std::basic_filebuf<char, std::char_traits<char> >::overflow(int)
+0 53 14 10 7 0 0 7
+
+fn=(672) std::ios_base::_M_dispose_callbacks()
+0 18 6 5 1 0 0 1
+
+fn=(32) std::ostream::sentry::sentry(std::ostream&)
+0 19954 7256 5442 3 678 0 3 5
+
+fn=(88) std::locale::id::_M_id() const
+0 1404 468 0 2 228 0 2 3
+
+fn=(468) std::ios_base::_M_init()
+0 30 4 14 2 1 1 2 1
+cob=(4)
+cfi=(6)
+cfn=(446)
+calls=2 0 
+0 92 32 18
+0 6 0 2
+cob=(4)
+cfi=(6)
+cfn=(470) 0x00000000246449c0
+calls=2 0 
+0 50 18 8 3 1 0 3 1
+0 4 0 2 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(474) 0x0000000024644ea0
+calls=2 0 
+0 28 12 4 3 1 0 3 1
+0 16 12
+
+fn=(574) std::ostream::write(char const*, long)
+0 17 1 7 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(30)
+calls=1 0 
+0 24 9 6
+0 9 6 1
+cfn=(558) std::basic_filebuf<char, std::char_traits<char> >::xsputn(char const*, long)
+calls=1 0 
+0 195 51 38 12 3 0 12 3
+0 19 12 0 1 0 0 1
+
+fn=(598) std::basic_filebuf<char, std::char_traits<char> >::_M_terminate_output()
+0 23 7 8 2 0 0 2
+cfn=(560) std::codecvt<char, char, __mbstate_t>::do_always_noconv() const
+calls=1 0 
+0 3 1
+0 15 9 0 1 0 0 1
+
+fn=(610) operator delete(void*)
+0 4 0 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(612) 0x0000000024643c60
+calls=2 0 
+0 427 128 74 3 5 0 1 1
+
+fn=(28) std::basic_ostream<char, std::char_traits<char> >& std::__ostream_insert<char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*, long)
+0 4332 228 2280 226 0 92 1
+cob=(4)
+cfi=(6)
+cfn=(30)
+calls=228 0 
+0 5472 2052 1368 4 904 0 4 6
+0 7524 4788 684 456 453 0 5 4
+cfn=(558)
+calls=2 0 
+0 284 77 43 18 6 0 18 4
+cfn=(34)
+calls=226 0 
+0 69563 18296 10305 1824 2260 3 51 18 3
+0 1140 456
+
+fn=(476) std::locale::~locale()
+0 48 20 8 2 0 0 2
+
+fn=(544) std::basic_filebuf<char, std::char_traits<char> >::_M_allocate_internal_buffer()
+0 15 6 3 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(546) 0x00000000246422a0
+calls=1 0 
+0 1014 171 137 5 2 1 3 2
+0 3 0 2
+
+fn=(558)
+0 85 20 30 2 2 0 2 1
+cfn=(560)
+calls=5 0 
+0 15 5 0 1 0 0 1
+0 76 22 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(576) 0x0000000024645e70
+calls=1 0 
+0 124 32 25 11 3 0 11 3
+0 50 26 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(562) 0x0000000024644a10
+calls=4 0 
+0 324 76 51 13 4 0 13 3
+0 17 3 6 1 0 0 1
+
+fn=(564) std::basic_streambuf<char, std::char_traits<char> >::xsputn(char const*, long)
+0 126 10 28 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(568) 0x0000000024646260
+calls=4 0 
+0 77 16 8 2 1 0 2 1
+0 55 32 5 1 2 0 1 1
+cfn=(566)
+calls=1 0 
+0 53 14 10 7 0 0 7
+0 5
+
+fn=(594) std::basic_filebuf<char, std::char_traits<char> >::close()
+0 26 2 12 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(496) 0x00000000246454f0
+calls=2 0 
+0 12 6
+0 7 0 2
+cob=(4)
+cfi=(6)
+cfn=(596) 0x0000000024643c20
+calls=1 0 
+0 43 18 8 4 1 0 4 1
+0 5 0 3 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(600) 0x0000000024643e60
+calls=1 0 
+0 237 69 44 8 4 0 8 4
+0 15 2 8 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(614) 0x0000000024645a20
+calls=1 0 
+0 466 138 85 40 8 0 40 6
+0 26 14 0 1 0 0 1
+
+fn=(606) operator delete[](void*)
+0 2 0 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(608) 0x0000000024643430
+calls=1 0 
+0 207 61 36 3 2 0 3 2
+
+fn=(94) 0x0000000000146900
+0 10973 800 573 2 226 0 2 1
+
+fn=(108) __gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >::overflow(int)
+0 1575 225 0 398 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(110) 0x0000000024644b60
+calls=225 0 
+0 60525 16875 9900 1927 225 0 14 1
+
+fn=(450) 0x00000000000e98b0
+0 36 8 8 2 1 0 2
+cob=(4)
+cfi=(6)
+cfn=(454) 0x0000000024643790
+calls=4 0 
+0 32 12 0 2 2 0 2 2
+0 20 12
+
+fn=(504) 0x00000000000f8e30
+0 9 2 0 3 1 0 3 1
+
+fn=(560)
+0 18 6 0 1 0 0 1
+
+fn=(676) operator delete(void*, unsigned long)
+0 2
+cob=(4)
+cfi=(6)
+cfn=(608)
+calls=1 0 
+0 228 69 38 2 4
+
+fn=(480) std::basic_ios<char, std::char_traits<char> >::_M_cache_locale(std::locale const&)
+0 18 2 8 1 1 0 1 1
+cob=(4)
+cfi=(6)
+cfn=(86)
+calls=2 0 
+0 16 6 0 0 2 0 0 1
+0 14 8 4 1 3 0 1 2
+cob=(4)
+cfi=(6)
+cfn=(86)
+calls=2 0 
+0 16 6 0 0 1
+0 14 8 4 1 2 0 1 2
+cob=(4)
+cfi=(6)
+cfn=(86)
+calls=2 0 
+0 16 6
+0 18 14 2
+
+fn=(664) std::ios_base::~ios_base()
+0 11 1 4 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(666) 0x00000000246444d0
+calls=1 0 
+0 18 7 4 3 1 0 3 1
+0 2 0 1
+cob=(4)
+cfi=(6)
+cfn=(670) 0x0000000024642870
+calls=1 0 
+0 20 7 5 2 1 0 2 1
+0 8 3 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(474)
+calls=1 0 
+0 14 6 2
+
+fn=(106) std::ostream::put(char)
+0 3390 226 1356 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(30)
+calls=226 0 
+0 5424 2034 1356
+0 6101 4292 227 3 0 0 3
+cfn=(108)
+calls=225 0 
+0 62100 17100 9900 2325 225 0 16 1
+0 450
+
+fn=(448) std::locale::locale()
+0 40 0 24 1 0 0 1
+cfn=(450)
+calls=4 0 
+0 88 32 8 4 3 0 4 2
+0 48 28 4 2 0 0 2
+
+fn=(464) std::basic_ios<char, std::char_traits<char> >::init(std::basic_streambuf<char, std::char_traits<char> >*)
+0 16 0 8 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(466) 0x0000000024645780
+calls=2 0 
+0 230 80 48 10 4 1 10 4
+0 6 0 2 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(478) 0x0000000024645920
+calls=2 0 
+0 116 52 18 4 10 0 4 7
+0 26 8 10
+
+fn=(494) std::basic_filebuf<char, std::char_traits<char> >::open(char const*, std::_Ios_Openmode)
+0 13 0 6 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(496)
+calls=1 0 
+0 6 3 0 1 1 0 1 1
+0 7 0 1
+cob=(4)
+cfi=(6)
+cfn=(500) 0x0000000024643240
+calls=1 0 
+0 585 141 131 52 12 6 50 9 6
+0 2 0 1
+cob=(4)
+cfi=(6)
+cfn=(496)
+calls=1 0 
+0 6 3
+0 4 0 1 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(542) 0x0000000024642dc0
+calls=1 0 
+0 1034 178 142 8 3 1 6 3
+0 23 8 8 1 0 0 1
+
+fn=(498) std::__basic_file<char>::is_open() const
+0 32 16
+
+fn=(548) operator new[](unsigned long)
+0 2 0 0 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(550) 0x0000000024642cc0
+calls=1 0 
+0 1010 170 137 3 1 1 1 1
+
+fn=(554) std::basic_ios<char, std::char_traits<char> >::clear(std::_Ios_Iostate)
+0 7 3 1 2 0 0 2
+
+fn=(582) std::__basic_file<char>::fd()
+0 3 1
+cob=(4)
+cfi=(6)
+cfn=(584) 0x00000000246425c0
+calls=1 0 
+0 9 4 0 2 1 0 2 1
+
+fn=(68) std::ostream& std::ostream::_M_insert<long>(long)
+0 3859 227 1816 2 0 0 2
+cob=(4)
+cfi=(6)
+cfn=(30)
+calls=227 0 
+0 5448 2043 1362
+0 4745 2035 225 1 673 0 1 1
+cfn=(78) std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::do_put(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, long) const
+calls=225 0 
+0 107640 25940 16288 1570 1792
+0 20 6 2 2 3 0 1 2
+cfn=(78)
+calls=2 0 
+0 774 180 117 26 13 1 16 8 1
+0 4570 2963 7 4 2 0 3 1
+cob=(4)
+cfi=(6)
+cfn=(70) 0x0000000024643fc0
+calls=1 0 
+0 805 79 41 17 6 5 17 6 5
+0 7 4 0 1 1 0 1 1
+
+fn=(422) __cxa_guard_acquire
+0 40 12 6 1 1 0 1 1
+
+fn=(444) std::ios_base::ios_base()
+0 60 1 24 3 1 4 3 1 4
+cob=(4)
+cfi=(6)
+cfn=(446)
+calls=1 0 
+0 46 16 9 8 4 0 8 3
+
+fn=(490) std::__basic_file<char>::__basic_file(pthread_mutex_t*)
+0 4 1 2 1 0 0 1
+
+fn=(502) std::__basic_file<char>::open(char const*, std::_Ios_Openmode, int)
+0 10 0 5 2 0 0 2
+cfn=(504)
+calls=1 0 
+0 9 2 0 3 1 0 3 1
+0 6 0 1
+cob=(4)
+cfi=(6)
+cfn=(496)
+calls=1 0 
+0 6 3
+0 5 0 1
+cob=(4)
+cfi=(6)
+cfn=(510) 0x0000000024643220
+calls=1 0 
+0 536 130 122 45 10 6 43 8 6
+0 11 5 2 1 0 0 1
+
+fn=(668) std::ios_base::_M_call_callbacks(std::ios_base::event)
+0 16 6 4 2 0 0 2
+
+fn=(78)
+0 681 0 0 226 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(80) 0x0000000024644c20
+calls=227 0 
+0 107733 26120 16405 1370 1805 1 15 8 1
+
+fn=(82) std::ostreambuf_iterator<char, std::char_traits<char> > std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<long>(std::ostreambuf_iterator<char, std::char_traits<char> >, std::ios_base&, char, long) const
+0 4313 227 2270 3 0 0 2
+cfn=(84)
+calls=227 0 
+0 6810 2951 1362 9 1127 0 5 5
+0 6583 227 1362 452 0 0 2
+cfn=(94)
+calls=227 0 
+0 10973 800 573 2 226 0 2 1
+0 6356 1589 681 452 226 0 2 1
+cfn=(558)
+calls=2 0 
+0 212 56 32
+cfn=(34)
+calls=225 0 
+0 68400 18000 10125 0 0 1 0 0 1
+0 3632 2043 0 226 0 0 1
+
+fn=(426) __cxa_guard_release
+0 18 8 2 1 0 0 1
+
+fn=(472) std::locale::operator=(std::locale const&)
+0 46 16 8 2 0 0 2
+
+fn=(616) std::__basic_file<char>::close()
+0 14 0 6 1 0 0 1
+cob=(4)
+cfi=(6)
+cfn=(496)
+calls=2 0 
+0 12 6
+0 12 5 1
+cob=(4)
+cfi=(6)
+cfn=(618) 0x00000000246457b0
+calls=1 0 
+0 438 129 80 37 7 0 37 5
+0 7 3 1 1 0 0 1
+
+fn=(656) std::__basic_file<char>::~__basic_file()
+0 4 0 2
+cob=(4)
+cfi=(6)
+cfn=(614)
+calls=1 0 
+0 21 7 3
+0 2 2
+
+ob=(4)
+fl=(6)
+fn=(36)
+0 902 451 0 226 226 0 1 1
+cob=(3)
+cfi=(10)
+cfn=(38)
+calls=451 31 
+0 134355 35394 20430 1596 1808 4 49 15 4
+
+fn=(80)
+0 454 227 0 226 226 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(82)
+calls=227 0 
+0 107279 25893 16405 1144 1579 1 14 7 1
+
+fn=(466)
+0 4 2 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(468)
+calls=2 0 
+0 226 78 48 9 3 1 9 3
+
+fn=(552)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(554)
+calls=1 0 
+0 7 3 1 2 0 0 2
+
+fn=(614)
+0 4 2 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(616)
+calls=2 0 
+0 483 143 88 39 7 0 39 5
+
+fn=(662)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(664)
+calls=1 0 
+0 73 24 16 8 2 0 8 2
+
+fn=(86)
+0 468 234 0 2 226 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(88)
+calls=234 0 
+0 1404 468 0 2 228 0 2 3
+
+fn=(442)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(444)
+calls=1 0 
+0 106 17 33 11 5 4 11 4 4
+
+fn=(538)
+0 2 1 0 1 1 0 1 1
+cob=(3)
+cfi=(69)
+cfn=(540)
+calls=1 53 
+0 21 3 0 2 0 0 2
+
+fn=(568)
+0 8 4 0 1 1 0 1 1
+cob=(3)
+cfi=(59)
+cfn=(404)
+calls=4 255 
+0 69 12 8 1 0 0 1
+
+fn=(576)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(578)
+calls=1 0 
+0 122 31 25 10 2 0 10 2
+
+fn=(596)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(598)
+calls=1 0 
+0 41 17 8 3 0 0 3
+
+fn=(670)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(672)
+calls=1 0 
+0 18 6 5 1 0 0 1
+
+fn=(66)
+0 454 227 0 3 226 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(68)
+calls=227 0 
+0 127868 33477 19858 1623 2490 6 41 19 6
+
+fn=(70)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(72)
+calls=1 0 
+0 803 78 41 16 5 5 16 5 5
+
+fn=(600)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(602)
+calls=1 0 
+0 235 68 44 7 3 0 7 3
+
+fn=(10)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(12)
+calls=1 0 
+0 326 71 46 34 13 9 34 13 9
+
+fn=(174)
+0 14666120 7333060 0 1 1 0 1 1
+cob=(3)
+cfi=(8)
+cfn=(16)
+calls=7333060 3294 
+0 2303871823 419323742 278294087 1057 6090150 4297779 24 63 56
+
+fn=(182)
+0 1620000 810000 0 1 90001 0 1 1
+cob=(604)
+cfi=(37)
+cfn=(184)
+calls=810000 401 
+0 8100000 3240000 2430000 2 450003 0 2 8
+
+fn=(478)
+0 4 2 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(480)
+calls=2 0 
+0 112 50 18 3 9 0 3 6
+
+fn=(612)
+0 4 2 0 1 1 0 1 1
+cob=(3)
+cfi=(8)
+cfn=(258)
+calls=2 3359 
+0 423 126 74 2 4
+
+fn=(618)
+0 2 1
+cob=(3)
+cfi=(72)
+cfn=(620)
+calls=1 34 
+0 436 128 80 37 7 0 37 5
+
+fn=(660)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(476)
+calls=1 0 
+0 12 5 2
+
+fn=(26)
+0 456 228 0 1 226 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(28)
+calls=228 0 
+0 88315 25897 14680 2528 3623 95 79 32 3
+
+fn=(30)
+0 1814 907 0 1 226 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(32)
+calls=907 0 
+0 19954 7256 5442 3 678 0 3 5
+
+fn=(148)
+0 450 225 0 1 225 0 1 1
+cob=(3)
+cfi=(29)
+cfn=(150)
+calls=225 32 
+0 16200 5625 2700 8 0 0 8
+
+fn=(14)
+0 4 2 0 1 1 0 1 1
+cob=(3)
+cfi=(8)
+cfn=(16)
+calls=2 3294 
+0 1298 232 177 32 12 9 31 12 8
+
+fn=(104)
+0 452 226 0 226 226 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(106)
+calls=226 0 
+0 77465 23652 12839 2330 225 0 21 1
+
+fn=(514)
+0 4 2 0 1 1 0 1 1
+cob=(3)
+cfi=(8)
+cfn=(16)
+calls=2 3294 
+0 90 24 14 0 3 0 0 3
+0 4 2 0 1 1 0 1 1
+
+fn=(580)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(582)
+calls=1 0 
+0 12 5 0 2 1 0 2 1
+
+fn=(588)
+0 2 1 0 1 0 0 1
+cob=(3)
+cfi=(71)
+cfn=(590)
+calls=1 25 
+0 57 13 9 2 0 0 2
+
+fn=(592)
+0 4 2 0 1 0 0 1
+cob=(43)
+cfi=(7)
+cfn=(594)
+calls=2 0 
+0 837 249 162 57 13 0 57 11
+
+fn=(608)
+0 4 2 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(610)
+calls=2 0 
+0 431 128 74 4 5 0 2 1
+
+fn=(446)
+0 8 4 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(448)
+calls=4 0 
+0 176 60 36 7 3 0 7 2
+
+fn=(454)
+0 8 4 0 1 1 0 1 1
+cob=(3)
+cfi=(63)
+cfn=(456)
+calls=4 136 
+0 24 8 0 1 1 0 1 1
+
+fn=(470)
+0 4 2 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(472)
+calls=2 0 
+0 46 16 8 2 0 0 2
+
+fn=(484)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(486)
+calls=1 0 
+0 110 30 40 7 4 2 7 4 2
+
+fn=(496)
+0 14 7 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(498)
+calls=7 0 
+0 28 14
+
+fn=(604)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(606)
+calls=1 0 
+0 209 61 36 4 2 0 4 2
+
+fn=(62)
+0 454 227 0 2 226 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(64)
+calls=227 0 
+0 130819 34385 19858 1627 2716 6 43 20 6
+
+fn=(164)
+0 1154 577 0 219 571
+cob=(604)
+cfi=(31)
+cfn=(166)
+calls=577 397 
+0 4281917 609889 246379 452 45168 0 4 80
+
+fn=(220)
+0 540000 270000 0 1 90001 0 1 1
+cob=(3)
+cfi=(44)
+cfn=(222)
+calls=270000 158 
+0 880290000 540000 871200000 136 19726 14760023 4 1 164
+
+fn=(402)
+0 1429836 714918 0 0 90000
+cob=(3)
+cfi=(59)
+cfn=(404)
+calls=714918 255 
+0 1426222212 1367268752 1364983448 1238 13442351 24765161 9 1 202
+
+fn=(420)
+0 4 2
+cob=(43)
+cfi=(7)
+cfn=(422)
+calls=2 0 
+0 40 12 6 1 1 0 1 1
+
+fn=(474)
+0 6 3 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(476)
+calls=3 0 
+0 36 15 6 2 0 0 2
+
+fn=(488)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(490)
+calls=1 0 
+0 4 1 2 1 0 0 1
+
+fn=(500)
+0 2 1 0 1 1 0 1
+cob=(43)
+cfi=(7)
+cfn=(502)
+calls=1 0 
+0 583 140 131 51 11 6 49 9 6
+
+fn=(510)
+0 2 1
+cob=(3)
+cfi=(65)
+cfn=(512)
+calls=1 85 
+0 534 129 122 45 10 6 43 8 6
+
+fn=(542)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(544)
+calls=1 0 
+0 1032 177 142 7 2 1 5 2
+
+fn=(556)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(498)
+calls=1 0 
+0 4 2
+
+fn=(562)
+0 8 4 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(564)
+calls=4 0 
+0 316 72 51 12 3 0 12 2
+
+fn=(572)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(574)
+calls=1 0 
+0 264 79 52 15 3 0 15 3
+
+fn=(642)
+0 2 1 0 1 1 0 1 1
+cob=(3)
+cfi=(8)
+cfn=(258)
+calls=1 3359 
+0 85 25 14
+0 2 1 0 0 1 0 0 1
+
+fn=(666)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(668)
+calls=1 0 
+0 16 6 4 2 0 0 2
+
+fn=(674)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(676)
+calls=1 0 
+0 230 69 38 2 4
+
+fn=(142)
+0 450 225 0 1 225 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(144)
+calls=225 0 
+0 31950 12600 5400 13 450 0 13 2
+
+fn=(160)
+0 720000 360000 0 1 1 0 1 1
+cob=(604)
+cfi=(31)
+cfn=(162)
+calls=360000 453 
+0 15084802 2411043 1326956 674 225162 0 7 81
+
+fn=(216)
+0 540000 270000 0 1 90609 0 1 1
+cob=(3)
+cfi=(8)
+cfn=(218)
+calls=270000 3699 
+0 985590000 19890000 883080000 596 529743 15030082 15 6 168
+
+fn=(416)
+0 1620000 810000 0 225 90001 0 1 1
+cob=(604)
+cfi=(37)
+cfn=(418)
+calls=810000 393 
+0 13770000 4860000 5670000 1 270000 0 1
+
+fn=(424)
+0 4 2 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(426)
+calls=2 0 
+0 18 8 2 1 0 0 1
+
+fn=(492)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(494)
+calls=1 0 
+0 1680 333 290 65 16 7 61 13 6
+
+fn=(550)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(12)
+calls=1 0 
+0 1008 169 137 2 0 1
+
+fn=(584)
+0 2 1 0 1 1 0 1 1
+cob=(3)
+cfi=(70)
+cfn=(586)
+calls=1 32 
+0 7 3 0 1 0 0 1
+
+fn=(654)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(656)
+calls=1 0 
+0 27 9 5
+
+fn=(74)
+0 2 1 0 1 1 0 1 1
+cob=(3)
+cfi=(17)
+cfn=(76)
+calls=1 73 
+0 47 17 0 4 0 0 4
+
+fn=(110)
+0 450 225 0 225 225 0 1 1
+cob=(3)
+cfi=(19)
+cfn=(112)
+calls=225 25 
+0 60075 16650 9900 1702 0 0 13
+
+fn=(256)
+0 15206120 7603060 0 1 340276 0 1 1
+cob=(3)
+cfi=(8)
+cfn=(258)
+calls=7603060 3359 
+0 1337298057 392306492 239023733 22 3824403 581925 22 4
+
+fn=(462)
+0 4 2 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(464)
+calls=2 0 
+0 394 140 86 16 14 1 16 11
+
+fn=(546)
+0 2 1 0 1 1 0 1 1
+cob=(43)
+cfi=(7)
+cfn=(548)
+calls=1 0 
+0 1012 170 137 4 1 1 2 1
+
+ob=(7) /home/tudent/rayTracer/rtEnv/lib/python3.11/site-packages/numpy.libs/libopenblas64_p-r0-0cf96a72.3.23.dev.so
+fl=(21) ???
+fn=(120) blas_thread_server
+cob=(3)
+cfi=(20)
+cfn=(118)
+calls=3 122 
+0 9 3 0 1 3 0 1 3
+0 27 6 3 2 4 0 2 4
+cob=(3)
+cfi=(22)
+cfn=(124)
+calls=3 77 
+0 108 27 15 3 3 0 3 3
+0 3 3 0 1 1 0 1 1
+0 24 3 6
+cob=(3)
+cfi=(23)
+cfn=(128)
+calls=3 625 
+0 474 84 123 14 9 12 14 9 12
+0 3 3 0 1 1 0 1 1
+0 9 3 0 1 0 0 1
+
+totals: 25804774765 7745188276 5933343184 18354 161459646 260611507 744 696 6902

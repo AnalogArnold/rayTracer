@@ -1,3 +1,4 @@
+/*
 // STD header files
 #include <vector>
 #include <array>
@@ -151,3 +152,5 @@ void build_acceleration_structures(const std::vector <nanobind::ndarray<const in
     // Build TLAS - structure of BLASes. Target is BVH in itself, but use a vector to just contain them for now?
 
  } // SCENE (end of function)
+
+ */

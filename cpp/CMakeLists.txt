@@ -52,7 +52,7 @@ target_link_directories(rtmaincpp PRIVATE
     ${PYTHON_LIBRARY_DIR}
 )
 
-target_compile_options(rtmaincpp PRIVATE -O2)
+target_compile_options(rtmaincpp PRIVATE -O2 -fno-omit-frame-pointer)
 
 # Ensure the output is a proper Python extension
 if(WIN32)

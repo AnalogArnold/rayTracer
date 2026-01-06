@@ -1,3 +1,4 @@
+/*
 #pragma once
 
 #include <array>
@@ -34,6 +35,9 @@ inline void compute_triangle_centroid(int node_0,
     int node_2,
     const double* mesh_node_coords_ptr,
     std::array<double,3> &triangle_centroid);
+
+inline void compute_mesh_centroid_it(AABB_it mesh_aabb,
+    std::array<double,3>& mesh_centroid);
 
 // Bounding volume structure - axis-aligned bounding boxes (AABB_r)
 struct AABB {
@@ -98,11 +102,13 @@ struct AABB {
     }
 };
 
-// BVH node structure
+// BVH node structure, for both BLAS and TLAS
 struct BVH_Node {
     AABB bounding_box {}; // size 48
     unsigned int left_child_index; // right_child_index = left + 1, so no need to store that
 };
+
+
 
 
 struct MeshBLAS {
@@ -112,6 +118,34 @@ struct MeshBLAS {
     std::vector<unsigned int> leaf_triangle_count;
 
 };
+
+struct FrameTLAS{
+    std::vector<std::reference_wrapper<BVH_it>> mesh_blas; // Reference wrappers to avoid copying the BLASes themselves <- this might stay?
+    std::unique_ptr<TLAS_Node_it> root; // definitely change that
+    std::vector<int> blas_indices; // Indices to BLASes in the TLAS // change that. We may just rearrange references directly in mesh_blas vector instead? Would that work?
+};
+
+
+struct Bin {
+    // Bin for binning SAH
+    AABB bounding_box {};
+    int element_count {0};
+};
+
+// Binned Surface Area Heuristic (SAH) split
+bool binned_sah_split_it(BVH_Node& Node, // either TLAS or BLAS node
+    const std::vector<std::array<double,3>>& centroids, // BLAS: element centroids; TLAS: BLAS (mesh) centroids
+    const std::vector<AABB>& aabbs, // BLAS: element (e.g., triangle) AABBs; TLAS: BLAS (mesh) AABBs
+    const std::vector<int>& element_indices, // BLAS: element (e.g., triangle) indices; TLAS: BLAS (mesh) indices
+    unsigned int& out_split_axis,
+    double& out_split_position);
+
+
+ void build_bvh(BVH_Node& Root,
+    const std::vector<std::array<double,3>>& mesh_triangle_centroids, // Likely to be changed
+    const std::vector<AABB>& mesh_triangle_aabbs, // Likely to be changed
+    std::vector<int>& mesh_triangle_indices); // To be changed
+
 
 
 inline void process_element_data_tri3(int mesh_number_of_triangles,
@@ -124,3 +158,5 @@ inline void process_element_data_tri3(int mesh_number_of_triangles,
 void build_acceleration_structures(const std::vector <nanobind::ndarray<const int, nanobind::c_contig>>& scene_connectivity,
     const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords,
     const std::vector<nanobind::ndarray<const double, nanobind::c_contig>>& scene_face_colors);
+
+    */

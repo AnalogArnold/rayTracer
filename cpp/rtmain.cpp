@@ -6,6 +6,8 @@
 #include <iostream>
 #include <array>
 #include <vector>
+#include <chrono>
+#include <valgrind/callgrind.h>
 
 // nanobind header files
 #include <nanobind/nanobind.h>
@@ -32,14 +34,33 @@ void render_scene(const int image_height,
     const std::vector<nb::DRef<EiVector3d>> pixel_00_centers,
     const std::vector<nb::DRef<Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor>>> matrix_pixel_spacings) {
 
+    CALLGRIND_START_INSTRUMENTATION;
     size_t num_cameras = camera_centers.size();
 
-    //build_acceleration_structures_r(scene_connectivity, scene_coords, scene_face_colors);
-    //build_acceleration_structures(scene_connectivity, scene_coords, scene_face_colors);
-    build_acceleration_structures_it(scene_connectivity, scene_coords, scene_face_colors);
+    //std::chrono::time_point t1_r = std::chrono::high_resolution_clock::now();
+    //build_acceleration_structures_r(scene_connectivity, scene_coords, scene_face_colors); // recursive implementation with pointers
+    //std::chrono::time_point t2_r = std::chrono::high_resolution_clock::now();
+
+    //std::chrono::time_point t1_i = std::chrono::high_resolution_clock::now();
+    //  build_acceleration_structures_it(scene_connectivity, scene_coords, scene_face_colors); // stack-based implementation with pointers
+    //std::chrono::time_point t2_i = std::chrono::high_resolution_clock::now();
+
+    //std::chrono::time_point t1_d = std::chrono::high_resolution_clock::now();
+    //build_acceleration_structures(scene_connectivity, scene_coords, scene_face_colors); // target stack-based DoD implementation
+    //std::chrono::time_point t2_d = std::chrono::high_resolution_clock::now();
+    //std::chrono::duration t_r = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_r - t1_r);
+    //std::chrono::duration t_i = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_i - t1_i);
+    //std::chrono::duration t_d = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_d - t1_d);
+    //std::cout << "Recursive, pointer approach duration: " << t_r.count() << "ns \n";
+    //std::cout << "Iterative, pointer approach duration: " << t_i.count() << "ns \n";
+    //std::cout << "Iterative, DoD approach duration: " << t_d.count() << "ns \n";
+
+
+
+
 
    
-    /* // Comment out for preliminary testing of building BVHs
+     // Comment out for preliminary testing of building BVHs
     // Iterate over all cameras and render an image for each
     for (size_t camera_idx = 0; camera_idx < num_cameras; ++camera_idx) {
         EiVector3d camera_center = camera_centers[camera_idx];
@@ -48,7 +69,8 @@ void render_scene(const int image_height,
 
         render_ppm_image(camera_center, pixel_00_center, matrix_pixel_spacing, scene_connectivity, scene_coords, scene_face_colors, image_height, image_width, number_of_samples);
     }
-        */
+        
+    CALLGRIND_STOP_INSTRUMENTATION;
 }
 
 NB_MODULE(rtmaincpp, a) {
