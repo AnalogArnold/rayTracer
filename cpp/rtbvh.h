@@ -1,4 +1,3 @@
-/*
 #pragma once
 
 #include <array>
@@ -29,17 +28,19 @@ enum ElementNodeQuantity {
     HEX27 = 27
 };
 
-// Element centroid. Will need to update this/write separate functions for different element typs
+inline void shuffle_flat_connectivity(std::vector<int>& connectivity,
+                                      int old_element_index,
+                                      int new_element_index,
+                                      int number_of_nodes);
+
 inline void compute_triangle_centroid(int node_0,
     int node_1,
     int node_2,
     const double* mesh_node_coords_ptr,
     std::array<double,3> &triangle_centroid);
+    
 
-inline void compute_mesh_centroid_it(AABB_it mesh_aabb,
-    std::array<double,3>& mesh_centroid);
-
-// Bounding volume structure - axis-aligned bounding boxes (AABB_r)
+// Bounding volume structure - axis-aligned bounding boxes (AABB)
 struct AABB {
     double corner_min[3]{};
     double corner_max[3]{};
@@ -48,15 +49,9 @@ struct AABB {
         corner_min[0] = corner_min[1] = corner_min[2] = std::numeric_limits<double>::infinity();
         corner_max[0] = corner_max[1] = corner_max[2] = -std::numeric_limits<double>::infinity();
     }
-
-    // Note on comparisons in the expand functions:
-    // If any of the numbers is NaN, <, >, etc. will return false -> Box won't be overwritten with bad data
-    // Hence no checks like std::isnan or if in the for loops to avoid the function call and branching overhead
-
      // Used for building AABBs for all mesh triangles
     void expand_to_include_node(const int& node_id,
         const double* mesh_node_coords_ptr){
-        if (!mesh_node_coords_ptr) return;
         for (int i = 0; i < 3; ++i){
              double nodal_coordinate = mesh_node_coords_ptr[node_id * 3 + i];
              if (nodal_coordinate < corner_min[i]) corner_min[i] = nodal_coordinate;
@@ -80,49 +75,44 @@ struct AABB {
     }
 
     inline double find_axis_extent(int axis) const {
-        return std::max(0.0, corner_max[axis] - corner_min[axis]); // In case we somehow get a negative extent
+        return corner_max[axis] - corner_min[axis];
     }
-
     double find_surface_area() const {
-        double box_dims[3]; // height, width, depth of AABB
-        for (int i = 0; i < 3; ++i){
-            box_dims[i] = find_axis_extent(i);
-        return 2 * (box_dims[0] * box_dims[1] + box_dims[1] * box_dims[2] + box_dims[0] * box_dims[2]);
-        }
-    }
-
-    inline bool is_valid() const {
-        // Safety function in case it is needed (likely if there is all-NaN input data only)
-        for (int i = 0; i < 3; ++i){
-            if (std::isnan(corner_min[i]) || std::isnan(corner_max[i])) return false; // Check for NaN values
-            if (!std::isfinite(corner_min[i]) || !std::isfinite(corner_max[i])) return false; // Check for infinity
-            if (corner_min[i] > corner_max[i]) return false;  // Degenerate or empty
-        }
-        return true;
+        double height = find_axis_extent(2);
+        double width = find_axis_extent(1);
+        double depth = find_axis_extent(0);
+        return 2 * (height * width + width * depth + height * depth);
     }
 };
 
-// BVH node structure, for both BLAS and TLAS
+inline void compute_mesh_centroid_it(AABB mesh_aabb,
+    std::array<double,3>& mesh_centroid);
+
+// BVH node structure - naive implementation with pointers for now. Replace with indices once functional to save a few bytes
 struct BVH_Node {
-    AABB bounding_box {}; // size 48
-    unsigned int left_child_index; // right_child_index = left + 1, so no need to store that
+    AABB bounding_box {};
+    // Unique pointers to prevent memory leaks with raw pointers and new BVH_Node use
+    std::unique_ptr<BVH_Node> left_child;
+    std::unique_ptr<BVH_Node> right_child;
+    //BVH_Node* left_child {nullptr}; // Nullptr if leaf.
+    //BVH_Node* right_child {nullptr};
+    int min_triangle_idx;
+    int triangle_count;
 };
 
+AABB create_node_AABB_it(const std::vector<AABB>& mesh_triangle_abbs,
+    const std::vector<int>& mesh_triangle_indices,
+    const int node_min_triangle_idx,
+    const int node_triangle_count);
 
 
-
-struct MeshBLAS {
-    std::vector<AABB> mesh_aabbs;
-    std::vector<unsigned int> child_index;
-    std::vector<unsigned int> leaf_first_triangle_idx;
-    std::vector<unsigned int> leaf_triangle_count;
-
-};
-
-struct FrameTLAS{
-    std::vector<std::reference_wrapper<BVH_it>> mesh_blas; // Reference wrappers to avoid copying the BLASes themselves <- this might stay?
-    std::unique_ptr<TLAS_Node_it> root; // definitely change that
-    std::vector<int> blas_indices; // Indices to BLASes in the TLAS // change that. We may just rearrange references directly in mesh_blas vector instead? Would that work?
+struct BVH {
+    //std::vector<BVH_Node> nodes;
+    std::unique_ptr<BVH_Node> root;
+    std::vector<int> triangle_indices; // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
+    double* mesh_node_coords_ptr; // pointer to contiguous array of mesh node coordinates
+    int* mesh_connectivity_ptr; // pointer to contiguous array of mesh connectivity
+    double* mesh_face_colors_ptr; // pointer to contiguous array of mesh face colors
 };
 
 
@@ -132,31 +122,24 @@ struct Bin {
     int element_count {0};
 };
 
+
 // Binned Surface Area Heuristic (SAH) split
-bool binned_sah_split_it(BVH_Node& Node, // either TLAS or BLAS node
-    const std::vector<std::array<double,3>>& centroids, // BLAS: element centroids; TLAS: BLAS (mesh) centroids
-    const std::vector<AABB>& aabbs, // BLAS: element (e.g., triangle) AABBs; TLAS: BLAS (mesh) AABBs
-    const std::vector<int>& element_indices, // BLAS: element (e.g., triangle) indices; TLAS: BLAS (mesh) indices
+bool binned_sah_split(BVH_Node& Node,
+    const std::vector<std::array<double,3>>& mesh_triangle_centroids,
+    const std::vector<AABB>& mesh_triangle_aabbs,
+    const std::vector<int>& mesh_triangle_indices,
     unsigned int& out_split_axis,
     double& out_split_position);
 
 
- void build_bvh(BVH_Node& Root,
-    const std::vector<std::array<double,3>>& mesh_triangle_centroids, // Likely to be changed
-    const std::vector<AABB>& mesh_triangle_aabbs, // Likely to be changed
-    std::vector<int>& mesh_triangle_indices); // To be changed
+ void build_bvh(BVH_Node& Node,
+    const std::vector<std::array<double,3>>& mesh_triangle_centroids,
+    const std::vector<AABB>& mesh_triangle_aabbs,
+    std::vector<int>& mesh_triangle_indices);
 
 
-
-inline void process_element_data_tri3(int mesh_number_of_triangles,
-    const int* mesh_connectivity_ptr,
-    const double* mesh_node_coords_ptr,
-    std::vector<std::array<double,3>>& mesh_element_centroids,
-    std::vector<AABB>& mesh_triangle_aabbs,
-    AABB& mesh_aabb);
-
+// Handles building all acceleration structures in the scene - bottom and top level
+// Might not need to pass scene_face_colors. Not sure yet.
 void build_acceleration_structures(const std::vector <nanobind::ndarray<const int, nanobind::c_contig>>& scene_connectivity,
     const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords,
     const std::vector<nanobind::ndarray<const double, nanobind::c_contig>>& scene_face_colors);
-
-    */

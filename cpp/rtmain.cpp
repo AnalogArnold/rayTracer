@@ -46,7 +46,7 @@ void render_scene(const int image_height,
     //std::chrono::time_point t2_i = std::chrono::high_resolution_clock::now();
 
     //std::chrono::time_point t1_d = std::chrono::high_resolution_clock::now();
-    //build_acceleration_structures(scene_connectivity, scene_coords, scene_face_colors); // target stack-based DoD implementation
+    build_acceleration_structures(scene_connectivity, scene_coords, scene_face_colors); // target stack-based DoD implementation
     //std::chrono::time_point t2_d = std::chrono::high_resolution_clock::now();
     //std::chrono::duration t_r = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_r - t1_r);
     //std::chrono::duration t_i = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_i - t1_i);
@@ -67,7 +67,7 @@ void render_scene(const int image_height,
         EiVector3d pixel_00_center = pixel_00_centers[camera_idx];
         Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor> matrix_pixel_spacing = matrix_pixel_spacings[camera_idx];
 
-        render_ppm_image(camera_center, pixel_00_center, matrix_pixel_spacing, scene_connectivity, scene_coords, scene_face_colors, image_height, image_width, number_of_samples);
+        //render_ppm_image(camera_center, pixel_00_center, matrix_pixel_spacing, scene_connectivity, scene_coords, scene_face_colors, image_height, image_width, number_of_samples);
     }
         
     CALLGRIND_STOP_INSTRUMENTATION;

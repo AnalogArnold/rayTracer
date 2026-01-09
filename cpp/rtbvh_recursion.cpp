@@ -63,6 +63,7 @@ AABB_r create_node_AABB_r(const std::vector<AABB_r>& mesh_triangle_abbs,
     return node_AABB;
 }
 
+/*
 // For performance improvement and corner cases, later have a look at: https://tavianator.com/2022/ray_box_boundary.html
 bool intersect_AABB_r (const Ray& ray, const AABB_r& AABB_r) {
     // Slab method for ray-AABB_r intersection
@@ -87,6 +88,30 @@ bool intersect_AABB_r (const Ray& ray, const AABB_r& AABB_r) {
     }
 
     return t_close < t_far; // False => No overlap => Ray does not intersect the AABB_r
+}
+    */
+
+bool intersect_AABB_r (const Ray& ray, const AABB_r& AABB) {
+    // Slab method for ray-AABB_r intersection
+    double t_axis[6]; // t values for each axis, so [0,1] are for x, [2,3] for y, and [4,5] for z
+    EiVector3d inverse_direction = 1/(ray.direction.array()); // Divide first to use cheaper multiplication later
+
+    // Find ray intersections with planes defining the AABB_r in X, Y, Z
+    for (int i = 0; i < 3; ++i) {
+        t_axis[2*i] = (AABB.corner_min[i] - ray.origin(i)) * inverse_direction(i);
+        t_axis[2*i + 1] = (AABB.corner_max[i] - ray.origin(i)) * inverse_direction(i);
+    }
+
+    //Overlap test
+    // Find the minimum t for each axis (x, y, z), then find maximum of these for (x,y,z)
+    double t_min = std::max(std::max(std::min(t_axis[0], t_axis[1]), std::min(t_axis[2], t_axis[3])), std::min(t_axis[4], t_axis[5]));
+    // Find the maximum t for each axis (x, y, z), then find minimum of these for (x,y,z)
+    double t_max = std::min(std::min(std::max(t_axis[0], t_axis[1]), std::max(t_axis[2], t_axis[3])), std::max(t_axis[4], t_axis[5]));
+
+    // t_min < t_max - Ray which just touches a corner, edge, or face of the AABB will be considered non-intersecting
+    // t_min <= t_max - Rays which touch the box boundary are considered intersecting. A bit of a degenerate case, but decided to include it here, hence more relaxed inequality.
+    // t_min < ray.t_max - Clip to ray segment
+    return t_min <= t_max && t_max > 0.0 && t_min < ray.t_max; // False => No overlap => Ray does not intersect the AABB.
 }
 
 /*
@@ -547,7 +572,7 @@ void intersect_bvh_r(const Ray& ray,
 
 void intersect_tlas_r(const Ray& ray,
     const TLAS_Node_r& node,
-    TLAS & tlas) {
+    TLAS_r & tlas) {
 
      HitRecord intersection_record; // Only here for tests. Doesn't make sense to have it here later - it's one per ray, so it'll be in the renderer as usual.
      std::cout << "TLAS: Starting BVH intersection test" << std::endl;
@@ -560,7 +585,7 @@ void intersect_tlas_r(const Ray& ray,
         int max_blas_idx = node.min_blas_idx + node.blas_leaf_count;
         for (int i = blas_idx; i < max_blas_idx; ++i) {
             std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
-            BVH& bvh = tlas.mesh_blas[tlas.blas_indices[i]]; // Get the BLAS corresponding to this TLAS leaf node
+            BVH_r& bvh = tlas.mesh_blas[tlas.blas_indices[i]]; // Get the BLAS corresponding to this TLAS leaf node
             intersect_bvh_r(ray, *(bvh.root), bvh.triangle_indices, bvh.mesh_connectivity_ptr, bvh.mesh_node_coords_ptr);
         }
     }
@@ -589,8 +614,8 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
     std::vector<std::array<double,3>> scene_obj_centroids; // Stores centroids of the whole objectes (meshes) in this scene
     scene_obj_centroids.reserve(num_meshes * 3 * sizeof(double)); // Can reliably reserve this size and not expect it to change
 
-    std::vector<BVH> scene_mesh_bvhs; // Store BVHs for all meshes in the scene
-    scene_mesh_bvhs.reserve(num_meshes * sizeof(BVH));
+    std::vector<BVH_r> scene_mesh_bvhs; // Store BVHs for all meshes in the scene
+    scene_mesh_bvhs.reserve(num_meshes * sizeof(BVH_r));
 
     // Iterate over MESHES
     for (size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx) {
@@ -694,7 +719,7 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
 
         build_bvh_r(*root, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices);
         // Build BVH struct
-        BVH mesh_bvh;
+        BVH_r mesh_bvh;
         mesh_bvh.root = std::move(root);
         mesh_bvh.triangle_indices = std::move(mesh_triangle_indices); 
         mesh_bvh.mesh_node_coords_ptr = mesh_node_coords_ptr;
@@ -715,7 +740,7 @@ void build_acceleration_structures_r(const std::vector <nanobind::ndarray<const 
     }
 
     // BUILD TLAS - structure of BLASes
-    TLAS scene_tlas;
+    TLAS_r scene_tlas;
     scene_tlas.mesh_blas.reserve(scene_mesh_bvhs.size());
     AABB_r scene_aabb;
     // Iterate over all mesh BVHs to build the TLAS

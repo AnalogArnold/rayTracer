@@ -92,7 +92,7 @@ AABB_r create_node_AABB_r(const std::vector<AABB_r>& mesh_triangle_abbs,
     const int node_triangle_count);
 
 
-struct BVH {
+struct BVH_r {
     //std::vector<BVH_Node_r> nodes;
     std::unique_ptr<BVH_Node_r> root;
     std::vector<int> triangle_indices; // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
@@ -111,8 +111,8 @@ struct TLAS_Node_r {
     int blas_leaf_count; // Number of BLASes in this node (consecutive in the array)
 };
 
-struct TLAS{
-    std::vector<std::reference_wrapper<BVH>> mesh_blas; // Reference wrappers to avoid copying the BLASes themselves
+struct TLAS_r{
+    std::vector<std::reference_wrapper<BVH_r>> mesh_blas; // Reference wrappers to avoid copying the BLASes themselves
     std::unique_ptr<TLAS_Node_r> root;
     std::vector<int> blas_indices; // Indices to BLASes in the TLAS
 };
