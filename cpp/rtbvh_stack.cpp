@@ -742,6 +742,10 @@ void build_acceleration_structures_it(const std::vector <nanobind::ndarray<const
         mesh_bvh.mesh_connectivity_ptr = mesh_connectivity_ptr;
         double* mesh_face_colors_ptr = const_cast<double*>(mesh_face_colors.data());
         mesh_bvh.mesh_face_colors_ptr = mesh_face_colors_ptr;
+
+
+        //std::cout << "Root:" << mesh_bvh.root->triangle_count << " triangles and min index " << mesh_bvh.root->min_triangle_idx << std::endl;
+
         // Add to the vector storing scene BVHs
         scene_mesh_bvhs.emplace_back(std::move(mesh_bvh)); // emplace_back to avoid unnecessary copies
 

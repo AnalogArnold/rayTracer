@@ -42,7 +42,7 @@ void render_scene(const int image_height,
     //std::chrono::time_point t2_r = std::chrono::high_resolution_clock::now();
 
     //std::chrono::time_point t1_i = std::chrono::high_resolution_clock::now();
-    //  build_acceleration_structures_it(scene_connectivity, scene_coords, scene_face_colors); // stack-based implementation with pointers
+    //build_acceleration_structures_it(scene_connectivity, scene_coords, scene_face_colors); // stack-based implementation with pointers
     //std::chrono::time_point t2_i = std::chrono::high_resolution_clock::now();
 
     //std::chrono::time_point t1_d = std::chrono::high_resolution_clock::now();

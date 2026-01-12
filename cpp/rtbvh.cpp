@@ -114,197 +114,7 @@ double find_SAH_cost_bin(unsigned int left_element_count, unsigned int right_ele
     // Calculate the Surface Area Heuristic (SAH) cost of a node. Simplified equation for initial implementation.
    return (double)left_element_count * left_bounds.find_surface_area() + (double)right_element_count * right_bounds.find_surface_area(); // Static casts complained so leave C-style casts for now
 }
-/*
 
-// Binned Surface Area Heuristic (SAH) split
-bool binned_sah_split(BVH_Node& Node,
-    const std::vector<std::array<double,3>>& mesh_triangle_centroids,
-    const std::vector<AABB>& mesh_triangle_aabbs,
-    const std::vector<int>& mesh_triangle_indices,
-    unsigned int& out_split_axis,
-    double& out_split_position) {
-
-    if (Node.triangle_count <= 2) return false; // Too small to split
-    unsigned int node_max_triangle_idx = Node.min_triangle_idx + Node.triangle_count;
-
-    // Compute centroid bounds for the node
-    // We use existing AABB since it nicely implements everything we need, BUT it is not to be confused with the actual bounding box of the node
-    // node_centroid_bounds - Only used to determine splitting
-    // bounding_box - Actual bounding box of the node used for ray intersections
-    AABB node_centroid_bounds{};
-    for (int i = Node.min_triangle_idx; i < node_max_triangle_idx; ++i) {
-        // Retrieve triangle and its centroid on the split axis
-        unsigned int triangle_idx = mesh_triangle_indices[i];
-        std::array<double,3> triangle_centroid = mesh_triangle_centroids[triangle_idx];
-        node_centroid_bounds.expand_to_include_point(triangle_centroid);
-    }
-
-    // Pick the longest axis for splitting
-    int best_axis = 0;
-    double axis_extent = node_centroid_bounds.find_axis_extent(best_axis);
-    for (int i = 1; i < 3; ++i) {
-        double temp_extent = node_centroid_bounds.find_axis_extent(i);
-        if (temp_extent > axis_extent){
-            best_axis = i;
-            axis_extent = temp_extent;
-        }
-    }
-    if (axis_extent == 0) return false; // All centroids coincident along the chosen axis => No useful split
-    // Might implement fallback split here (median et.c) here later rather than in the main build_bvh function?
-    out_split_axis = best_axis;
-
-    // Create bins
-    constexpr int NUM_BINS = 8;
-    Bin bins[NUM_BINS];
-
-    const double inverse_extent = 1.0/axis_extent;
-    for (unsigned int i = Node.min_triangle_idx; i < node_max_triangle_idx; ++i){
-        unsigned int triangle_idx = mesh_triangle_indices[i];
-        // Find the Bin containing the triangle centroid
-        double t = (mesh_triangle_centroids[triangle_idx][best_axis] - node_centroid_bounds.corner_min[best_axis]) * inverse_extent;
-        int bin_id = static_cast<int>(t * NUM_BINS);
-        if (bin_id == NUM_BINS) bin_id = NUM_BINS - 1; // Round up to the last Bin
-        bins[bin_id].element_count++;
-        bins[bin_id].bounding_box.expand_to_include_AABB(mesh_triangle_aabbs[triangle_idx]);
-    }
-
-    // Pre-compute left/right bounds for all possible splits (so we don't have to recompute them from scratch to analyse every possible split)
-    unsigned int left_count[NUM_BINS], right_count[NUM_BINS];
-    AABB left_bounds[NUM_BINS], right_bounds[NUM_BINS];
-
-    // Left-to-right
-    AABB possible_left_box;
-    unsigned int possible_left_count = 0;
-    for (int i = 0; i < NUM_BINS; ++i) {
-        if (bins[i].element_count > 0) {
-            possible_left_box.expand_to_include_AABB(bins[i].bounding_box);
-        }
-        possible_left_count += bins[i].element_count;
-        left_bounds[i] = possible_left_box;
-        left_count[i] = possible_left_count;
-    }
-    // Right-to-left
-    AABB possible_right_box;
-    unsigned int possible_right_count = 0;
-    for (int i = NUM_BINS - 1; i >= 0; --i) {
-        if (bins[i].element_count > 0) {
-            possible_right_box.expand_to_include_AABB(bins[i].bounding_box);
-        }
-        possible_right_count += bins[i].element_count;
-        right_bounds[i] = possible_right_box;
-        right_count[i] = possible_right_count;
-        if (i == 0) break; // Safety
-    }
-
-    // Evaluate SAH at each Bin boundary and pick the best one (i.e., the one which minimizes the cost function)
-    double best_cost = std::numeric_limits<double>::infinity();
-    int best_split_bin = -1;
-
-    for (int i = 0; i < NUM_BINS - 1; ++i) {
-        unsigned int left_size = left_count[i];
-        unsigned int right_size = right_count[i+1];
-        if (left_size == 0 || right_size == 0) continue; // invalid split
-
-        double cost = find_SAH_cost_bin(left_size, right_size, left_bounds[i], right_bounds[i+1]);
-        if (cost < best_cost) {
-            best_cost = cost;
-            best_split_bin = i;
-        }
-    }
-    if (best_split_bin == -1) return false; // No useful split found
-
-    // Convert Bin index to world-space split position
-    double bin_width = axis_extent / NUM_BINS;
-    out_split_position = node_centroid_bounds.corner_min[best_axis] + bin_width * (best_split_bin + 1); // Boundary between best_split_bin and best_split_bin + 1
-    return true;
-}
-
- void build_bvh(BVH_Node& Root,
-    const std::vector<std::array<double,3>>& mesh_triangle_centroids,
-    const std::vector<AABB>& mesh_triangle_aabbs,
-    std::vector<int>& mesh_triangle_indices){
-
-    static constexpr int MAX_ELEMENTS_PER_LEAF = 4;
-    // DFS implementation so LIFO; need to think if queue with BFS wouldn't work better since we don't care THAT much about the memory
-    std::vector<BVH_Node*> stack;
-    stack.reserve(128); // reduce reallocs; might make a better guess for that btw
-    stack.push_back(&Root); // push root onto the stack
-
-    while(!stack.empty()){
-        BVH_Node* Node = stack.back(); // Get address to the last element on the stack
-        stack.pop_back(); // Remove the last element from the stack
-
-        // Check if we should terminate and make a leaf node
-        if (Node->triangle_count <= MAX_ELEMENTS_PER_LEAF) {
-        // For now leaf node means that both children are nullptr, so while these should be default values, set them again just to be sure
-        Node->left_child = nullptr;
-        Node->right_child = nullptr;
-        continue;
-        }
-
-        // Otherwise, split elements into child nodes
-        // Run binned SAH
-        unsigned int split_axis = 0;
-        double split_position = 0.0;
-        bool found_split = binned_sah_split(*Node, mesh_triangle_centroids, mesh_triangle_aabbs, mesh_triangle_indices, split_axis, split_position);
-        if (!found_split) {
-            Node->left_child = nullptr;
-            Node->right_child = nullptr;
-            continue;
-            // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
-        }
-
-        // Partition of indices by centroid[axis] < split_pos
-        unsigned int begin = Node->min_triangle_idx;
-        unsigned int end = begin + Node->triangle_count;
-        unsigned int mid = begin;
-
-        while (mid < end) {
-            unsigned int triangle_idx = mesh_triangle_indices[mid];
-            double triangle_centroid_split = mesh_triangle_centroids[triangle_idx][split_axis];
-            // Compare triangle centroid position on the axis versus the splitting point
-            if (triangle_centroid_split < split_position) { // Triangle on the left
-                ++mid; // move mid to the right
-            } else {
-                --end; // Move end to left
-                std::swap(mesh_triangle_indices[mid], mesh_triangle_indices[end]);
-            }
-        }
-        // How many triangles are on the left and on the right
-        unsigned int left_count = mid - begin;
-        unsigned int right_count = Node->triangle_count - left_count;
-
-        // Abort split if one side is empty
-        if (left_count == 0 || right_count == 0) {
-            Node->left_child = nullptr;
-            Node->right_child = nullptr;
-            continue;
-        }
-
-        // Create children
-        Node->left_child = std::make_unique<BVH_Node>();
-        Node->right_child = std::make_unique<BVH_Node>();
-
-        // Assign triangle ranges
-        // Left child indices: [begin, begin+left_count)
-        Node->left_child->triangle_count = left_count;
-        Node->left_child->min_triangle_idx = begin;
-        // Right child indices: [begin+left_count, begin+left_count+right_count)
-        Node->right_child->triangle_count = right_count;
-        Node->right_child->min_triangle_idx = begin + left_count;
-
-        // Recompute child bounds from the indices
-        Node->left_child->bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, Node->left_child->min_triangle_idx, Node->left_child->triangle_count);
-        Node->right_child->bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, Node->right_child->min_triangle_idx, Node->right_child->triangle_count);
-        
-        Node->triangle_count = 0; // Split => Internal node containing no triangles, so update the count
-
-        // Push children to stack instead of recursing. LIFO -> Left child gets processed first
-        stack.push_back(Node->right_child.get());
-        stack.push_back(Node->left_child.get());
-    }
-}
-*/
 
 // Binned Surface Area Heuristic (SAH) split
 bool binned_sah_split(BVH_Node& Node,
@@ -433,13 +243,13 @@ void build_bvh(BVH &mesh_bvh,
    mesh_bvh.tree_nodes.push_back(root);
    mesh_bvh.root_idx = 0;
 
-   std::cout << "Initializing building BVH" << std::endl;
+   //std::cout << "Initializing building BVH" << std::endl;
    // Stack-based builder
    std::vector<BuildTask> stack;
    stack.push_back({mesh_bvh.root_idx, 0, root.triangle_count}); // push root onto the stack
    
     while(!stack.empty()){
-        std::cout << "Inside loop for building BVH" << std::endl;
+        //std::cout << "Inside loop for building BVH" << std::endl;
         BuildTask task = stack.back(); // Get address to the last element on the stack
         stack.pop_back(); // Remove the last element from the stack
         int node_idx = task.node_idx;
@@ -471,7 +281,7 @@ void build_bvh(BVH &mesh_bvh,
             continue;
             // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
         }
-        */
+            */
         // Partition of indices by centroid[axis] < split_pos
         unsigned int begin = min_triangle_idx;
         unsigned int end = begin + triangle_count;
@@ -491,12 +301,11 @@ void build_bvh(BVH &mesh_bvh,
         // How many triangles are on the left and on the right
         unsigned int left_count = mid - begin;
         unsigned int right_count = triangle_count - left_count;
-
-        /*
         // Abort split if one side is empty
+        /*
         if (left_count == 0 || right_count == 0) {
-            Node->left_child = nullptr;
-            Node->right_child = nullptr;
+            Node.left_child_idx = -1;
+            Node.right_child_idx = -1;
             continue;
         }
         */
@@ -506,11 +315,11 @@ void build_bvh(BVH &mesh_bvh,
         int right_child_idx = mesh_bvh.tree_nodes.size();
         mesh_bvh.tree_nodes.push_back(BVH_Node());
 
-        // Set parent data
-        //BVH_Node& Node = mesh_bvh.tree_nodes[node_idx];
-        Node.left_child_idx = left_child_idx;
-        Node.right_child_idx = right_child_idx;
-        Node.triangle_count = 0; // Split => Internal node containing no triangles, so update the count
+         // Set parent data
+        // This way instead of using references, as if the vector resizes when we add children, the references might become invalid and produce nonsensical results
+        mesh_bvh.tree_nodes[node_idx].left_child_idx = left_child_idx;
+        mesh_bvh.tree_nodes[node_idx].right_child_idx = right_child_idx;
+        mesh_bvh.tree_nodes[node_idx].triangle_count = 0; // It is now an internal node
 
         // Initialize children metadata
         BVH_Node& left_child = mesh_bvh.tree_nodes[left_child_idx];
@@ -528,10 +337,72 @@ void build_bvh(BVH &mesh_bvh,
         left_child.bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, left_child.min_triangle_idx, left_child.triangle_count);
         right_child.bounding_box = create_node_AABB(mesh_triangle_aabbs, mesh_triangle_indices, right_child.min_triangle_idx, right_child.triangle_count);
         
+
         // Push children to stack instead of recursing. LIFO -> Left child gets processed first
         stack.push_back({right_child_idx, right_child.min_triangle_idx, right_child.triangle_count});
         stack.push_back({left_child_idx, left_child.min_triangle_idx, left_child.triangle_count});
     }
+}
+
+void intersect_bvh(const Ray& ray,
+    HitRecord &intersection_record,
+    const BVH& mesh_bvh) {
+
+     std::cout << "  BLAS:Starting BVH intersection test" << std::endl;
+     const BVH_Node& root = mesh_bvh.tree_nodes[mesh_bvh.root_idx];
+
+     std::vector<int> stack; // Store node indices on the stack
+     stack.push_back(mesh_bvh.root_idx);
+
+     while(!stack.empty()){
+        const BVH_Node& Node = mesh_bvh.tree_nodes[stack.back()];
+        stack.pop_back();
+
+        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (Node.left_child_idx == -1 && Node.right_child_idx == -1) {
+            // No children => Leaf node => Intersect triangles
+            std::cout << "   BLAS: Leaf node reached with " << Node.triangle_count << " triangles." << std::endl;
+            int min_triangle_idx = Node.min_triangle_idx;
+            int node_max_triangle_idx = Node.min_triangle_idx + Node.triangle_count;
+            // Get indices of the triangles within the node and store in vector to pass to the intersection function
+            std::vector<unsigned int> node_triangle_indices; // Allocating this per leaf probably isn't the most optimal solution, so might have to update intersect_bvh_triangles later. Or keep a buffer since I pre-set max number of triangles per node anyway, so I can have a flat array pre-allocated at compile time
+            node_triangle_indices.resize(Node.triangle_count);
+
+            for (int i = min_triangle_idx; i < node_max_triangle_idx; ++i) {
+                int triangle_idx = mesh_bvh.triangle_indices[i];
+                node_triangle_indices[i - min_triangle_idx] = triangle_idx;
+                std::cout << "    BLAS: Node triangle index: " << triangle_idx << std::endl;
+            }
+            IntersectionOutput intersection = intersect_bvh_triangles(ray, mesh_bvh.mesh_connectivity_ptr, mesh_bvh.mesh_node_coords_ptr, Node.triangle_count, node_triangle_indices);
+            Eigen::Index minRowIndex, minColIndex;
+            std::cout << "Number of t_values: " << intersection.t_values.size() << std::endl;
+
+            intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value
+
+            double closest_t = intersection.t_values(minRowIndex, minColIndex);
+            if (closest_t < intersection_record.t) {
+                intersection_record.t = closest_t;
+                intersection_record.barycentric_coordinates = intersection.barycentric_coordinates.row(minRowIndex);
+                intersection_record.point_intersection = ray_at_t(closest_t, ray);
+                intersection_record.normal_surface = intersection.plane_normals.row(minRowIndex);
+                // Get a pointer to the array storing face colors for the mesh if intersected
+                //double* face_colors_ptr = const_cast<double*>((scene_face_colors[mesh_idx]).data());
+                //intersection_itecord.face_color = get_face_color(minRowIndex, face_colors_ptr);
+            }
+            if (intersection_record.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
+                std::cout << "Intersection found" << std::endl;
+            }
+        }
+        else { // Not a leaf node => Test children nodes for intersections
+            // DFS order
+            int right = Node.right_child_idx;
+            if (right != -1) stack.push_back(right);
+            int left = Node.left_child_idx;
+            if(left != -1) stack.push_back(left);
+            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
+        }
+            
+     }
 }
 
 // Rationale: Basically, instead of swapping triangle/element indices to reflect the BVH ordering, we swap the connectivity array to have one less memory access. So, for example:
@@ -640,18 +511,33 @@ for (int i = 0; i < mesh_number_of_elements; i++){
         std::cout << "Before building BVH" << std::endl;
         BVH mesh_bvh;
         build_bvh(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_triangle_indices);
+        // If BVH has multiple nodes => Root must store 0 triangles => Update the triangle count
+        if (mesh_bvh.tree_nodes.size() >=2){
+            mesh_bvh.tree_nodes[0].triangle_count = 0;
+        }
+        
         for (int i = 0; i < mesh_bvh.tree_nodes.size(); i++){
             std::cout << "Node " << i << ": min_triangle_idx " << mesh_bvh.tree_nodes[i].min_triangle_idx << ", triangle_count " << mesh_bvh.tree_nodes[i].triangle_count << ", left_child_idx " << mesh_bvh.tree_nodes[i].left_child_idx << ", right_child_idx " << mesh_bvh.tree_nodes[i].right_child_idx << std::endl;
         }
         std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
-        std::cout << "Root data" << mesh_bvh.tree_nodes[mesh_bvh.root_idx].min_triangle_idx << ", " << mesh_bvh.tree_nodes[mesh_bvh.root_idx].triangle_count << std::endl;
         std::cout << "After building BVH" << std::endl;
+        
+        mesh_bvh.mesh_node_coords_ptr = mesh_node_coords_ptr;
+        mesh_bvh.mesh_connectivity_ptr = mesh_connectivity_ptr;
+        double* mesh_face_colors_ptr = const_cast<double*>(mesh_face_colors.data());
+        mesh_bvh.mesh_face_colors_ptr = mesh_face_colors_ptr;
+        mesh_bvh.triangle_indices = std::move(mesh_triangle_indices); 
+        //scene_mesh_bvhs.push_back(std::make_unique<BVH>(std::move(mesh_bvh)));
+
+
 
         // DEBUG LINES
         Ray test_ray;
         test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
         test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
-        HitRecord intersection_record; //
+        HitRecord intersection_record; 
+        intersect_bvh(test_ray, intersection_record, mesh_bvh);
+        //intersect_bvh(test_ray, intersection_record, *scene_mesh_bvhs.back());
         //intersect_bvh(test_ray, intersection_record, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
     
         // Without struct bvh all data should be accessible via root pointer after building
