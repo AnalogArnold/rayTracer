@@ -41,8 +41,8 @@ camera1.add_camera_to_scene(scene)
 data_path = dataset.render_simple_block_path() # Test mesh 1
 data_path2 = dataset.render_mechanical_3d_path() # Test mesh 2
 add_mesh_to_scene(scene, data_path)
-add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
-add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
+#add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
+#add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
 
 # Lights - to be added later
 

@@ -92,12 +92,14 @@ inline void compute_mesh_centroid_it(AABB mesh_aabb,
 struct BVH_Node {
     AABB bounding_box {};
     // Unique pointers to prevent memory leaks with raw pointers and new BVH_Node use
-    std::unique_ptr<BVH_Node> left_child;
-    std::unique_ptr<BVH_Node> right_child;
+    //std::unique_ptr<BVH_Node> left_child;
+    //std::unique_ptr<BVH_Node> right_child;
     //BVH_Node* left_child {nullptr}; // Nullptr if leaf.
     //BVH_Node* right_child {nullptr};
+    int left_child_idx {-1};
+    int right_child_idx {-1};
     int min_triangle_idx;
-    int triangle_count;
+    int triangle_count {0}; // If not zero, this is the leaf
 };
 
 AABB create_node_AABB_it(const std::vector<AABB>& mesh_triangle_abbs,
@@ -108,11 +110,13 @@ AABB create_node_AABB_it(const std::vector<AABB>& mesh_triangle_abbs,
 
 struct BVH {
     //std::vector<BVH_Node> nodes;
-    std::unique_ptr<BVH_Node> root;
+    //std::unique_ptr<BVH_Node> root;
     std::vector<int> triangle_indices; // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
+    std::vector<BVH_Node> tree_nodes;
     double* mesh_node_coords_ptr; // pointer to contiguous array of mesh node coordinates
     int* mesh_connectivity_ptr; // pointer to contiguous array of mesh connectivity
     double* mesh_face_colors_ptr; // pointer to contiguous array of mesh face colors
+    int root_idx {-1};
 };
 
 
@@ -131,12 +135,12 @@ bool binned_sah_split(BVH_Node& Node,
     unsigned int& out_split_axis,
     double& out_split_position);
 
-
+/**
  void build_bvh(BVH_Node& Node,
     const std::vector<std::array<double,3>>& mesh_triangle_centroids,
     const std::vector<AABB>& mesh_triangle_aabbs,
     std::vector<int>& mesh_triangle_indices);
-
+*/
 
 // Handles building all acceleration structures in the scene - bottom and top level
 // Might not need to pass scene_face_colors. Not sure yet.
