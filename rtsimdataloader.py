@@ -20,7 +20,7 @@ def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_
     coords = np.ascontiguousarray(coords_world[:,:3])
     #coords = np.ascontiguousarray(render_mesh.coords[:,:3])
     connectivity = render_mesh.connectivity
-    #node_coords = coords[connectivity,:3]
+    node_coords_expanded = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array.
     x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes. Use this for coloring somehow
     x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
     # Approach 2 - taking averages and stacking them together
@@ -29,7 +29,8 @@ def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_
     # Approach 1 - using a colour map to assign an rgb value
     # cmap = plt.get_cmap('viridis')
     # face_colors = cmap(x_disp_node_norm)[:,:3]
-    scene.add_mesh(connectivity, coords, face_colors)
+    #scene.add_mesh(connectivity, coords, face_colors)
+    scene.add_mesh(node_coords_expanded, face_colors)
 
 # Function to get mesh data; partially deprecated due to the introduction of add_mesh_to_scene.
 def get_mesh_data(pypath, field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), world_position = None, scale = 100.0) -> dict:
@@ -40,7 +41,7 @@ def get_mesh_data(pypath, field_components=("disp_x","disp_y", "disp_z"), fields
     coords_world = np.matmul(render_mesh.coords, render_mesh.mesh_to_world_mat.T) # Convert to world coordinates
     coords = np.ascontiguousarray(coords_world[:,:3])
     connectivity = render_mesh.connectivity
-    #node_coords = coords[connectivity,:3]
+    node_coords_expanded = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array.
     x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes. Use this for coloring somehow
     x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
     # Approach 2 - taking averages and stacking them together
@@ -49,4 +50,5 @@ def get_mesh_data(pypath, field_components=("disp_x","disp_y", "disp_z"), fields
     # Approach 1 - using a colour map to assign an rgb value
     # cmap = plt.get_cmap('viridis')
     # face_colors = cmap(x_disp_node_norm)[:,:3]
-    return {"connectivity": connectivity, "coords": coords, "face_colors": face_colors}
+    return {"node_coords_expanded": node_coords_expanded, "face_colors": face_colors}
+    #return {"connectivity": connectivity, "coords": coords, "face_colors": face_colors}
