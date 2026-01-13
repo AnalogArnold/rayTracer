@@ -21,7 +21,13 @@ IntersectionOutput intersect_triangle(const Ray& ray,
     const long long number_of_elements);
 
 IntersectionOutput intersect_bvh_triangles(const Ray& ray,
+    const std::vector<double>& node_coords,
+    const unsigned int bvh_node_triangle_count);
+
+/*
+IntersectionOutput intersect_bvh_triangles(const Ray& ray,
     const int* connectivity_ptr,
     const double* node_coords_ptr,
     const unsigned int bvh_node_triangle_count,
     const std::vector<unsigned int>& bvh_node_triangle_indices);
+*/

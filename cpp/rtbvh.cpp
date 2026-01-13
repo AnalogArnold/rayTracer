@@ -15,41 +15,12 @@
 #include "ndarray.h"
 
 
-/*non expanded coords
-inline void compute_triangle_centroid(int node_0,
-    int node_1,
-    int node_2,
-    const double* mesh_node_coords_ptr,
-    std::array<double,3> &triangle_centroid) {
-    // Find the centroid of a triangle.
-    // Update the value of the passed array, so we don't have to fiddle with structs etc. to return a value.
-    for (int i = 0; i < 3; ++i){
-        triangle_centroid[i] = (mesh_node_coords_ptr[node_0 * 3 + i] + mesh_node_coords_ptr[node_1 * 3 + i] + mesh_node_coords_ptr[node_2 * 3 + i]) / 3.0;
-    }
-}
-*/
-
-/*
-inline void compute_triangle_centroid(int node_0,
-    int node_1,
-    int node_2,
-    const double* mesh_node_coords_ptr,
-    std::array<double,3> &triangle_centroid) {
-    // Find the centroid of a triangle.
-    // Update the value of the passed array, so we don't have to fiddle with structs etc. to return a value.
-    for (int i = 0; i < 3; ++i){
-        triangle_centroid[i] = (mesh_node_coords_ptr[node_0 * 3 + i] + mesh_node_coords_ptr[node_1 * 3 + i] + mesh_node_coords_ptr[node_2 * 3 + i]) / 3.0;
-    }
-}
-*/
-
-inline void compute_mesh_centroid(AABB mesh_aabb, std::array<double,3>& mesh_centroid) {
+inline void compute_mesh_centroid(AABB& mesh_aabb, std::array<double,3>& mesh_centroid) {
     // Compute centroid of the mesh AABB
     for (int i = 0; i < 3; ++i){
         mesh_centroid[i] = (mesh_aabb.corner_min[i] + mesh_aabb.corner_max[i]) / 2.0;
     }
 }
-
 
 AABB create_node_AABB(const std::vector<AABB>& mesh_triangle_abbs,
     const std::vector<int>& mesh_triangle_indices,
@@ -412,6 +383,58 @@ void copy_data_to_bvh_node(BVH &mesh_bvh,
     }
 }
 
+
+void intersect_bvh(const Ray& ray,
+    HitRecord &intersection_record,
+    const BVH& mesh_bvh) {
+
+     std::cout << "  BLAS:Starting BVH intersection test" << std::endl;
+     const BVH_Node& root = mesh_bvh.tree_nodes[mesh_bvh.root_idx];
+
+     std::vector<int> stack; // Store node indices on the stack
+     stack.push_back(mesh_bvh.root_idx);
+
+     while(!stack.empty()){
+        const BVH_Node& Node = mesh_bvh.tree_nodes[stack.back()];
+        stack.pop_back();
+
+        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (Node.left_child_idx == -1) {
+            // No children => Leaf node => Intersect triangles
+            std::cout << "   BLAS: Leaf node reached with " << Node.element_count << " triangles." << std::endl;
+           
+            IntersectionOutput intersection = intersect_bvh_triangles(ray, Node.node_coords, Node.element_count);
+            Eigen::Index minRowIndex, minColIndex;
+            std::cout << "Number of t_values: " << intersection.t_values.size() << std::endl;
+
+            intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value
+
+            double closest_t = intersection.t_values(minRowIndex, minColIndex);
+            if (closest_t < intersection_record.t) {
+                intersection_record.t = closest_t;
+                intersection_record.barycentric_coordinates = intersection.barycentric_coordinates.row(minRowIndex);
+                intersection_record.point_intersection = ray_at_t(closest_t, ray);
+                intersection_record.normal_surface = intersection.plane_normals.row(minRowIndex);
+                // Get a pointer to the array storing face colors for the mesh if intersected
+                //double* face_colors_ptr = const_cast<double*>((scene_face_colors[mesh_idx]).data());
+                //intersection_itecord.face_color = get_face_color(minRowIndex, face_colors_ptr);
+            }
+            if (intersection_record.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
+                std::cout << "Intersection found" << std::endl;
+            }
+        }
+        else { // Not a leaf node => Test children nodes for intersections
+            // DFS order
+            int left = Node.left_child_idx;
+            int right = left + 1;
+            if (right != 0) stack.push_back(right);
+            if(left != -1) stack.push_back(left);
+            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
+        }
+            
+     }
+}
+
 // Handles building all acceleration structures in the scene - bottom and top level
 // Might not need to pass scene_face_colors. Not sure yet.
 void build_acceleration_structures(const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords_expanded,
@@ -505,7 +528,7 @@ for (int i = 0; i < mesh_number_of_elements; i++){
         test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
         test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
         HitRecord intersection_record; 
-        //intersect_bvh(test_ray, intersection_record, mesh_bvh);
+        intersect_bvh(test_ray, intersection_record, mesh_bvh);
         //intersect_bvh(test_ray, intersection_record, *scene_mesh_bvhs.back());
         //intersect_bvh(test_ray, intersection_record, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
     

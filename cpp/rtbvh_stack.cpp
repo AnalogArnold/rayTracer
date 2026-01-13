@@ -544,6 +544,7 @@ void intersect_bvh_it(const Ray& ray,
                 node_triangle_indices[i - node->min_triangle_idx] = triangle_idx;
                 std::cout << "    BLAS: Node triangle index: " << triangle_idx << std::endl;
             }
+            /*
             IntersectionOutput intersection = intersect_bvh_triangles(ray, mesh_connectivity_ptr, mesh_node_coords_ptr, node->triangle_count, node_triangle_indices);
             Eigen::Index minRowIndex, minColIndex;
             std::cout << "Number of t_values: " << intersection.t_values.size() << std::endl;
@@ -563,6 +564,7 @@ void intersect_bvh_it(const Ray& ray,
             if (intersection_record.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
                 std::cout << "Intersection found" << std::endl;
             }
+                */
         }
         else { // Not a leaf node => Test children nodes for intersections
             // DFS order

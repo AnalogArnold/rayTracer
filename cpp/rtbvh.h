@@ -93,7 +93,6 @@ struct AABB {
 inline void compute_mesh_centroid_it(AABB mesh_aabb,
     std::array<double,3>& mesh_centroid);
 
-// BVH node structure - naive implementation with pointers for now. Replace with indices once functional to save a few bytes
 struct BVH_Node {
     // Coordinates of nodes comprising the triangles stored in the node, if applicable
     std::vector<double> node_coords; // Stored as x,y,z. Node coords of contained elements in this node
@@ -118,17 +117,11 @@ AABB create_node_AABB_it(const std::vector<AABB>& mesh_triangle_abbs,
     const int node_triangle_count);
 
 
+// Keeping BVH as a struct for now since we may have to store the global texture data here. TBDetermined.
 struct BVH {
-    //std::vector<BVH_Node> nodes;
-    //std::unique_ptr<BVH_Node> root;
-    //std::vector<int> triangle_indices; // Triangle indices that will be swapped in splitting to avoid modifying the data passed from Python
     std::vector<BVH_Node> tree_nodes;
-    //double* mesh_node_coords_ptr; // pointer to contiguous array of mesh node coordinates
-    //int* mesh_connectivity_ptr; // pointer to contiguous array of mesh connectivity
-    //double* mesh_face_colors_ptr; // pointer to contiguous array of mesh face colors
     int root_idx {-1};
 };
-
 
 struct Bin {
     // Bin for binning SAH
