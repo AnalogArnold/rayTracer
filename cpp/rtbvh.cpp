@@ -22,17 +22,17 @@ inline void compute_mesh_centroid(AABB& mesh_aabb, std::array<double,3>& mesh_ce
     }
 }
 
-AABB create_node_AABB(const std::vector<AABB>& mesh_triangle_abbs,
-    const std::vector<int>& mesh_triangle_indices,
-    const int node_min_triangle_idx,
-    const int node_triangle_count) {
-    // Iterates over all triangles assigned to the node to find its bounding box
-    int node_max_triangle_idx = node_min_triangle_idx + node_triangle_count;
+AABB create_node_AABB(const std::vector<AABB>& mesh_element_abbs,
+    const std::vector<int>& mesh_element_indices,
+    const int node_min_element_idx,
+    const int node_element_count) {
+    // Iterates over all elements assigned to the node to find its bounding box
+    int node_max_element_idx = node_min_element_idx + node_element_count;
     AABB node_AABB;
 
-    for (int i = node_min_triangle_idx; i < node_max_triangle_idx; ++i) {
-        int triangle_idx = mesh_triangle_indices[i];
-        node_AABB.expand_to_include_AABB(mesh_triangle_abbs[triangle_idx]);
+    for (int i = node_min_element_idx; i < node_max_element_idx; ++i) {
+        int element_idx = mesh_element_indices[i];
+        node_AABB.expand_to_include_AABB(mesh_element_abbs[element_idx]);
     }
     return node_AABB;
 }
@@ -115,12 +115,6 @@ double find_SAH_cost_bin(unsigned int left_element_count, unsigned int right_ele
     // Calculate the Surface Area Heuristic (SAH) cost of a node. Simplified equation for initial implementation.
    return (double)left_element_count * left_bounds.find_surface_area() + (double)right_element_count * right_bounds.find_surface_area(); // Static casts complained so leave C-style casts for now
 }
-
-struct BuildTask {
-    int node_idx;
-    int min_element_idx;      // first triangle index in tri_indices
-    int element_count;      // number of elements
-};
 
 // Binned Surface Area Heuristic (SAH) split
 bool binned_sah_split(BuildTask& Node,
@@ -230,26 +224,29 @@ void build_bvh(BVH &mesh_bvh,
     const std::vector<std::array<double,3>>& mesh_element_centroids,
     const std::vector<AABB>& mesh_element_aabbs,
     std::vector<int>& mesh_element_indices,
-    std::vector<int>& node_minimum_element_index){
+    std::vector<int>& node_minimum_element_index,
+    size_t mesh_element_count){
 
     static constexpr int MAX_ELEMENTS_PER_LEAF = 4;
     // DFS implementation so LIFO; need to think if queue with BFS wouldn't work better since we don't care THAT much about the memory
     mesh_bvh.tree_nodes.clear();
-   //mesh_bvh.tree_nodes.reserve(mesh_triangle_indices.size() * 2); // crude upper bound
-  
-   // Create root
-   BVH_Node root;
-   root.element_count = mesh_element_indices.size();
-   root.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, 0, root.element_count);
-   //root.min_elem_idx = 0;
-   mesh_bvh.tree_nodes.push_back(root);
-   node_minimum_element_index.push_back(0);
-   mesh_bvh.root_idx = 0;
+    mesh_bvh.tree_nodes.reserve(mesh_element_indices.size() * 2); // crude upper bound
 
-   //std::cout << "Initializing building BVH" << std::endl;
-   // Stack-based builder
-   std::vector<BuildTask> stack;
-   stack.push_back({mesh_bvh.root_idx, 0, root.element_count}); // push root onto the stack
+    std::cout << "BLAS builder: Splitting into nodes..." << std::endl;
+  
+    // Create root
+    BVH_Node root;
+    root.element_count = mesh_element_count;
+    root.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, 0, mesh_element_count);
+    //root.min_elem_idx = 0;
+    mesh_bvh.tree_nodes.push_back(root);
+    node_minimum_element_index.push_back(0);
+    mesh_bvh.root_idx = 0;
+
+    //std::cout << "Initializing building BVH" << std::endl;
+    // Stack-based builder
+    std::vector<BuildTask> stack;
+     stack.push_back({root.element_count, mesh_bvh.root_idx, 0, }); // push root onto the stack
    
     while(!stack.empty()){
         //std::cout << "Inside loop for building BVH" << std::endl;
@@ -263,8 +260,6 @@ void build_bvh(BVH &mesh_bvh,
          // Check if we should terminate and make a leaf node
         if (element_count <= MAX_ELEMENTS_PER_LEAF) {
             // Leaf node means that both children indices are -1, so while these should be default values, set them again just to be sure
-            //BVH_Node& Node = mesh_bvh.tree_nodes[node_idx];
-            //Node.min_elem_idx = min_element_idx;
             Node.element_count = element_count;
             Node.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, min_element_idx, element_count);
             Node.left_child_idx = -1;
@@ -300,11 +295,13 @@ void build_bvh(BVH &mesh_bvh,
             }
         }
         // How many triangles are on the left and on the right
-        int left_count = mid - begin;
-        int right_count = element_count - left_count;
+        size_t left_count = mid - begin;
+        size_t right_count = element_count - left_count;
         
         // Abort split if one side is empty
         if (left_count == 0 || right_count == 0) {
+            Node.element_count = element_count;
+            Node.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, min_element_idx, element_count);
             Node.left_child_idx = -1;
             continue;
         }
@@ -340,11 +337,126 @@ void build_bvh(BVH &mesh_bvh,
         left_child.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, left_min_element_idx, left_count);
         right_child.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, right_min_element_idx, right_count);
         
-        // Push children to stack instead of recursing. LIFO -> Left child gets processed first
-        stack.push_back({right_child_idx, right_min_element_idx, right_count});
-        stack.push_back({left_child_idx, left_min_element_idx, left_count});
+        // Push children to stack. LIFO -> Left child gets processed first
+        stack.push_back({right_count, right_child_idx, right_min_element_idx});
+        stack.push_back({left_count, left_child_idx, left_min_element_idx});
     }
 }
+
+void build_TLAS(std::vector<TLAS_Node>& TLAS,
+    const std::vector<std::array<double,3>>& scene_blas_centroids,
+    const std::vector<AABB>& scene_blas_aabbs,
+    std::vector<int>& scene_blas_indices,
+    size_t scene_mesh_count){
+
+    static constexpr int MAX_ELEMENTS_PER_LEAF = 2;
+    // DFS implementation so LIFO; need to think if queue with BFS wouldn't work better since we don't care THAT much about the memory
+
+    std::cout << "TLAS builder: Splitting into nodes..." << std::endl;
+
+    // Create root
+    TLAS_Node root;
+    root.blas_count = scene_mesh_count;
+    root.min_blas_idx = 0;
+    root.bounding_box = create_node_AABB(scene_blas_aabbs, scene_blas_indices, 0, root.blas_count);
+    TLAS.push_back(root);
+
+    // Stack-based builder
+    std::vector<BuildTask> stack;
+    stack.push_back({scene_mesh_count, 0, 0});
+   
+    while(!stack.empty()){
+        //std::cout << "Inside loop for building BVH" << std::endl;
+        BuildTask task = stack.back(); // Get address to the last element on the stack
+        stack.pop_back(); // Remove the last element from the stack
+        int node_idx = task.node_idx;
+        int min_blas_idx = task.min_element_idx;
+        int element_count = task.element_count;
+        TLAS_Node& Node = TLAS[node_idx];
+
+         // Check if we should terminate and make a leaf node
+        if (element_count <= MAX_ELEMENTS_PER_LEAF) {
+            // Leaf node means that both children indices are -1, so while these should be default values, set them again just to be sure
+            Node.min_blas_idx = min_blas_idx;
+            Node.blas_count = element_count;
+            Node.bounding_box = create_node_AABB(scene_blas_aabbs, scene_blas_indices, min_blas_idx, element_count);
+            Node.left_child_idx = -1;
+            continue;
+        }
+
+        // Otherwise, split elements into child nodes
+        // Run binned SAH
+        unsigned int split_axis = 0;
+        double split_position = 0.0;
+        bool found_split = binned_sah_split(task, scene_blas_centroids, scene_blas_aabbs, scene_blas_indices, split_axis, split_position);
+        if (!found_split) {
+            Node.left_child_idx = -1;
+            continue;
+            // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
+        }
+            
+        // Partition of indices by centroid[axis] < split_pos
+        unsigned int begin = min_blas_idx;
+        unsigned int end = begin + element_count;
+        unsigned int mid = begin;
+
+        while (mid < end) {
+            unsigned int element_idx = scene_blas_indices[mid];
+            double element_centroid_split = scene_blas_centroids[element_idx][split_axis];
+            // Compare triangle centroid position on the axis versus the splitting point
+            if (element_centroid_split < split_position) { // Triangle on the left
+                ++mid; // move mid to the right
+            } else {
+                --end; // Move end to left
+                std::swap(scene_blas_indices[mid], scene_blas_indices[end]);
+            }
+        }
+        // How many triangles are on the left and on the right
+        size_t left_count = mid - begin;
+        size_t right_count = element_count - left_count;
+        
+        // Abort split if one side is empty
+        if (left_count == 0 || right_count == 0) {
+            Node.min_blas_idx = min_blas_idx;
+            Node.blas_count = element_count;
+            Node.bounding_box = create_node_AABB(scene_blas_aabbs, scene_blas_indices, min_blas_idx, element_count);
+            Node.left_child_idx = -1;
+            continue;
+        }
+    
+        // Create children
+        int left_child_idx = TLAS.size();
+        int right_child_idx = left_child_idx + 1;
+         // Assign element ranges
+        // Left child indices: [begin, begin+left_count)
+        int left_min_element_idx = begin;
+        // Right child indices: [begin+left_count, begin+left_count+right_count)
+        int right_min_element_idx = begin + left_count;
+
+        
+        // Create left child directly in TLAS
+        TLAS.emplace_back(create_node_AABB(scene_blas_aabbs, scene_blas_indices, left_min_element_idx, left_count),
+            left_count,
+            -1,
+            left_min_element_idx);
+
+        // Create right child directly in TLAS
+            TLAS.emplace_back(create_node_AABB(scene_blas_aabbs, scene_blas_indices, right_min_element_idx, right_count),
+            right_count,
+            -1,
+            right_min_element_idx);
+
+         // Set parent data
+        // This way instead of using references, as if the vector resizes when we add children, the references might become invalid and produce nonsensical results
+        TLAS[node_idx].left_child_idx = left_child_idx;
+        TLAS[node_idx].blas_count = 0; // It is now an internal node
+        
+        // Push children to stack. LIFO -> Left child gets processed first
+        stack.push_back({right_count, right_child_idx, right_min_element_idx});
+        stack.push_back({left_count, left_child_idx, left_min_element_idx});
+    }
+}
+
 
 
 void copy_data_to_bvh_node(BVH &mesh_bvh,
@@ -352,8 +464,10 @@ void copy_data_to_bvh_node(BVH &mesh_bvh,
     std::vector<int>& node_minimum_element_index,
     const double* mesh_node_coords_expanded_ptr,
     const double* mesh_face_color_ptr){
-    // Copies appropriate mesh data to store directly in BVH node, so it can be accessed easily upon intersection
+    // Copies appropriate mesh data to store directly in BVH node, so it can be accessed easily upon intersection.
+    // This way we also avoid copying the mesh data when we move the node to the BVH tree vector... they're already there when we get to this part here.
 
+    std::cout << "BLAS builder: Copying mesh data into leaf nodes..." << std::endl;
     size_t bvh_node_count = mesh_bvh.tree_nodes.size();
     for (int i = 0; i < bvh_node_count; ++i){
         BVH_Node& Node = mesh_bvh.tree_nodes[i];
@@ -383,12 +497,28 @@ void copy_data_to_bvh_node(BVH &mesh_bvh,
     }
 }
 
+void copy_data_to_TLAS(TLAS &tlas,
+    std::vector<BVH>& scene_BLASes,
+    const std::vector<int>& scene_blas_indices){
+
+    const size_t tlas_node_count = tlas.tlas_nodes.size();
+    std::vector<BVH>& blases_ordered = tlas.blases; // Copy BLASes so they're stored in the traversal order determined by the builder, so data for each node is more local
+
+    for(size_t i = 0; i < tlas_node_count; ++i){
+        TLAS_Node& Node = tlas.tlas_nodes[i];
+        // Iterate over all BLASes stored in TLAS nodes to copy them
+        for(int j = Node.min_blas_idx; j < Node.blas_count; ++j){
+            int blas_idx = scene_blas_indices[j];
+            blases_ordered.push_back(scene_BLASes[blas_idx]);
+        }
+    }
+ }
 
 void intersect_bvh(const Ray& ray,
     HitRecord &intersection_record,
     const BVH& mesh_bvh) {
 
-     std::cout << "  BLAS:Starting BVH intersection test" << std::endl;
+     std::cout << "  BLAS: Starting BVH intersection test" << std::endl;
      const BVH_Node& root = mesh_bvh.tree_nodes[mesh_bvh.root_idx];
 
      std::vector<int> stack; // Store node indices on the stack
@@ -437,78 +567,62 @@ void intersect_bvh(const Ray& ray,
 
 // Handles building all acceleration structures in the scene - bottom and top level
 // Might not need to pass scene_face_colors. Not sure yet.
-void build_acceleration_structures(const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords_expanded,
+TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords_expanded,
     const std::vector<nanobind::ndarray<const double, nanobind::c_contig>>& scene_face_colors){
 
-    // Build BLASes - BVHs for respective meshes
-    size_t num_meshes = scene_coords_expanded.size();
-    // Create vectors to store centroid and AABB_r data for the scene; might not need these, but have them for now
-    std::vector<std::vector<std::array<double,3>>> scene_centroids; // Stores centroids for all meshes in the scene
-    //scene_centroids.reserve(num_meshes); // Might not be worth reserving since we'll need num_meshes * num_elements_mesh * 3 * 8 bytes (double) for the whole vector
-    std::vector<std::vector<AABB>> scene_aabbs; // Stores AABBs for all elements comprising meshes in this scene
-     //scene_aabbs.reserve(num_meshes); // // Might not be worth reserving since we'll need num_meshes * num_elements_mesh * 48 bytes (AABB) for the whole vector
-    std::vector<AABB> scene_obj_aabbs; // Stores AABBs of the whole objectes (meshes) in this scene
-    //scene_obj_aabbs.reserve(num_meshes); // Can reliably reserve this size and not expect it to change
-    
-    std::vector<std::array<double,3>> scene_obj_centroids; // Stores centroids of the whole objectes (meshes) in this scene
-    scene_obj_centroids.reserve(num_meshes); // Can reliably reserve this size and not expect it to change
-    //std::vector<BVH> scene_mesh_bvhs; // Store BVHs for all meshes in the scene
-    //scene_mesh_bvhs.reserve(num_meshes);
-    std::vector<std::unique_ptr<BVH>> scene_mesh_bvhs;
+    size_t scene_mesh_count = scene_coords_expanded.size(); // niu
+   
+    std::vector<std::array<double,3>> scene_blas_centroids; // Stores centroids of the whole objectes (meshes) in this scene
+    scene_blas_centroids.reserve(scene_mesh_count);
+    std::vector<AABB> scene_blas_aabbs; // Store AABBs of the whole objects in this scene
+    scene_blas_aabbs.reserve(scene_mesh_count);
+    std::vector<BVH> scene_blases; // Store mesh_bvhs - this will be used for TLAS
+    scene_blases.reserve(scene_mesh_count);
 
-    // Iterate over MESHES
-    for (size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx) {
-           // Access data from the scene for this particular mesh
+    // Iterate over MESHES to build BLASes - BVHs for respective meshes
+    for (size_t mesh_idx = 0; mesh_idx < scene_mesh_count; ++mesh_idx) {
+        
+        // Access data from Python buffer for this particular mesh (i.e., scene->object)
         enum ElementNodeCount nodes_per_element = TRI3; // Hard-code for now since we only have triangless.
 		nanobind::ndarray<const double, nanobind::c_contig> mesh_node_coords = scene_coords_expanded[mesh_idx];
         nanobind::ndarray<const double, nanobind::c_contig> mesh_face_colors = scene_face_colors[mesh_idx];
-        //size_t mesh_number_of_elements = mesh_connectivity.shape(0); // number of triangles/faces, will give us indices for some bits
-        size_t mesh_number_of_elements = mesh_face_colors.shape(0); // number of triangles/faces, will give us indices for some bits
+        size_t mesh_element_count = mesh_face_colors.shape(0); // number of elements comprising the mesh
         double* mesh_node_coords_ptr = const_cast<double*>(mesh_node_coords.data());
-        //int* mesh_connectivity_ptr = const_cast<int*>(mesh_connectivity.data());
         double* mesh_face_colors_ptr = const_cast<double*>(mesh_face_colors.data());
 
-        // Containers for calculated data
+        // Containers for calculated data for this mesh
         std::vector<std::array<double,3>> mesh_element_centroids; // Store centroids for this mesh
-        mesh_element_centroids.reserve(mesh_number_of_elements * 3 * sizeof(double));
+        mesh_element_centroids.reserve(mesh_element_count);
         std::vector<AABB> mesh_element_aabbs; // Bounding volumes for the elements in this mesh
-        mesh_element_aabbs.reserve(mesh_number_of_elements * sizeof(AABB));
-        AABB mesh_aabb; // AABB_r for the entire mesh
-        std::vector<int> mesh_flat_connectivity;
-        // Iterate over ELEMENTS/TRIANGLES in this mesh
-        process_element_data_tri3(mesh_number_of_elements, mesh_node_coords_ptr, mesh_element_centroids, mesh_element_aabbs, mesh_aabb);
-        // DEBUG: Test copying the connectivity array and flat shuffle
-        /*
-        for (int i = 0; i < mesh_number_of_elements; i++){
-            std::cout << "element " << i << ": " << mesh_flat_connectivity[i] << " " << mesh_flat_connectivity[i+1] << " " << mesh_flat_connectivity[i+2] << std::endl;
-        }
-        shuffle_flat_connectivity(mesh_flat_connectivity, 0, 5, nodes_per_element);
-for (int i = 0; i < mesh_number_of_elements; i++){
-            std::cout << "element " << i << ": " << mesh_flat_connectivity[i] << " " << mesh_flat_connectivity[i+1] << " " << mesh_flat_connectivity[i+2] << std::endl;
-        }
-        //scene_centroids.push_back(mesh_element_centroids);
-        */
-        scene_obj_aabbs.push_back(mesh_aabb); // Store the AABB of this mesh in the scene vector
-        std::array<double,3> mesh_centroid;
-        compute_mesh_centroid(mesh_aabb, mesh_centroid);
-        scene_obj_centroids.push_back(mesh_centroid); // Store the centroid of this mesh in the scene vector
+        mesh_element_aabbs.reserve(mesh_element_count);
+        scene_blas_aabbs.emplace_back();
+        AABB& mesh_aabb = scene_blas_aabbs[mesh_idx]; // AABB for the entire mesh
 
-        // Temp to reshuffle indices as we build the BVH, instead of having to access the mesh data all the time to append it in nodes
-        std::vector<int> mesh_triangle_indices;
-        mesh_triangle_indices.resize(mesh_number_of_elements);
-        std::iota(mesh_triangle_indices.begin(), mesh_triangle_indices.end(), 0);
+        // Iterate over ELEMENTS in this mesh (only triangles for now)
+        process_element_data_tri3(mesh_element_count, mesh_node_coords_ptr, mesh_element_centroids, mesh_element_aabbs, mesh_aabb);
+     
+        // Find centroid of the entire mesh
+        scene_blas_centroids.emplace_back();
+        std::array<double,3>& mesh_centroid = scene_blas_centroids[mesh_idx];
+        compute_mesh_centroid(mesh_aabb, mesh_centroid);
+
+        // Temporary vectors to reshuffle element indices as we build the BVH, instead of having to access the mesh data all the time to append it in nodes right away as we do so
+        std::vector<int> mesh_element_indices;
+        mesh_element_indices.resize(mesh_element_count);
+        std::iota(mesh_element_indices.begin(), mesh_element_indices.end(), 0);
         std::vector<int> node_minimum_element_index;
 
-        std::cout << "Before building BVH" << std::endl;
-        BVH mesh_bvh;
+        std::cout << "Generating BLAS for mesh " << mesh_idx << std::endl;
+        scene_blases.emplace_back(); // Generate directly inside the vector to avoid copying data
+        BVH& mesh_bvh = scene_blases[mesh_idx]; // Get a reference to the BVH of the current mesh to pass it to the builder functions
 
-        
-        build_bvh(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_triangle_indices, node_minimum_element_index);
-        copy_data_to_bvh_node(mesh_bvh, mesh_triangle_indices, node_minimum_element_index, mesh_node_coords_ptr, mesh_face_colors_ptr);
-
-
+        // BVH builder functions
+        build_bvh(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, node_minimum_element_index, mesh_element_count);
+        copy_data_to_bvh_node(mesh_bvh, mesh_element_indices, node_minimum_element_index, mesh_node_coords_ptr, mesh_face_colors_ptr);
+        std::cout << "BLAS successfully built." << std::endl;
         std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
 
+        /*
         for (int i = 0; i < mesh_bvh.tree_nodes.size(); ++i){
             std::cout << "BVH Node ID: " << i << std::endl;
             BVH_Node& Node = mesh_bvh.tree_nodes[i];
@@ -516,154 +630,50 @@ for (int i = 0; i < mesh_number_of_elements; i++){
             std::cout << "Node face colors vector size [elements]: " << Node.face_color.size() << std::endl;
             std::cout << "Node struct size total [bytes]: " << sizeof(Node) << std::endl;
         }
-        std::cout << "After building BVH" << std::endl;
-        
-        //scene_mesh_bvhs.push_back(std::make_unique<BVH>(std::move(mesh_bvh)));
-
-        // Add to the vector storing scene BVHs
-        //scene_mesh_bvhs.emplace_back(std::move(mesh_bvh)); // emplace_back to avoid unnecessary copies
+            */
+       
 
         // DEBUG LINES
         Ray test_ray;
         test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
         test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
         HitRecord intersection_record; 
-        intersect_bvh(test_ray, intersection_record, mesh_bvh);
-        //intersect_bvh(test_ray, intersection_record, *scene_mesh_bvhs.back());
-        //intersect_bvh(test_ray, intersection_record, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
+        //intersect_bvh(test_ray, intersection_record, mesh_bvh);
     
         // Without struct bvh all data should be accessible via root pointer after building
     } //MESHES
 
-    
+    // BUILD TLAS - structure of BLASes
+    TLAS scene_TLAS;
+    scene_TLAS.tlas_nodes.reserve(scene_mesh_count);
+    scene_TLAS.blases.reserve(scene_mesh_count*2);
+    // Temporary vector to reshuffle element indices as we build the BVH, instead of having to access the mesh data all the time to append it in nodes right away as we do so
+    std::vector<int> scene_blas_indices;
+    scene_blas_indices.resize(scene_mesh_count);
+    std::iota(scene_blas_indices.begin(), scene_blas_indices.end(), 0);
+
+    build_TLAS(scene_TLAS.tlas_nodes, scene_blas_centroids, scene_blas_aabbs, scene_blas_indices, scene_mesh_count);
+    copy_data_to_TLAS(scene_TLAS, scene_blases, scene_blas_indices);
+    std::cout << "TLAS successfully built." << std::endl;
+
+    /*
+    for (int i = 0; i < scene_TLAS.tlas_nodes.size(); ++i){
+        std::cout << "TLAS Node ID: " << i << std::endl;
+        TLAS_Node& Node = scene_TLAS.tlas_nodes[i];
+        std::cout << "  Node BLAS count: " << Node.blas_count << std::endl;
+        std::cout << "  Node min index: " << Node.min_blas_idx << std::endl;
+        std::cout << "  Printing contained BLASes..." << std::endl;
+        for(int j = Node.min_blas_idx; j < Node.blas_count; ++j){
+            BVH& mesh_bvh = scene_TLAS.blases[j];
+            std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
+        }
+    }
+    */
+
+    return scene_TLAS;
  } // SCENE (end of function)
+
  
-
-
-/* Commented out - using connectivity and nodal coordinates, not expanded
-// Handles building all acceleration structures in the scene - bottom and top level
-// Might not need to pass scene_face_colors. Not sure yet.
-void build_acceleration_structures(const std::vector <nanobind::ndarray<const int, nanobind::c_contig>>& scene_connectivity,
-    const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords,
-    const std::vector<nanobind::ndarray<const double, nanobind::c_contig>>& scene_face_colors){
-
-    // Build BLASes - BVHs for respective meshes
-    size_t num_meshes = scene_coords.size();
-    // Create vectors to store centroid and AABB_r data for the scene; might not need these, but have them for now
-    std::vector<std::vector<std::array<double,3>>> scene_centroids; // Stores centroids for all meshes in the scene
-    //scene_centroids.reserve(num_meshes); // Might not be worth reserving since we'll need num_meshes * num_elements_mesh * 3 * 8 bytes (double) for the whole vector
-    std::vector<std::vector<AABB>> scene_aabbs; // Stores AABBs for all elements comprising meshes in this scene
-     //scene_aabbs.reserve(num_meshes); // // Might not be worth reserving since we'll need num_meshes * num_elements_mesh * 48 bytes (AABB) for the whole vector
-    std::vector<AABB> scene_obj_aabbs; // Stores AABBs of the whole objectes (meshes) in this scene
-    //scene_obj_aabbs.reserve(num_meshes); // Can reliably reserve this size and not expect it to change
-    
-    std::vector<std::array<double,3>> scene_obj_centroids; // Stores centroids of the whole objectes (meshes) in this scene
-    scene_obj_centroids.reserve(num_meshes); // Can reliably reserve this size and not expect it to change
-    //std::vector<BVH> scene_mesh_bvhs; // Store BVHs for all meshes in the scene
-    //scene_mesh_bvhs.reserve(num_meshes);
-    std::vector<std::unique_ptr<BVH>> scene_mesh_bvhs;
-
-    // Iterate over MESHES
-    for (size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx) {
-           // Access data from the scene for this particular mesh
-        enum ElementNodeQuantity nodes_per_element = TRI3; // Hard-code for now since we only have triangless.
-		nanobind::ndarray<const double, nanobind::c_contig> mesh_node_coords = scene_coords[mesh_idx];
-		nanobind::ndarray<const int, nanobind::c_contig> mesh_connectivity = scene_connectivity[mesh_idx];
-        nanobind::ndarray<const double, nanobind::c_contig> mesh_face_colors = scene_face_colors[mesh_idx];
-        size_t mesh_number_of_elements = mesh_connectivity.shape(0); // number of triangles/faces, will give us indices for some bits
-        double* mesh_node_coords_ptr = const_cast<double*>(mesh_node_coords.data());
-        int* mesh_connectivity_ptr = const_cast<int*>(mesh_connectivity.data());
-
-        // Containers for calculated data
-        std::vector<std::array<double,3>> mesh_element_centroids; // Store centroids for this mesh
-        mesh_element_centroids.reserve(mesh_number_of_elements * 3 * sizeof(double));
-        std::vector<AABB> mesh_element_aabbs; // Bounding volumes for the elements in this mesh
-        mesh_element_aabbs.reserve(mesh_number_of_elements * sizeof(AABB));
-        AABB mesh_aabb; // AABB_r for the entire mesh
-        std::vector<int> mesh_flat_connectivity;
-        // Iterate over ELEMENTS/TRIANGLES in this mesh
-        process_element_data_tri3(mesh_number_of_elements, mesh_connectivity_ptr, mesh_node_coords_ptr, mesh_element_centroids, mesh_element_aabbs, mesh_aabb, mesh_flat_connectivity);
-        // DEBUG: Test copying the connectivity array and flat shuffle
-        /*
-        for (int i = 0; i < mesh_number_of_elements; i++){
-            std::cout << "element " << i << ": " << mesh_flat_connectivity[i] << " " << mesh_flat_connectivity[i+1] << " " << mesh_flat_connectivity[i+2] << std::endl;
-        }
-        shuffle_flat_connectivity(mesh_flat_connectivity, 0, 5, nodes_per_element);
-for (int i = 0; i < mesh_number_of_elements; i++){
-            std::cout << "element " << i << ": " << mesh_flat_connectivity[i] << " " << mesh_flat_connectivity[i+1] << " " << mesh_flat_connectivity[i+2] << std::endl;
-        }
-        //scene_centroids.push_back(mesh_element_centroids);
-        scene_obj_aabbs.push_back(mesh_aabb); // Store the AABB of this mesh in the scene vector
-        std::vector<int> mesh_triangle_indices;
-        mesh_triangle_indices.resize(mesh_number_of_elements);
-        std::iota(mesh_triangle_indices.begin(), mesh_triangle_indices.end(), 0);
-        std::array<double,3> mesh_centroid;
-        compute_mesh_centroid(mesh_aabb, mesh_centroid);
-        scene_obj_centroids.push_back(mesh_centroid); // Store the centroid of this mesh in the scene vector
-
-        // DEBUG LINES
-        //std::cout << "size of mesh_triangle_indices " << mesh_triangle_indices.size() << std::endl;
-        //std::cout << "mesh_triangle_indices[0] " << mesh_triangle_indices[0] << std::endl;
-        //std::cout << "mesh_triangle_indices[30] " << mesh_triangle_indices[30] << std::endl;
-
-        std::unique_ptr<BVH_Node> root = std::make_unique<BVH_Node>();
-        root->bounding_box = mesh_aabb;
-        root->min_triangle_idx = 0;
-        root->triangle_count = mesh_number_of_elements;
-        //mesh_bvh.root = std::move(root);
-
-
-        build_bvh(*root, mesh_element_centroids, mesh_element_aabbs, mesh_triangle_indices);
-        // Build BVH struct
-        BVH mesh_bvh;
-        mesh_bvh.root = std::move(root);
-        mesh_bvh.triangle_indices = std::move(mesh_triangle_indices); 
-        mesh_bvh.mesh_node_coords_ptr = mesh_node_coords_ptr;
-        mesh_bvh.mesh_connectivity_ptr = mesh_connectivity_ptr;
-        double* mesh_face_colors_ptr = const_cast<double*>(mesh_face_colors.data());
-        mesh_bvh.mesh_face_colors_ptr = mesh_face_colors_ptr;
-        // Add to the vector storing scene BVHs
-        //scene_mesh_bvhs.emplace_back(std::move(mesh_bvh)); // emplace_back to avoid unnecessary copies
-
-        std::cout << "Before building BVH" << std::endl;
-        BVH mesh_bvh;
-        build_bvh(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_triangle_indices);
-        // If BVH has multiple nodes => Root must store 0 triangles => Update the triangle count
-        if (mesh_bvh.tree_nodes.size() >=2){
-            mesh_bvh.tree_nodes[0].triangle_count = 0;
-        }
-        
-        for (int i = 0; i < mesh_bvh.tree_nodes.size(); i++){
-            std::cout << "Node " << i << ": min_triangle_idx " << mesh_bvh.tree_nodes[i].min_triangle_idx << ", triangle_count " << mesh_bvh.tree_nodes[i].triangle_count << ", left_child_idx " << mesh_bvh.tree_nodes[i].left_child_idx << ", right_child_idx " << mesh_bvh.tree_nodes[i].right_child_idx << std::endl;
-        }
-        std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
-        std::cout << "After building BVH" << std::endl;
-        
-        mesh_bvh.mesh_node_coords_ptr = mesh_node_coords_ptr;
-        mesh_bvh.mesh_connectivity_ptr = mesh_connectivity_ptr;
-        double* mesh_face_colors_ptr = const_cast<double*>(mesh_face_colors.data());
-        mesh_bvh.mesh_face_colors_ptr = mesh_face_colors_ptr;
-        mesh_bvh.triangle_indices = std::move(mesh_triangle_indices); 
-        //scene_mesh_bvhs.push_back(std::make_unique<BVH>(std::move(mesh_bvh)));
-
-
-
-        // DEBUG LINES
-        Ray test_ray;
-        test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
-        test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
-        HitRecord intersection_record; 
-        intersect_bvh(test_ray, intersection_record, mesh_bvh);
-        //intersect_bvh(test_ray, intersection_record, *scene_mesh_bvhs.back());
-        //intersect_bvh(test_ray, intersection_record, *root, mesh_triangle_indices, mesh_connectivity_ptr, mesh_node_coords_ptr);
-    
-        // Without struct bvh all data should be accessible via root pointer after building
-    } //MESHES
-
-    
- } // SCENE (end of function)
- */
-
 
 /*
 double find_SAH_cost_node(const BVH_Node& node) {

@@ -47,7 +47,7 @@ void render_scene(const int image_height,
     //std::chrono::time_point t2_i = std::chrono::high_resolution_clock::now();
 
     //std::chrono::time_point t1_d = std::chrono::high_resolution_clock::now();
-    build_acceleration_structures(scene_coords_expanded, scene_face_colors); // target stack-based DoD implementation
+    TLAS test = build_acceleration_structures(scene_coords_expanded, scene_face_colors); // target stack-based DoD implementation
     //std::chrono::time_point t2_d = std::chrono::high_resolution_clock::now();
     //std::chrono::duration t_r = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_r - t1_r);
     //std::chrono::duration t_i = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_i - t1_i);

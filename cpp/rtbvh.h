@@ -93,42 +93,60 @@ struct AABB {
 inline void compute_mesh_centroid_it(AABB mesh_aabb,
     std::array<double,3>& mesh_centroid);
 
-struct BVH_Node {
-    // Coordinates of nodes comprising the triangles stored in the node, if applicable
-    std::vector<double> node_coords; // Stored as x,y,z. Node coords of contained elements in this node
-    std::vector<double> face_color; // , as we access those per element in this order
-    AABB bounding_box {};
-    // Unique pointers to prevent memory leaks with raw pointers and new BVH_Node use
-    //std::unique_ptr<BVH_Node> left_child;
-    //std::unique_ptr<BVH_Node> right_child;
-    //BVH_Node* left_child {nullptr}; // Nullptr if leaf.
-    //BVH_Node* right_child {nullptr};
-    //int min_elem_idx {-1};
-    int left_child_idx {-1};
-   // int right_child_idx {-1}; // Remove this later as it's left + 1, but keep while developing as it makes it easier to see obvious issues with the code
-    enum ElementNodeCount nodes_per_element {TRI3}; // Assign 3 by default for now since we only do triangles
-    int element_count {0}; // If not zero, this is the leaf
-};
-
-
-AABB create_node_AABB_it(const std::vector<AABB>& mesh_triangle_abbs,
-    const std::vector<int>& mesh_triangle_indices,
-    const int node_min_triangle_idx,
-    const int node_triangle_count);
-
-
-// Keeping BVH as a struct for now since we may have to store the global texture data here. TBDetermined.
-struct BVH {
-    std::vector<BVH_Node> tree_nodes;
-    int root_idx {-1};
-};
-
 struct Bin {
     // Bin for binning SAH
     AABB bounding_box {};
     int element_count {0};
 };
 
+// Struct used as a placeholder in BLAS and TLAS builder
+struct BuildTask {
+    size_t element_count;      // number of elements
+    int node_idx;
+    int min_element_idx;      // first triangle index in tri_indices
+};
+
+struct BVH_Node {
+    // Coordinates of nodes comprising the triangles stored in the node, if applicable
+    std::vector<double> node_coords; // Stored as x,y,z. Node coords of contained elements in this node
+    std::vector<double> face_color; // , as we access those per element in this order
+    AABB bounding_box {};
+    size_t element_count {0}; // If not zero, this is the leaf
+    //int min_elem_idx {-1};
+    enum ElementNodeCount nodes_per_element {TRI3}; // Assign 3 by default for now since we only do triangles
+    int left_child_idx {-1};
+   // int right_child_idx {-1}; // Remove this later as it's left + 1, but keep while developing as it makes it easier to see obvious issues with the code
+    
+};
+
+// Keeping BVH as a struct for now since we may have to store the global texture data here. TBDetermined.
+struct BVH {
+    std::vector<BVH_Node> tree_nodes;
+    AABB bounding_box;
+    int root_idx {-1};
+
+    BVH() = default;
+};
+
+struct TLAS_Node {
+    AABB bounding_box {};
+    int blas_count {0}; // Number of BLASes in this node (consecutive in the array)
+    int left_child_idx {-1};
+    int min_blas_idx {-1}; // Store this instead of data as we expect a few meshes in the scene tops, so indexing into BLAS vector shouldn't be too awful
+
+    TLAS_Node() = default;
+    TLAS_Node(AABB aabb, int count, int left_idx, int min_blas_idx):
+        bounding_box(aabb),
+        blas_count(count),
+        left_child_idx(left_idx),
+        min_blas_idx(min_blas_idx)
+        {};
+};
+
+struct TLAS {
+    std::vector<BVH> blases;
+    std::vector<TLAS_Node> tlas_nodes;
+};
 
 // Binned Surface Area Heuristic (SAH) split
 bool binned_sah_split(BVH_Node& Node,
@@ -145,7 +163,7 @@ bool binned_sah_split(BVH_Node& Node,
     std::vector<int>& mesh_triangle_indices);
 */
 
-void build_acceleration_structures(const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords_expanded,
+TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords_expanded,
     const std::vector<nanobind::ndarray<const double, nanobind::c_contig>>& scene_face_colors);
 
 // Handles building all acceleration structures in the scene - bottom and top level
