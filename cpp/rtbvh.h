@@ -104,6 +104,12 @@ struct BuildTask {
     size_t element_count;      // number of elements
     int node_idx;
     int min_element_idx;      // first triangle index in tri_indices
+
+    BuildTask(size_t element_count, int node_idx, int min_element_idx):
+    element_count(element_count),
+    node_idx(node_idx),
+    min_element_idx(min_element_idx)
+    {};
 };
 
 struct BVH_Node {
@@ -116,6 +122,13 @@ struct BVH_Node {
     enum ElementNodeCount nodes_per_element {TRI3}; // Assign 3 by default for now since we only do triangles
     int left_child_idx {-1};
    // int right_child_idx {-1}; // Remove this later as it's left + 1, but keep while developing as it makes it easier to see obvious issues with the code
+
+   BVH_Node() = default;
+   BVH_Node(AABB aabb, size_t element_count, int left_child_idx):
+    bounding_box(aabb),
+    element_count(element_count),
+    left_child_idx(left_child_idx)
+    {};
     
 };
 

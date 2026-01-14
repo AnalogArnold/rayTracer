@@ -232,7 +232,7 @@ void build_bvh(BVH &mesh_bvh,
     mesh_bvh.tree_nodes.clear();
     mesh_bvh.tree_nodes.reserve(mesh_element_indices.size() * 2); // crude upper bound
 
-    std::cout << "BLAS builder: Splitting into nodes..." << std::endl;
+    //std::cout << "BLAS builder: Splitting into nodes..." << std::endl;
   
     // Create root
     BVH_Node root;
@@ -246,7 +246,7 @@ void build_bvh(BVH &mesh_bvh,
     //std::cout << "Initializing building BVH" << std::endl;
     // Stack-based builder
     std::vector<BuildTask> stack;
-     stack.push_back({root.element_count, mesh_bvh.root_idx, 0, }); // push root onto the stack
+    stack.push_back({root.element_count, mesh_bvh.root_idx, 0}); // push root onto the stack
    
     while(!stack.empty()){
         //std::cout << "Inside loop for building BVH" << std::endl;
@@ -352,7 +352,7 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
     static constexpr int MAX_ELEMENTS_PER_LEAF = 2;
     // DFS implementation so LIFO; need to think if queue with BFS wouldn't work better since we don't care THAT much about the memory
 
-    std::cout << "TLAS builder: Splitting into nodes..." << std::endl;
+    //std::cout << "TLAS builder: Splitting into nodes..." << std::endl;
 
     // Create root
     TLAS_Node root;
@@ -433,7 +433,6 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
         // Right child indices: [begin+left_count, begin+left_count+right_count)
         int right_min_element_idx = begin + left_count;
 
-        
         // Create left child directly in TLAS
         TLAS.emplace_back(create_node_AABB(scene_blas_aabbs, scene_blas_indices, left_min_element_idx, left_count),
             left_count,
@@ -456,8 +455,6 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
         stack.push_back({left_count, left_child_idx, left_min_element_idx});
     }
 }
-
-
 
 void copy_data_to_bvh_node(BVH &mesh_bvh,
     std::vector<int>& mesh_element_indices,
@@ -507,7 +504,8 @@ void copy_data_to_TLAS(TLAS &tlas,
     for(size_t i = 0; i < tlas_node_count; ++i){
         TLAS_Node& Node = tlas.tlas_nodes[i];
         // Iterate over all BLASes stored in TLAS nodes to copy them
-        for(int j = Node.min_blas_idx; j < Node.blas_count; ++j){
+        int node_max_index = Node.min_blas_idx + Node.blas_count;
+        for(int j = Node.min_blas_idx; j < node_max_index; ++j){
             int blas_idx = scene_blas_indices[j];
             blases_ordered.push_back(scene_BLASes[blas_idx]);
         }
@@ -519,7 +517,7 @@ void intersect_bvh(const Ray& ray,
     const BVH& mesh_bvh) {
 
      std::cout << "  BLAS: Starting BVH intersection test" << std::endl;
-     const BVH_Node& root = mesh_bvh.tree_nodes[mesh_bvh.root_idx];
+     //const BVH_Node& root = mesh_bvh.tree_nodes[mesh_bvh.root_idx];
 
      std::vector<int> stack; // Store node indices on the stack
      stack.push_back(mesh_bvh.root_idx);
@@ -531,7 +529,7 @@ void intersect_bvh(const Ray& ray,
         if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
         if (Node.left_child_idx == -1) {
             // No children => Leaf node => Intersect triangles
-            std::cout << "   BLAS: Leaf node reached with " << Node.element_count << " triangles." << std::endl;
+            std::cout << "   BLAS: Leaf node reached with " << Node.element_count << " elements." << std::endl;
            
             IntersectionOutput intersection = intersect_bvh_triangles(ray, Node.node_coords, Node.element_count);
             Eigen::Index minRowIndex, minColIndex;
@@ -562,6 +560,40 @@ void intersect_bvh(const Ray& ray,
             // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
         }
             
+     }
+}
+
+void intersect_tlas(const Ray& ray,
+    const TLAS& scene_TLAS){
+
+    HitRecord intersection_record;
+    std::cout << "TLAS: Starting BVH intersection test" << std::endl;
+
+     std::vector<int> stack; // Store node indices on the stack
+     stack.push_back(0); // Push root index
+
+     while(!stack.empty()){
+        const TLAS_Node& Node = scene_TLAS.tlas_nodes[stack.back()];
+        stack.pop_back();
+
+        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (Node.left_child_idx == -1) {
+            // No children => Leaf node => Intersect triangles
+            std::cout << "TLAS: Leaf node reached with " << Node.blas_count << " BLASes." << std::endl;
+            int node_max_index = Node.min_blas_idx + Node.blas_count;
+            for (int i = Node.min_blas_idx; i < node_max_index; ++i){
+                std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
+                intersect_bvh(ray, intersection_record, scene_TLAS.blases[i]);
+            }
+        }
+        else { // Not a leaf node => Test children nodes for intersections
+            // DFS order
+            int left = Node.left_child_idx;
+            int right = left + 1;
+            if (right != 0) stack.push_back(right);
+            if(left != -1) stack.push_back(left);
+            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
+        }
      }
 }
 
@@ -612,15 +644,15 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
         std::iota(mesh_element_indices.begin(), mesh_element_indices.end(), 0);
         std::vector<int> node_minimum_element_index;
 
-        std::cout << "Generating BLAS for mesh " << mesh_idx << std::endl;
+        //std::cout << "Generating BLAS for mesh " << mesh_idx << std::endl;
         scene_blases.emplace_back(); // Generate directly inside the vector to avoid copying data
         BVH& mesh_bvh = scene_blases[mesh_idx]; // Get a reference to the BVH of the current mesh to pass it to the builder functions
 
         // BVH builder functions
         build_bvh(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, node_minimum_element_index, mesh_element_count);
         copy_data_to_bvh_node(mesh_bvh, mesh_element_indices, node_minimum_element_index, mesh_node_coords_ptr, mesh_face_colors_ptr);
-        std::cout << "BLAS successfully built." << std::endl;
-        std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
+        //std::cout << "BLAS successfully built." << std::endl;
+        //std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
 
         /*
         for (int i = 0; i < mesh_bvh.tree_nodes.size(); ++i){
@@ -634,11 +666,13 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
        
 
         // DEBUG LINES
+        /*
         Ray test_ray;
         test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
         test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
         HitRecord intersection_record; 
-        //intersect_bvh(test_ray, intersection_record, mesh_bvh);
+        intersect_bvh(test_ray, intersection_record, mesh_bvh);
+        */
     
         // Without struct bvh all data should be accessible via root pointer after building
     } //MESHES
@@ -654,7 +688,13 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
 
     build_TLAS(scene_TLAS.tlas_nodes, scene_blas_centroids, scene_blas_aabbs, scene_blas_indices, scene_mesh_count);
     copy_data_to_TLAS(scene_TLAS, scene_blases, scene_blas_indices);
-    std::cout << "TLAS successfully built." << std::endl;
+    //std::cout << "TLAS successfully built." << std::endl;
+    Ray test_ray;
+    test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
+    test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
+    //HitRecord intersection_record; 
+    intersect_tlas(test_ray, scene_TLAS);
+    
 
     /*
     for (int i = 0; i < scene_TLAS.tlas_nodes.size(); ++i){
