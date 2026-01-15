@@ -14,6 +14,7 @@
 #include "rthitrecord.h"
 #include "ndarray.h"
 
+constexpr int NODE_COORDINATES = 3; // number of coordinates per each mesh node. Used for some of flat indexing
 
 inline void compute_mesh_centroid(AABB& mesh_aabb, std::array<double,3>& mesh_centroid) {
     // Compute centroid of the mesh AABB
@@ -78,7 +79,7 @@ inline void process_element_data_tri3(int mesh_number_of_triangles,
     std::vector<AABB>& mesh_triangle_aabbs,
     AABB& mesh_aabb){
         enum ElementNodeCount nodes_per_element = TRI3;
-        const int coords_per_element = nodes_per_element * 3; // number of elements times 3 coordinates each
+        const int coords_per_element = nodes_per_element * NODE_COORDINATES; // number of elements times 3 coordinates each
         // Iterate over triangles comprising a mesh
         for (int triangle_idx = 0; triangle_idx < mesh_number_of_triangles; triangle_idx++) {
             // Use pointers - means we treat the 2D array as a flat 1D array and do the indexing manually by calculating the offset.
@@ -116,13 +117,25 @@ double find_SAH_cost_bin(unsigned int left_element_count, unsigned int right_ele
    return (double)left_element_count * left_bounds.find_surface_area() + (double)right_element_count * right_bounds.find_surface_area(); // Static casts complained so leave C-style casts for now
 }
 
-// Binned Surface Area Heuristic (SAH) split
+inline void midpoint_split(AABB& node_centroid_bounds,
+    double axis_extent,
+    unsigned int& out_split_axis,
+    double& out_split_position){
+    // Fallback splitting if SAH fails: midpoint
+    
+    std::cout << "SAH splitting failed. Trying midpoint instead." << std::endl;
+    // Find median index (median object)
+    out_split_position = node_centroid_bounds.corner_min[out_split_axis] + axis_extent * 0.5;
+}
+
+
 bool binned_sah_split(BuildTask& Node,
     const std::vector<std::array<double,3>>& mesh_element_centroids,
     const std::vector<AABB>& mesh_element_aabbs,
     const std::vector<int>& mesh_element_indices,
     unsigned int& out_split_axis,
     double& out_split_position) {
+    // Binned Surface Area Heuristic (SAH) split
 
     if (Node.element_count <= 2) return false; // Too small to split
     unsigned int node_max_element_idx = Node.min_element_idx + Node.element_count;
@@ -149,9 +162,14 @@ bool binned_sah_split(BuildTask& Node,
             axis_extent = temp_extent;
         }
     }
-    if (axis_extent == 0) return false; // All centroids coincident along the chosen axis => No useful split
-    // Might implement fallback split here (median et.c) here later rather than in the main build_bvh function?
     out_split_axis = best_axis;
+
+    // All centroids coincident along the chosen axis => No useful split
+    if (axis_extent == 0){
+        //return false;
+        midpoint_split(node_centroid_bounds, axis_extent, out_split_axis, out_split_position);
+        return true;
+    }
 
     // Create bins
     constexpr int NUM_BINS = 8;
@@ -211,14 +229,17 @@ bool binned_sah_split(BuildTask& Node,
             best_split_bin = i;
         }
     }
-    if (best_split_bin == -1) return false; // No useful split found
+    if (best_split_bin == -1){ // No useful split found
+        //return false; 
+        midpoint_split(node_centroid_bounds, axis_extent, out_split_axis, out_split_position);
+        return true;
+    } 
 
     // Convert Bin index to world-space split position
     double bin_width = axis_extent / NUM_BINS;
     out_split_position = node_centroid_bounds.corner_min[best_axis] + bin_width * (best_split_bin + 1); // Boundary between best_split_bin and best_split_bin + 1
     return true;
 }
-
 
 void build_bvh(BVH &mesh_bvh,
     const std::vector<std::array<double,3>>& mesh_element_centroids,
@@ -271,14 +292,13 @@ void build_bvh(BVH &mesh_bvh,
         unsigned int split_axis = 0;
         double split_position = 0.0;
         bool found_split = binned_sah_split(task, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, split_axis, split_position);
-        
         if (!found_split) {
+            // Fallback splitting implemented, so if SAH returns false, it ought to be too small to split => Mark as leaf node.
             Node.left_child_idx = -1;
             continue;
-            // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
         }
             
-        // Partition of indices by centroid[axis] < split_pos
+        // Partition of indices by centroid[axis] < split_pos. A bit like QuickSort partitioning, where we get the pivot from our splitting function
         unsigned int begin = min_element_idx;
         unsigned int end = begin + element_count;
         unsigned int mid = begin;
@@ -299,6 +319,8 @@ void build_bvh(BVH &mesh_bvh,
         size_t right_count = element_count - left_count;
         
         // Abort split if one side is empty
+        // NOTE: this could be improved by going through the midpoint split again, but choosing a different axis.
+        // That being said, with both SAH and midpoint splitting, this is very unlikely
         if (left_count == 0 || right_count == 0) {
             Node.element_count = element_count;
             Node.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, min_element_idx, element_count);
@@ -308,34 +330,29 @@ void build_bvh(BVH &mesh_bvh,
     
         // Create children
         int left_child_idx = mesh_bvh.tree_nodes.size();
-        mesh_bvh.tree_nodes.push_back(BVH_Node());
         int right_child_idx = left_child_idx + 1;
-        mesh_bvh.tree_nodes.push_back(BVH_Node());
+        // Assign element ranges
+        // Left child indices: [begin, begin+left_count)
+        int left_min_element_idx = begin;
+        // Right child indices: [begin+left_count, begin+left_count+right_count)
+        int right_min_element_idx = begin + left_count;
+        node_minimum_element_index.push_back(left_min_element_idx);
+        node_minimum_element_index.push_back(right_min_element_idx);
+         
+        // Create left child directly in BVH
+        mesh_bvh.tree_nodes.emplace_back(create_node_AABB(mesh_element_aabbs, mesh_element_indices, left_min_element_idx, left_count),
+            left_count,
+            -1);
+
+         // Create right child directly in BVH
+        mesh_bvh.tree_nodes.emplace_back(create_node_AABB(mesh_element_aabbs, mesh_element_indices, right_min_element_idx, right_count),
+            right_count,
+            -1);
 
          // Set parent data
         // This way instead of using references, as if the vector resizes when we add children, the references might become invalid and produce nonsensical results
         mesh_bvh.tree_nodes[node_idx].left_child_idx = left_child_idx;
         mesh_bvh.tree_nodes[node_idx].element_count = 0; // It is now an internal node
-
-        // Initialize children metadata
-        BVH_Node& left_child = mesh_bvh.tree_nodes[left_child_idx];
-        BVH_Node& right_child = mesh_bvh.tree_nodes[right_child_idx];        
- 
-        // Assign element ranges
-        // Left child indices: [begin, begin+left_count)
-        left_child.element_count = left_count;
-        int left_min_element_idx = begin;
-        //left_child.min_elem_idx = begin;
-        node_minimum_element_index.push_back(left_min_element_idx);
-        // Right child indices: [begin+left_count, begin+left_count+right_count)
-        int right_min_element_idx = begin + left_count;
-        right_child.element_count = right_count;
-        //right_child.min_elem_idx = begin + left_count;
-        node_minimum_element_index.push_back(right_min_element_idx);
-
-        // Recompute child bounds from the indices
-        left_child.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, left_min_element_idx, left_count);
-        right_child.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, right_min_element_idx, right_count);
         
         // Push children to stack. LIFO -> Left child gets processed first
         stack.push_back({right_count, right_child_idx, right_min_element_idx});
@@ -390,9 +407,9 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
         double split_position = 0.0;
         bool found_split = binned_sah_split(task, scene_blas_centroids, scene_blas_aabbs, scene_blas_indices, split_axis, split_position);
         if (!found_split) {
+            // Fallback splitting implemented, so if SAH returns false, it ought to be too small to split => Mark as leaf node.
             Node.left_child_idx = -1;
             continue;
-            // Potential to implement some back-up splitting metod here, like median split or whatever. Need to look up what would be fail-safe where binning SAH might not perform well.
         }
             
         // Partition of indices by centroid[axis] < split_pos
@@ -405,7 +422,7 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
             double element_centroid_split = scene_blas_centroids[element_idx][split_axis];
             // Compare triangle centroid position on the axis versus the splitting point
             if (element_centroid_split < split_position) { // Triangle on the left
-                ++mid; // move mid to the right
+                ++mid; // Move mid to the right
             } else {
                 --end; // Move end to left
                 std::swap(scene_blas_indices[mid], scene_blas_indices[end]);
@@ -416,6 +433,8 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
         size_t right_count = element_count - left_count;
         
         // Abort split if one side is empty
+        // NOTE: this could be improved by going through the midpoint split again, but choosing a different axis.
+        // That being said, with both SAH and midpoint splitting, this is very unlikely
         if (left_count == 0 || right_count == 0) {
             Node.min_blas_idx = min_blas_idx;
             Node.blas_count = element_count;
@@ -475,9 +494,9 @@ void copy_data_to_bvh_node(BVH &mesh_bvh,
         //std::cout << "Min element id from vector: " << node_min_element_idx << std::endl;
         //std::cout << "Min element id from node: " << Node.min_elem_idx << std::endl;;
         int node_max_element_idx = node_min_element_idx + Node.element_count;
-        Node.node_coords.resize(node_element_count * Node.nodes_per_element * 3);
-        Node.face_color.resize(node_element_count * 3);
-        const int coords_per_element = Node.nodes_per_element * 3; // number of nodes per element times 3 coordinates each
+        Node.node_coords.resize(node_element_count * Node.nodes_per_element * NODE_COORDINATES);
+        Node.face_color.resize(node_element_count * NODE_COORDINATES);
+        const int coords_per_element = Node.nodes_per_element * NODE_COORDINATES; // number of nodes per element times 3 coordinates each
         for (int element_idx = node_min_element_idx; element_idx < node_max_element_idx; ++element_idx){
             //std::cout << "Element id " << element_idx << " with coords: " << std::endl;
             int element_min_index = element_idx * coords_per_element;
@@ -487,9 +506,9 @@ void copy_data_to_bvh_node(BVH &mesh_bvh,
                 Node.node_coords.push_back(mesh_node_coords_expanded_ptr[element_min_index + j]);
             }
             //std::cout << std::endl;
-            Node.face_color.push_back(mesh_face_color_ptr[element_idx * 3]);
-            Node.face_color.push_back(mesh_face_color_ptr[element_idx * 3 + 1]);
-            Node.face_color.push_back(mesh_face_color_ptr[element_idx * 3 + 2]);
+            Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES]);
+            Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES + 1]);
+            Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES + 2]);
         }
     }
 }
@@ -597,6 +616,31 @@ void intersect_tlas(const Ray& ray,
      }
 }
 
+  inline void print_BLAS_data(BVH& mesh_bvh){
+     std::cout << "     BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
+     for (int i = 0; i < mesh_bvh.tree_nodes.size(); ++i){
+            std::cout << "          BVH Node ID: " << i << std::endl;
+            BVH_Node& Node = mesh_bvh.tree_nodes[i];
+            std::cout << "              Node coords vector size [elements]: " << Node.node_coords.size() << std::endl;
+            std::cout << "              Node face colors vector size [elements]: " << Node.face_color.size() << std::endl;
+            std::cout << "              Node struct size total [bytes]: " << sizeof(Node) << std::endl;
+ }
+}
+
+ inline void print_TLAS(TLAS &scene_TLAS){
+    for (int i = 0; i < scene_TLAS.tlas_nodes.size(); ++i){
+        std::cout << "TLAS Node ID: " << i << std::endl;
+        TLAS_Node& Node = scene_TLAS.tlas_nodes[i];
+        std::cout << "  Node BLAS count: " << Node.blas_count << std::endl;
+        std::cout << "  Node min index: " << Node.min_blas_idx << std::endl;
+        std::cout << "  Printing contained BLASes..." << std::endl;
+        for(int j = Node.min_blas_idx; j < Node.blas_count; ++j){
+            BVH& mesh_bvh = scene_TLAS.blases[j];
+            print_BLAS_data(mesh_bvh);
+        }
+    }
+ }
+
 // Handles building all acceleration structures in the scene - bottom and top level
 // Might not need to pass scene_face_colors. Not sure yet.
 TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const double, nanobind::c_contig>>& scene_coords_expanded,
@@ -654,17 +698,6 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
         //std::cout << "BLAS successfully built." << std::endl;
         //std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
 
-        /*
-        for (int i = 0; i < mesh_bvh.tree_nodes.size(); ++i){
-            std::cout << "BVH Node ID: " << i << std::endl;
-            BVH_Node& Node = mesh_bvh.tree_nodes[i];
-            std::cout << "Node coords vector size [elements]: " << Node.node_coords.size() << std::endl;
-            std::cout << "Node face colors vector size [elements]: " << Node.face_color.size() << std::endl;
-            std::cout << "Node struct size total [bytes]: " << sizeof(Node) << std::endl;
-        }
-            */
-       
-
         // DEBUG LINES
         /*
         Ray test_ray;
@@ -692,28 +725,15 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
     Ray test_ray;
     test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
     test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
-    //HitRecord intersection_record; 
-    intersect_tlas(test_ray, scene_TLAS);
-    
-
-    /*
-    for (int i = 0; i < scene_TLAS.tlas_nodes.size(); ++i){
-        std::cout << "TLAS Node ID: " << i << std::endl;
-        TLAS_Node& Node = scene_TLAS.tlas_nodes[i];
-        std::cout << "  Node BLAS count: " << Node.blas_count << std::endl;
-        std::cout << "  Node min index: " << Node.min_blas_idx << std::endl;
-        std::cout << "  Printing contained BLASes..." << std::endl;
-        for(int j = Node.min_blas_idx; j < Node.blas_count; ++j){
-            BVH& mesh_bvh = scene_TLAS.blases[j];
-            std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
-        }
-    }
-    */
+    //intersect_tlas(test_ray, scene_TLAS);
+    print_TLAS(scene_TLAS);
 
     return scene_TLAS;
  } // SCENE (end of function)
 
- 
+
+
+
 
 /*
 double find_SAH_cost_node(const BVH_Node& node) {

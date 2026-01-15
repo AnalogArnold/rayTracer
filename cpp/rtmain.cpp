@@ -56,10 +56,6 @@ void render_scene(const int image_height,
     //std::cout << "Iterative, pointer approach duration: " << t_i.count() << "ns \n";
     std::cout << "Iterative, DoD approach duration: " << t_d.count() << "ns \n";
 
-
-
-
-
    
      // Comment out for preliminary testing of building BVHs
     // Iterate over all cameras and render an image for each
