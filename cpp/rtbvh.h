@@ -13,7 +13,6 @@
 #include <nanobind/stl/vector.h>
 
 #include "rteigentypes.h"
-#include "rtrender.h"
 #include "rtray.h"
 
 // Enum storing the number of nodes per element, so we can update it later nicely when we add different types? At least that's the idea.
@@ -80,7 +79,9 @@ struct AABB {
     }
 
     inline double find_axis_extent(int axis) const {
-        return corner_max[axis] - corner_min[axis];
+        double result = corner_max[axis] - corner_min[axis];
+        if (result < 0) return 0.0;
+        return result;
     }
     inline double find_surface_area() const {
         double height = find_axis_extent(2);
@@ -89,6 +90,8 @@ struct AABB {
         return 2 * (height * width + width * depth + height * depth);
     }
 };
+
+bool intersect_AABB (const Ray& ray, const AABB& AABB);
 
 inline void compute_mesh_centroid_it(AABB mesh_aabb,
     std::array<double,3>& mesh_centroid);

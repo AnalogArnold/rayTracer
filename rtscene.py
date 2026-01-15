@@ -12,6 +12,7 @@ class Scene:
     scene_camera_center: list[np.ndarray] = field(default_factory=list)
     scene_pixel_00_center: list[np.ndarray] = field(default_factory=list)
     scene_matrix_pixel_spacing: list[np.ndarray] = field(default_factory=list)
+    
         
     #def add_mesh(self, connectivity:np.ndarray, coords: np.ndarray, face_colors: np.ndarray) -> None:
     #    '''Adds a mesh to the scene.'''

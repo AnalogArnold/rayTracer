@@ -17,8 +17,8 @@
 
 // raytracer header files
 #include "rteigentypes.h"
-#include "rtrender.h"
 #include "rtbvh.h"
+#include "rtrender.h"
 #include "rtbvh_recursion.h"
 #include "rtbvh_stack.h"
 
@@ -46,15 +46,15 @@ void render_scene(const int image_height,
     //build_acceleration_structures_it(scene_connectivity, scene_coords, scene_face_colors); // stack-based implementation with pointers
     //std::chrono::time_point t2_i = std::chrono::high_resolution_clock::now();
 
-    std::chrono::time_point t1_d = std::chrono::high_resolution_clock::now();
-    TLAS test = build_acceleration_structures(scene_coords_expanded, scene_face_colors); // target stack-based DoD implementation
-    std::chrono::time_point t2_d = std::chrono::high_resolution_clock::now();
+    //std::chrono::time_point t1_d = std::chrono::high_resolution_clock::now();
+    TLAS test_TLAS = build_acceleration_structures(scene_coords_expanded, scene_face_colors); // target stack-based DoD implementation
+    //std::chrono::time_point t2_d = std::chrono::high_resolution_clock::now();
     //std::chrono::duration t_r = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_r - t1_r);
     //std::chrono::duration t_i = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_i - t1_i);
-    std::chrono::duration t_d = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_d - t1_d);
+    //std::chrono::duration t_d = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_d - t1_d);
     //std::cout << "Recursive, pointer approach duration: " << t_r.count() << "ns \n";
     //std::cout << "Iterative, pointer approach duration: " << t_i.count() << "ns \n";
-    std::cout << "Iterative, DoD approach duration: " << t_d.count() << "ns \n";
+    //std::cout << "Iterative, DoD approach duration: " << t_d.count() << "ns \n";
 
    
      // Comment out for preliminary testing of building BVHs
@@ -64,6 +64,7 @@ void render_scene(const int image_height,
         EiVector3d pixel_00_center = pixel_00_centers[camera_idx];
         Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor> matrix_pixel_spacing = matrix_pixel_spacings[camera_idx];
 
+        render_ppm_image(camera_center, pixel_00_center, matrix_pixel_spacing, test_TLAS, image_height, image_width, number_of_samples);
         //render_ppm_image(camera_center, pixel_00_center, matrix_pixel_spacing, scene_connectivity, scene_coords, scene_face_colors, image_height, image_width, number_of_samples);
     }
         

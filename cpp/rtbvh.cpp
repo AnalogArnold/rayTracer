@@ -38,7 +38,6 @@ AABB create_node_AABB(const std::vector<AABB>& mesh_element_abbs,
     return node_AABB;
 }
 
-
 bool intersect_AABB (const Ray& ray, const AABB& AABB) {
     // Slab method for ray-AABB_r intersection
     double t_axis[6]; // t values for each axis, so [0,1] are for x, [2,3] for y, and [4,5] for z
@@ -61,7 +60,6 @@ bool intersect_AABB (const Ray& ray, const AABB& AABB) {
     // t_min < ray.t_max - Clip to ray segment
     return t_min <= t_max && t_max > 0.0 && t_min < ray.t_max; // False => No overlap => Ray does not intersect the AABB.
 }
-
 
 inline void compute_triangle_centroid(const std::array<double,9> &triangle_node_coords,
     std::array<double,3> &triangle_centroid) {
@@ -162,6 +160,7 @@ bool binned_sah_split(BuildTask& Node,
         }
     }
     out_split_axis = best_axis;
+    //midpoint_split(node_centroid_bounds, axis_extent, out_split_axis, out_split_position);
 
     // All centroids coincident along the chosen axis => No useful split
     if (axis_extent == 0){
@@ -237,6 +236,7 @@ bool binned_sah_split(BuildTask& Node,
     // Convert Bin index to world-space split position
     double bin_width = axis_extent / NUM_BINS;
     out_split_position = node_centroid_bounds.corner_min[best_axis] + bin_width * (best_split_bin + 1); // Boundary between best_split_bin and best_split_bin + 1
+    
     return true;
 }
 
@@ -484,24 +484,32 @@ void copy_data_to_BLAS_node(BVH &mesh_bvh,
 
     std::cout << "BLAS builder: Copying mesh data into leaf nodes..." << std::endl;
     size_t bvh_node_count = mesh_bvh.tree_nodes.size();
+    size_t coord_count = 0;
     for (int i = 0; i < bvh_node_count; ++i){
         BVH_Node& Node = mesh_bvh.tree_nodes[i];
         // Iterate over elements in the node
         int node_min_element_idx = node_minimum_element_index[i];
         int node_element_count = Node.element_count;
-        //std::cout << "BVH node id: " << i << " with element count: " << node_element_count << std::endl;
+        std::cout << "BVH node id: " << i << " with element count: " << node_element_count << std::endl;
         //std::cout << "Min element id from vector: " << node_min_element_idx << std::endl;
         //std::cout << "Min element id from node: " << Node.min_elem_idx << std::endl;;
         int node_max_element_idx = node_min_element_idx + Node.element_count;
-        Node.node_coords.resize(node_element_count * Node.nodes_per_element * NODE_COORDINATES);
-        Node.face_color.resize(node_element_count * NODE_COORDINATES);
+        Node.node_coords.reserve(node_element_count * Node.nodes_per_element * NODE_COORDINATES);
+        Node.face_color.reserve(node_element_count * NODE_COORDINATES);
         const int coords_per_element = Node.nodes_per_element * NODE_COORDINATES; // number of nodes per element times 3 coordinates each
+        //std::cout << "Contained elems: ";
         for (int element_idx = node_min_element_idx; element_idx < node_max_element_idx; ++element_idx){
+            int original_element_idx = mesh_element_indices[element_idx];
+            //std::cout << "original element idx " << original_element_idx;
+            int element_min_index = original_element_idx * coords_per_element;
+
             //std::cout << "Element id " << element_idx << " with coords: " << std::endl;
-            int element_min_index = element_idx * coords_per_element;
+            //std::cout << original_element_idx << " " << std::endl;
+            
+           //int element_min_index = element_idx * coords_per_element;
             //std::cout << "Min element idx: " << element_min_index << std::endl;
             for (int j = 0; j < coords_per_element; ++j){
-                //std:: cout << mesh_node_coords_expanded_ptr[element_min_index + j];
+                //std:: cout << mesh_node_coords_expanded_ptr[element_min_index + j] << " ";
                 Node.node_coords.push_back(mesh_node_coords_expanded_ptr[element_min_index + j]);
             }
             //std::cout << std::endl;
@@ -509,7 +517,12 @@ void copy_data_to_BLAS_node(BVH &mesh_bvh,
             Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES + 1]);
             Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES + 2]);
         }
+         coord_count += Node.node_coords.size();
+        //std::cout << "Node coords size: " << Node.node_coords.size() << std::endl;
+       // std::cout << "Node element count: " << Node.element_count << std::endl;
+
     }
+   // std::cout << "Total BVH coordinate count: " << coord_count << std::endl;
 }
 
 void copy_data_to_TLAS(TLAS &tlas,
@@ -530,90 +543,7 @@ void copy_data_to_TLAS(TLAS &tlas,
     }
  }
 
-void intersect_BLAS(const Ray& ray,
-    HitRecord &intersection_record,
-    const BVH& mesh_bvh) {
 
-     std::cout << "  BLAS: Starting BVH intersection test" << std::endl;
-     //const BVH_Node& root = mesh_bvh.tree_nodes[mesh_bvh.root_idx];
-
-     std::vector<int> stack; // Store node indices on the stack
-     stack.push_back(mesh_bvh.root_idx);
-
-     while(!stack.empty()){
-        const BVH_Node& Node = mesh_bvh.tree_nodes[stack.back()];
-        stack.pop_back();
-
-        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
-        if (Node.left_child_idx == -1) {
-            // No children => Leaf node => Intersect triangles
-            std::cout << "   BLAS: Leaf node reached with " << Node.element_count << " elements." << std::endl;
-           
-            IntersectionOutput intersection = intersect_bvh_triangles(ray, Node.node_coords, Node.element_count);
-            Eigen::Index minRowIndex, minColIndex;
-            std::cout << "Number of t_values: " << intersection.t_values.size() << std::endl;
-
-            intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value
-
-            double closest_t = intersection.t_values(minRowIndex, minColIndex);
-            if (closest_t < intersection_record.t) {
-                intersection_record.t = closest_t;
-                intersection_record.barycentric_coordinates = intersection.barycentric_coordinates.row(minRowIndex);
-                intersection_record.point_intersection = ray_at_t(closest_t, ray);
-                intersection_record.normal_surface = intersection.plane_normals.row(minRowIndex);
-                // Get a pointer to the array storing face colors for the mesh if intersected
-                //double* face_colors_ptr = const_cast<double*>((scene_face_colors[mesh_idx]).data());
-                //intersection_itecord.face_color = get_face_color(minRowIndex, face_colors_ptr);
-            }
-            if (intersection_record.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
-                std::cout << "Intersection found" << std::endl;
-            }
-        }
-        else { // Not a leaf node => Test children nodes for intersections
-            // DFS order
-            int left = Node.left_child_idx;
-            int right = left + 1;
-            if (right != 0) stack.push_back(right);
-            if(left != -1) stack.push_back(left);
-            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
-        }
-            
-     }
-}
-
-void intersect_tlas(const Ray& ray,
-    const TLAS& scene_TLAS){
-
-    HitRecord intersection_record;
-    std::cout << "TLAS: Starting BVH intersection test" << std::endl;
-
-     std::vector<int> stack; // Store node indices on the stack
-     stack.push_back(0); // Push root index
-
-     while(!stack.empty()){
-        const TLAS_Node& Node = scene_TLAS.tlas_nodes[stack.back()];
-        stack.pop_back();
-
-        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
-        if (Node.left_child_idx == -1) {
-            // No children => Leaf node => Intersect triangles
-            std::cout << "TLAS: Leaf node reached with " << Node.blas_count << " BLASes." << std::endl;
-            int node_max_index = Node.min_blas_idx + Node.blas_count;
-            for (int i = Node.min_blas_idx; i < node_max_index; ++i){
-                std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
-                intersect_BLAS(ray, intersection_record, scene_TLAS.blases[i]);
-            }
-        }
-        else { // Not a leaf node => Test children nodes for intersections
-            // DFS order
-            int left = Node.left_child_idx;
-            int right = left + 1;
-            if (right != 0) stack.push_back(right);
-            if(left != -1) stack.push_back(left);
-            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
-        }
-     }
-}
 
   inline void print_BLAS_data(BVH& mesh_bvh){
      std::cout << "     BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;

@@ -5,6 +5,19 @@
 // ray tracer header files
 #include "rtrayintersection.h"
 
+
+
+inline EiVector3d get_face_color(Eigen::Index minRowIndex,
+    const std::vector<double>& face_color) {
+    double c1 = face_color[minRowIndex * 3];
+    double c2 = face_color[minRowIndex * 3 + 1];
+    double c3 = face_color[minRowIndex * 3 + 2];
+    EiVector3d face_color_vec;
+    face_color_vec << c1, c2, c3;
+    return face_color_vec;
+}
+
+
 EiVectorD3d cross_rowwise(const EiVectorD3d& mat1, const EiVectorD3d& mat2) {
     // Row-wise cross product for 2 matrices (i.e., treating each row as a vector).
     // Also works for multiplying a matrix with a row vector, so the input order determines the multiplication order. Happy days.
@@ -132,16 +145,21 @@ IntersectionOutput intersect_bvh_triangles(const Ray& ray,
         int node_0 = triangle_idx * 3;
         int node_1 = triangle_idx * 3 + 1;
         int node_2 = triangle_idx * 3 + 2;
+        //std::cout << "Triangle node indices: " << node_0 << " " << node_1 << " " << node_2 << std::endl;
 
         for (int j = 0; j < 3; j++) {
             //std::cout<<node_coords_arr[i][j] << " ";
             //edge0(i, j) = node_coords.at(node_1, j) - node_coords.at(node_0, j);
             edge0(triangle_idx, j) = node_coords[node_1 * 3 + j] - node_coords[node_0 * 3 + j];
+            //std::cout << "node_coords at " << node_1 *3 + j << " are: " << node_coords[node_1 * 3 + j] << std::endl;
+            //std::cout << "edge 0: " << edge0(triangle_idx,j) << std::endl;
             //nodes0(i, j) = node_coords.at(node_0, j);
             nodes0(triangle_idx, j) = node_coords[node_0 * 3 + j];
+            //std::cout << "nodes0 : " << nodes0(triangle_idx,j) << std::endl;
             // Skip edge1 because it never gets used in the calculations anyway
             //nEdge2(i, j) = node_coords.at(node_2, j) - node_coords.at(node_0, j);
             nEdge2(triangle_idx, j) = node_coords[node_2 * 3 + j] - node_coords[node_0 * 3 + j];
+            //std::cout << "nEdge2 : " << nEdge2(triangle_idx,j) << std::endl;
         }
     }
     EiVectorD3d plane_normals = cross_rowwise(edge0, nEdge2); // not normalised! Shape (faces, 3)
@@ -191,6 +209,91 @@ IntersectionOutput intersect_bvh_triangles(const Ray& ray,
     barycentric_coordinates.col(2) = 1.0 - barycentric_u - barycentric_v; // barycentric_w
     return IntersectionOutput{ barycentric_coordinates, plane_normals, t_values };
 }
+
+void intersect_BLAS(const Ray& ray,
+    const BVH& mesh_bvh,
+    IntersectionOutput &out_intersection,
+    HitRecord &intersection_record) {
+
+     //std::cout << "  BLAS: Starting BVH intersection test" << std::endl;
+     //const BVH_Node& root = mesh_bvh.tree_nodes[mesh_bvh.root_idx];
+
+     std::vector<int> stack; // Store node indices on the stack
+     stack.push_back(mesh_bvh.root_idx);
+
+     while(!stack.empty()){
+        const BVH_Node& Node = mesh_bvh.tree_nodes[stack.back()];
+        stack.pop_back();
+
+        // Debug notes: Renders wrong if I uncomment below. But renders ok if I don't
+        // So all triangle data per node is still preserved, which is good
+        // => intersect AABB is wrong? calculating AABB? Like this suggests that we exit prematurely
+        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+
+        if (Node.left_child_idx == -1) {
+            // No children => Leaf node => Intersect triangles
+           
+            out_intersection = intersect_bvh_triangles(ray, Node.node_coords, Node.element_count);
+            Eigen::Index minRowIndex, minColIndex;
+            //std::cout << "Number of t_values: " << out_intersection.t_values.size() << std::endl;
+
+            out_intersection.t_values.minCoeff(&minRowIndex, &minColIndex); // Find indices of the smallest t_value
+            double closest_t = out_intersection.t_values(minRowIndex, minColIndex);
+            //std::cout << "Closest t found: " << closest_t << std::endl;
+
+            if (closest_t < intersection_record.t) {
+                intersection_record.t = closest_t;
+                intersection_record.barycentric_coordinates = out_intersection.barycentric_coordinates.row(minRowIndex);
+                intersection_record.point_intersection = ray_at_t(closest_t, ray);
+                intersection_record.normal_surface = out_intersection.plane_normals.row(minRowIndex);
+                intersection_record.face_color = get_face_color(minRowIndex, Node.face_color);
+            }
+        }
+        else { // Not a leaf node => Test children nodes for intersections
+            // DFS order
+            int left = Node.left_child_idx;
+            int right = left + 1;
+            if (right != 0) stack.push_back(right);
+            if(left != -1) stack.push_back(left);
+            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
+        }   
+     }
+}
+
+void intersect_TLAS(const Ray& ray,
+    const TLAS& scene_TLAS,
+    IntersectionOutput &out_intersection,
+    HitRecord &out_intersection_record){
+
+    //std::cout << "TLAS: Starting BVH intersection test" << std::endl;
+     std::vector<int> stack; // Store node indices on the stack
+     stack.push_back(0); // Push root index
+
+     while(!stack.empty()){
+        const TLAS_Node& Node = scene_TLAS.tlas_nodes[stack.back()];
+        stack.pop_back();
+
+        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (Node.left_child_idx == -1) {
+            // No children => Leaf node => Intersect triangles
+            //std::cout << "TLAS: Leaf node reached with " << Node.blas_count << " BLASes." << std::endl;
+            int node_max_index = Node.min_blas_idx + Node.blas_count;
+            for (int i = Node.min_blas_idx; i < node_max_index; ++i){
+                //std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
+                intersect_BLAS(ray, scene_TLAS.blases[i], out_intersection, out_intersection_record);
+            }
+        }
+        else { // Not a leaf node => Test children nodes for intersections
+            // DFS order
+            int left = Node.left_child_idx;
+            int right = left + 1;
+            if (right != 0) stack.push_back(right);
+            if(left != -1) stack.push_back(left);
+            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
+        }
+     }
+}
+
 
 /*
 IntersectionOutput intersect_bvh_triangles(const Ray& ray,
