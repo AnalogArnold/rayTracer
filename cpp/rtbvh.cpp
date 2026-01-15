@@ -128,7 +128,6 @@ inline void midpoint_split(AABB& node_centroid_bounds,
     out_split_position = node_centroid_bounds.corner_min[out_split_axis] + axis_extent * 0.5;
 }
 
-
 bool binned_sah_split(BuildTask& Node,
     const std::vector<std::array<double,3>>& mesh_element_centroids,
     const std::vector<AABB>& mesh_element_aabbs,
@@ -241,7 +240,63 @@ bool binned_sah_split(BuildTask& Node,
     return true;
 }
 
-void build_bvh(BVH &mesh_bvh,
+bool split_BVH_node(BuildTask &task,
+    const std::vector<std::array<double,3>>& element_centroids,
+    const std::vector<AABB>& element_aabbs,
+    std::vector<int>& element_indices,
+    int& out_left_min_element_idx,
+    size_t& out_left_count){
+
+    // Splitting BVH node into child nodes
+    // Here element = face in case of a BLAS, or BLAS in case of a TLAS
+        int element_count = task.element_count;
+        unsigned int min_element_idx = out_left_min_element_idx;
+        //BVH_Node& Node = mesh_bvh.tree_nodes[node_idx];
+
+        // Otherwise, split elements into child nodes
+        // Run binned SAH
+        unsigned int split_axis = 0;
+        double split_position = 0.0;
+        bool found_split = binned_sah_split(task, element_centroids, element_aabbs, element_indices, split_axis, split_position);
+        if (!found_split) {
+            // Fallback splitting implemented, so if SAH returns false, it ought to be too small to split => Mark as leaf node.
+            return false;
+        }
+            
+        // Partition of indices by centroid[axis] < split_pos. A bit like QuickSort partitioning, where we get the pivot from our splitting function
+        unsigned int begin = min_element_idx;
+        unsigned int end = begin + element_count;
+        unsigned int mid = begin;
+
+        while (mid < end) {
+            unsigned int element_idx = element_indices[mid];
+            double element_centroid_split = element_centroids[element_idx][split_axis];
+            // Compare triangle centroid position on the axis versus the splitting point
+            if (element_centroid_split < split_position) { // Triangle on the left
+                ++mid; // move mid to the right
+            } else {
+                --end; // Move end to left
+                std::swap(element_indices[mid], element_indices[end]);
+            }
+        }
+        // How many triangles are on the left and on the right
+        size_t left_count = mid - begin;
+        size_t right_count = element_count - left_count;
+        out_left_count = left_count;
+        out_left_min_element_idx = begin;
+        
+        // Abort split if one side is empty
+        // NOTE: this could be improved by going through the midpoint split again, but choosing a different axis.
+        // That being said, with both SAH and midpoint splitting, this is very unlikely
+        if (left_count == 0 || right_count == 0) {
+           return false;
+        }
+
+    return true;
+    }
+
+
+void build_BLAS(BVH &mesh_bvh,
     const std::vector<std::array<double,3>>& mesh_element_centroids,
     const std::vector<AABB>& mesh_element_aabbs,
     std::vector<int>& mesh_element_indices,
@@ -287,55 +342,27 @@ void build_bvh(BVH &mesh_bvh,
             continue;
         }
 
-        // Otherwise, split elements into child nodes
-        // Run binned SAH
-        unsigned int split_axis = 0;
-        double split_position = 0.0;
-        bool found_split = binned_sah_split(task, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, split_axis, split_position);
-        if (!found_split) {
-            // Fallback splitting implemented, so if SAH returns false, it ought to be too small to split => Mark as leaf node.
-            Node.left_child_idx = -1;
-            continue;
-        }
-            
-        // Partition of indices by centroid[axis] < split_pos. A bit like QuickSort partitioning, where we get the pivot from our splitting function
-        unsigned int begin = min_element_idx;
-        unsigned int end = begin + element_count;
-        unsigned int mid = begin;
+        // Split into child nodes
+        int left_min_element_idx = min_element_idx;
+        size_t left_count = 0;
 
-        while (mid < end) {
-            unsigned int element_idx = mesh_element_indices[mid];
-            double element_centroid_split = mesh_element_centroids[element_idx][split_axis];
-            // Compare triangle centroid position on the axis versus the splitting point
-            if (element_centroid_split < split_position) { // Triangle on the left
-                ++mid; // move mid to the right
-            } else {
-                --end; // Move end to left
-                std::swap(mesh_element_indices[mid], mesh_element_indices[end]);
-            }
-        }
-        // How many triangles are on the left and on the right
-        size_t left_count = mid - begin;
-        size_t right_count = element_count - left_count;
-        
-        // Abort split if one side is empty
-        // NOTE: this could be improved by going through the midpoint split again, but choosing a different axis.
-        // That being said, with both SAH and midpoint splitting, this is very unlikely
-        if (left_count == 0 || right_count == 0) {
+        if (!split_BVH_node(task, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, left_min_element_idx, left_count)) {
+            // Splitting node failed -> Either no split found or we have 0 elements on either right or left side.
+            // Fallbacks implemented in the above function, so if it fails, just create leaf node
             Node.element_count = element_count;
             Node.bounding_box = create_node_AABB(mesh_element_aabbs, mesh_element_indices, min_element_idx, element_count);
             Node.left_child_idx = -1;
             continue;
         }
-    
+
         // Create children
         int left_child_idx = mesh_bvh.tree_nodes.size();
         int right_child_idx = left_child_idx + 1;
         // Assign element ranges
-        // Left child indices: [begin, begin+left_count)
-        int left_min_element_idx = begin;
+        // Left child indices: [begin, begin+left_count) <- this is done in split_bvh_node
         // Right child indices: [begin+left_count, begin+left_count+right_count)
-        int right_min_element_idx = begin + left_count;
+        size_t right_count = element_count - left_count;
+        int right_min_element_idx = left_min_element_idx + left_count;
         node_minimum_element_index.push_back(left_min_element_idx);
         node_minimum_element_index.push_back(right_min_element_idx);
          
@@ -401,56 +428,28 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
             continue;
         }
 
-        // Otherwise, split elements into child nodes
-        // Run binned SAH
-        unsigned int split_axis = 0;
-        double split_position = 0.0;
-        bool found_split = binned_sah_split(task, scene_blas_centroids, scene_blas_aabbs, scene_blas_indices, split_axis, split_position);
-        if (!found_split) {
-            // Fallback splitting implemented, so if SAH returns false, it ought to be too small to split => Mark as leaf node.
-            Node.left_child_idx = -1;
-            continue;
-        }
-            
-        // Partition of indices by centroid[axis] < split_pos
-        unsigned int begin = min_blas_idx;
-        unsigned int end = begin + element_count;
-        unsigned int mid = begin;
+        // Split into child nodes
+        int left_min_element_idx = min_blas_idx;
+        size_t left_count = 0;
 
-        while (mid < end) {
-            unsigned int element_idx = scene_blas_indices[mid];
-            double element_centroid_split = scene_blas_centroids[element_idx][split_axis];
-            // Compare triangle centroid position on the axis versus the splitting point
-            if (element_centroid_split < split_position) { // Triangle on the left
-                ++mid; // Move mid to the right
-            } else {
-                --end; // Move end to left
-                std::swap(scene_blas_indices[mid], scene_blas_indices[end]);
-            }
-        }
-        // How many triangles are on the left and on the right
-        size_t left_count = mid - begin;
-        size_t right_count = element_count - left_count;
-        
-        // Abort split if one side is empty
-        // NOTE: this could be improved by going through the midpoint split again, but choosing a different axis.
-        // That being said, with both SAH and midpoint splitting, this is very unlikely
-        if (left_count == 0 || right_count == 0) {
+        if (!split_BVH_node(task, scene_blas_centroids, scene_blas_aabbs, scene_blas_indices, left_min_element_idx, left_count)) {
+            // Splitting node failed -> Either no split found or we have 0 elements on either right or left side.
+            // Fallbacks implemented in the above function, so if it fails, just create leaf node
             Node.min_blas_idx = min_blas_idx;
             Node.blas_count = element_count;
             Node.bounding_box = create_node_AABB(scene_blas_aabbs, scene_blas_indices, min_blas_idx, element_count);
             Node.left_child_idx = -1;
             continue;
         }
-    
+
         // Create children
         int left_child_idx = TLAS.size();
         int right_child_idx = left_child_idx + 1;
          // Assign element ranges
-        // Left child indices: [begin, begin+left_count)
-        int left_min_element_idx = begin;
+        // Left child indices: [begin, begin+left_count)  <- this is done in split_bvh_node
         // Right child indices: [begin+left_count, begin+left_count+right_count)
-        int right_min_element_idx = begin + left_count;
+        size_t right_count = element_count - left_count;
+        int right_min_element_idx = left_min_element_idx + left_count;
 
         // Create left child directly in TLAS
         TLAS.emplace_back(create_node_AABB(scene_blas_aabbs, scene_blas_indices, left_min_element_idx, left_count),
@@ -475,7 +474,7 @@ void build_TLAS(std::vector<TLAS_Node>& TLAS,
     }
 }
 
-void copy_data_to_bvh_node(BVH &mesh_bvh,
+void copy_data_to_BLAS_node(BVH &mesh_bvh,
     std::vector<int>& mesh_element_indices,
     std::vector<int>& node_minimum_element_index,
     const double* mesh_node_coords_expanded_ptr,
@@ -531,7 +530,7 @@ void copy_data_to_TLAS(TLAS &tlas,
     }
  }
 
-void intersect_bvh(const Ray& ray,
+void intersect_BLAS(const Ray& ray,
     HitRecord &intersection_record,
     const BVH& mesh_bvh) {
 
@@ -602,7 +601,7 @@ void intersect_tlas(const Ray& ray,
             int node_max_index = Node.min_blas_idx + Node.blas_count;
             for (int i = Node.min_blas_idx; i < node_max_index; ++i){
                 std::cout << " TLAS: Intersected BLAS index: " << i << std::endl;
-                intersect_bvh(ray, intersection_record, scene_TLAS.blases[i]);
+                intersect_BLAS(ray, intersection_record, scene_TLAS.blases[i]);
             }
         }
         else { // Not a leaf node => Test children nodes for intersections
@@ -693,8 +692,8 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
         BVH& mesh_bvh = scene_blases[mesh_idx]; // Get a reference to the BVH of the current mesh to pass it to the builder functions
 
         // BVH builder functions
-        build_bvh(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, node_minimum_element_index, mesh_element_count);
-        copy_data_to_bvh_node(mesh_bvh, mesh_element_indices, node_minimum_element_index, mesh_node_coords_ptr, mesh_face_colors_ptr);
+        build_BLAS(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, node_minimum_element_index, mesh_element_count);
+        copy_data_to_BLAS_node(mesh_bvh, mesh_element_indices, node_minimum_element_index, mesh_node_coords_ptr, mesh_face_colors_ptr);
         //std::cout << "BLAS successfully built." << std::endl;
         //std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
 
@@ -704,7 +703,7 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
         test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
         test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
         HitRecord intersection_record; 
-        intersect_bvh(test_ray, intersection_record, mesh_bvh);
+        intersect_BLAS(test_ray, intersection_record, mesh_bvh);
         */
     
         // Without struct bvh all data should be accessible via root pointer after building
@@ -726,7 +725,7 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
     test_ray.origin = EiVector3d(0.0, 0.0, 0.0);
     test_ray.direction = EiVector3d(1.0, 0.0, 0.0);
     //intersect_tlas(test_ray, scene_TLAS);
-    print_TLAS(scene_TLAS);
+    //print_TLAS(scene_TLAS);
 
     return scene_TLAS;
  } // SCENE (end of function)
