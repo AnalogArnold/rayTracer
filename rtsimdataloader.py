@@ -20,7 +20,7 @@ def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_
     coords = np.ascontiguousarray(coords_world[:,:3])
     #coords = np.ascontiguousarray(render_mesh.coords[:,:3])
     connectivity = render_mesh.connectivity
-    node_coords_expanded = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array.
+    node_coords_expanded = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array. Comment out to test rtbvh_stack, rtbvh_recursion, or no BVH
     x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes. Use this for coloring somehow
     x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
     # Approach 2 - taking averages and stacking them together
@@ -29,7 +29,7 @@ def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_
     # Approach 1 - using a colour map to assign an rgb value
     # cmap = plt.get_cmap('viridis')
     # face_colors = cmap(x_disp_node_norm)[:,:3]
-    #scene.add_mesh(connectivity, coords, face_colors)
+    #scene.add_mesh(connectivity, coords, face_colors) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
     scene.add_mesh(node_coords_expanded, face_colors)
 
 # Function to get mesh data; partially deprecated due to the introduction of add_mesh_to_scene.

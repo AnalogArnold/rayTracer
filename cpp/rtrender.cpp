@@ -10,19 +10,6 @@
 #include "rtrayintersection.h"
 #include "rtmathutils.h"
 
-
-/*
-inline EiVector3d get_face_color(Eigen::Index minRowIndex,
-    const double* face_color_ptr) {
-    double c1 = face_color_ptr[minRowIndex * 3];
-    double c2 = face_color_ptr[minRowIndex * 3 + 1];
-    double c3 = face_color_ptr[minRowIndex * 3 + 2];
-    EiVector3d face_color;
-    face_color << c1, c2, c3;
-    return face_color;
-}
-*/
-
 EiVector3d return_ray_color(const Ray& ray,
     const TLAS& TLAS) {
 
@@ -34,12 +21,6 @@ EiVector3d return_ray_color(const Ray& ray,
     if (intersection_record.t != std::numeric_limits<double>::infinity()) { // Instead of keeping a bool hit_anything, check if t value has changed from the default
         //std::cout << "Coloring..." << std::endl;
         set_face_normal(ray, intersection_record.normal_surface);
-        //static EiVector3d r, g, b;
-        //r << 1.0, 0.0, 0.0;
-        //g << 0.0, 1.0, 1.0;
-        //b << 1.0, 0.0, 1.0;
-        //eturn r;
-        //return intersection_record.barycentric_coordinates(0) * r + intersection_record.barycentric_coordinates(1) * g + intersection_record.barycentric_coordinates(2)* b;
         return intersection_record.barycentric_coordinates(0) * intersection_record.face_color + intersection_record.barycentric_coordinates(1) * intersection_record.face_color + intersection_record.barycentric_coordinates(2) * intersection_record.face_color;
     }
 
@@ -51,11 +32,65 @@ EiVector3d return_ray_color(const Ray& ray,
     return (1.0 - a) * white + a * blue;
 }
 
+void render_ppm_image(const EiVector3d& camera_center,
+    const EiVector3d& pixel_00_center,
+    const Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor>& matrix_pixel_spacing,
+    const TLAS& TLAS,
+    const int image_height,
+    const int image_width,
+    const int number_of_samples) {
+    // Get camera parameters from the dict and cast it to Eigen types so it works with existing code; by reference to avoid copying data
 
+    std::vector<uint8_t> buffer;
+    buffer.reserve(image_width * image_height * 12); // Preallocate memory for the image buffer (conservatively)
 
+    for (int j = 0; j < image_height; j++) {
+        std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush << std::endl;
+        for (int i = 0; i < image_width; i++) {
+            EiVector3d pixel_color = EiVector3d::Zero();
+            for (int k = 0; k < number_of_samples; k++) {
+                double offset[2] = { random_double() - 0.5, random_double() - 0.5 };
+                EiVector3d pixel_sample = pixel_00_center +
+                    (i + offset[0]) * matrix_pixel_spacing.row(0) +
+                    (j + offset[1]) * matrix_pixel_spacing.row(1);
+                EiVector3d ray_direction = pixel_sample - camera_center;
+                Ray current_ray{ camera_center, ray_direction.normalized() };
+                pixel_color += return_ray_color(current_ray, TLAS);
+            }
+            double gray = 0.2126 * pixel_color[0] + 0.7152 * pixel_color[1] + 0.0722 * pixel_color[2];
+            int gray_byte = int(gray / number_of_samples * 255.99);
+            buffer.push_back(static_cast<uint8_t>(gray_byte));
+            buffer.push_back(static_cast<uint8_t>(gray_byte));
+            buffer.push_back(static_cast<uint8_t>(gray_byte));
+        }
+    }
 
+    std::ofstream image_file;
 
-/*
+    // WIP: Will have to make the filename change based on the camera number or some unique identifier, otherwise we will keep on overwriting the same file
+    image_file.open("test_nano.ppm");
+    if (!image_file.is_open()) {
+        std::cerr << "Failed to open the output file.\n";
+        return;
+    }
+
+    image_file << "P6\n" << image_width << ' ' << image_height << "\n255\n";
+    image_file.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+
+    image_file.close();
+    std::cout << "\r Done. \n";
+}
+
+/* Version with pointers for no BVH, rtbvh_stack, and rtbvh_recursion
+inline EiVector3d get_face_color(Eigen::Index minRowIndex,
+    const double* face_color_ptr) {
+    double c1 = face_color_ptr[minRowIndex * 3];
+    double c2 = face_color_ptr[minRowIndex * 3 + 1];
+    double c3 = face_color_ptr[minRowIndex * 3 + 2];
+    EiVector3d face_color;
+    face_color << c1, c2, c3;
+    return face_color;
+}
 
 EiVector3d return_ray_color(const Ray& ray,
     const std::vector < nanobind::ndarray<const int, nanobind::c_contig>>& scene_connectivity,
@@ -115,59 +150,7 @@ EiVector3d return_ray_color(const Ray& ray,
     blue << 0.5, 0.7, 1.0;
     return (1.0 - a) * white + a * blue;
 }
-*/
-void render_ppm_image(const EiVector3d& camera_center,
-    const EiVector3d& pixel_00_center,
-    const Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor>& matrix_pixel_spacing,
-    const TLAS& TLAS,
-    const int image_height,
-    const int image_width,
-    const int number_of_samples) {
-    // Get camera parameters from the dict and cast it to Eigen types so it works with existing code; by reference to avoid copying data
 
-    std::vector<uint8_t> buffer;
-    buffer.reserve(image_width * image_height * 12); // Preallocate memory for the image buffer (conservatively)
-
-    for (int j = 0; j < image_height; j++) {
-        std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush << std::endl;
-        for (int i = 0; i < image_width; i++) {
-            EiVector3d pixel_color = EiVector3d::Zero();
-            for (int k = 0; k < number_of_samples; k++) {
-                double offset[2] = { random_double() - 0.5, random_double() - 0.5 };
-                EiVector3d pixel_sample = pixel_00_center +
-                    (i + offset[0]) * matrix_pixel_spacing.row(0) +
-                    (j + offset[1]) * matrix_pixel_spacing.row(1);
-                EiVector3d ray_direction = pixel_sample - camera_center;
-                Ray current_ray{ camera_center, ray_direction.normalized() };
-                //pixel_color += return_ray_color(current_ray, connectivity, node_coords);
-                pixel_color += return_ray_color(current_ray, TLAS);
-            }
-            double gray = 0.2126 * pixel_color[0] + 0.7152 * pixel_color[1] + 0.0722 * pixel_color[2];
-            int gray_byte = int(gray / number_of_samples * 255.99);
-            buffer.push_back(static_cast<uint8_t>(gray_byte));
-            buffer.push_back(static_cast<uint8_t>(gray_byte));
-            buffer.push_back(static_cast<uint8_t>(gray_byte));
-        }
-    }
-
-    std::ofstream image_file;
-
-    // WIP: Will have to make the filename change based on the camera number or some unique identifier, otherwise we will keep on overwriting the same file
-    image_file.open("test_nano.ppm");
-    if (!image_file.is_open()) {
-        std::cerr << "Failed to open the output file.\n";
-        return;
-    }
-
-    image_file << "P6\n" << image_width << ' ' << image_height << "\n255\n";
-    image_file.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
-
-    image_file.close();
-    std::cout << "\r Done. \n";
-    //return pybind11::bytes(buffer);
-}
-
-/*
 void render_ppm_image(const EiVector3d& camera_center,
     const EiVector3d& pixel_00_center,
     const Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor>& matrix_pixel_spacing,

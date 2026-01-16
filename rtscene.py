@@ -5,15 +5,15 @@ import numpy as np
 class Scene:
     '''WIP: Dataclass for storing camera, mesh, and light data in a format that should work best with C++
     while preserving user-friendly interface.'''
-    #scene_connectivity: list[np.ndarray] = field(default_factory=list)
-    #scene_coords: list[np.ndarray] = field(default_factory=list)
+    #scene_connectivity: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
+    #scene_coords: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
     scene_coords_expanded: list[np.ndarray] = field(default_factory=list)
     scene_face_colors: list[np.ndarray] = field(default_factory=list)
     scene_camera_center: list[np.ndarray] = field(default_factory=list)
     scene_pixel_00_center: list[np.ndarray] = field(default_factory=list)
     scene_matrix_pixel_spacing: list[np.ndarray] = field(default_factory=list)
     
-        
+    # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH    
     #def add_mesh(self, connectivity:np.ndarray, coords: np.ndarray, face_colors: np.ndarray) -> None:
     #    '''Adds a mesh to the scene.'''
     #    self.scene_connectivity.append(connectivity)
