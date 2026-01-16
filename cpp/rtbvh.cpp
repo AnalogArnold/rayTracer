@@ -86,28 +86,6 @@ AABB create_node_AABB(const std::vector<AABB>& mesh_element_abbs,
     return node_AABB;
 }
 
-bool intersect_AABB (const Ray& ray, const AABB& AABB) {
-    // Slab method for ray-AABB intersection
-    double t_axis[6]; // t values for each axis, so [0,1] are for x, [2,3] for y, and [4,5] for z
-    EiVector3d inverse_direction = 1/(ray.direction.array()); // Divide first to use cheaper multiplication later
-
-    // Find ray intersections with planes defining the AABB in X, Y, Z
-    for (int i = 0; i < 3; ++i) {
-        t_axis[2*i] = (AABB.corner_min[i] - ray.origin(i)) * inverse_direction(i);
-        t_axis[2*i + 1] = (AABB.corner_max[i] - ray.origin(i)) * inverse_direction(i);
-    }
-    //Overlap test
-    // Find the minimum t for each axis (x, y, z), then find maximum of these for (x,y,z)
-    double t_min = std::max(std::max(std::min(t_axis[0], t_axis[1]), std::min(t_axis[2], t_axis[3])), std::min(t_axis[4], t_axis[5]));
-    // Find the maximum t for each axis (x, y, z), then find minimum of these for (x,y,z)
-    double t_max = std::min(std::min(std::max(t_axis[0], t_axis[1]), std::max(t_axis[2], t_axis[3])), std::max(t_axis[4], t_axis[5]));
-
-    // t_min < t_max - Ray which just touches a corner, edge, or face of the AABB will be considered non-intersecting
-    // t_min <= t_max - Rays which touch the box boundary are considered intersecting. A bit of a degenerate case, but decided to include it here, hence more relaxed inequality.
-    // t_min < ray.t_max - Clip to ray segment
-    return t_min <= t_max && t_max > 0.0 && t_min < ray.t_max; // False => No overlap => Ray does not intersect the AABB.
-}
-
 // Auxiliary functions for splitting and binning
 inline double find_SAH_cost_bin(unsigned int left_element_count,
     unsigned int right_element_count,
@@ -119,18 +97,20 @@ inline double find_SAH_cost_bin(unsigned int left_element_count,
     return left_count * left_bounds.find_surface_area() + right_count * right_bounds.find_surface_area(); // Static casts complained so leave C-style casts for now
 }
 
-/* 
 // Full SAH implementation outline, but need to come up with some sensible values for parameters
-double find_SAH_cost_node(const BLAS_Node& node) {
-    // Calculate the Surface Area Heuristic (SAH) cost of a node.
+inline double find_SAH_cost_bin_full(unsigned int left_element_count,
+    unsigned int right_element_count,
+    const AABB& left_bounds,
+    const AABB& right_bounds,
+    const AABB& parent_bounds){
+    
     double cost_traversal = 1.0;
-    double cost_intersection = 1.0; // Might have to vary this with the element type when we start using more than just triangles.
-    double area_parent = node.bounding_box.find_surface_area();
-    double area_left_child = node.left_child->bounding_box.find_surface_area();
-    double area_right_child = node.right_child->bounding_box.find_surface_area();
-    return cost_traversal + cost_intersection * (area_left_child/area_parent * node.left_child->triangle_count + area_right_child/area_parent * node.right_child->triangle_count);
+    double cost_intersection = 2.0; // Might have to vary this with the element type when we start using more than just triangles
+    double area_parent = parent_bounds.find_surface_area();
+    double area_left_child = left_bounds.find_surface_area();
+    double area_right_child = right_bounds.find_surface_area();
+    return cost_traversal + cost_intersection * (area_left_child/area_parent * left_element_count + area_right_child/area_parent * right_element_count);
 }
-*/
 
 inline void midpoint_split(AABB& node_centroid_bounds,
     double axis_extent,
@@ -231,13 +211,16 @@ bool binned_SAH_split(BuildTask& Node,
     // Evaluate SAH at each Bin boundary and pick the best one (i.e., the one which minimizes the cost function)
     double best_cost = std::numeric_limits<double>::infinity();
     int best_split_bin = -1;
+    AABB parent_node_aabb = create_node_AABB(mesh_element_aabbs, mesh_element_indices, Node.min_element_idx, Node.element_count);
 
     for (int i = 0; i < NUM_BINS - 1; ++i) {
         unsigned int left_size = left_count[i];
         unsigned int right_size = right_count[i+1];
         if (left_size == 0 || right_size == 0) continue; // invalid split
 
-        double cost = find_SAH_cost_bin(left_size, right_size, left_bounds[i], right_bounds[i+1]);
+        // Simplified or full SAH cost calculation
+        double cost = find_SAH_cost_bin_full(left_size, right_size, left_bounds[i], right_bounds[i+1], parent_node_aabb);
+        //double cost = find_SAH_cost_bin(left_size, right_size, left_bounds[i], right_bounds[i+1]);
         if (cost < best_cost) {
             best_cost = cost;
             best_split_bin = i;

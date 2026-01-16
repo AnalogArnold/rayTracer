@@ -120,6 +120,28 @@ IntersectionOutput intersect_bvh_triangles(const Ray& ray,
     return IntersectionOutput{ barycentric_coordinates, plane_normals, t_values };
 }
 
+bool intersect_AABB (const Ray& ray, const AABB& AABB) {
+    // Slab method for ray-AABB intersection
+    double t_axis[6]; // t values for each axis, so [0,1] are for x, [2,3] for y, and [4,5] for z
+    EiVector3d inverse_direction = 1/(ray.direction.array()); // Divide first to use cheaper multiplication later
+
+    // Find ray intersections with planes defining the AABB in X, Y, Z
+    for (int i = 0; i < 3; ++i) {
+        t_axis[2*i] = (AABB.corner_min[i] - ray.origin(i)) * inverse_direction(i);
+        t_axis[2*i + 1] = (AABB.corner_max[i] - ray.origin(i)) * inverse_direction(i);
+    }
+    //Overlap test
+    // Find the minimum t for each axis (x, y, z), then find maximum of these for (x,y,z)
+    double t_min = std::max(std::max(std::min(t_axis[0], t_axis[1]), std::min(t_axis[2], t_axis[3])), std::min(t_axis[4], t_axis[5]));
+    // Find the maximum t for each axis (x, y, z), then find minimum of these for (x,y,z)
+    double t_max = std::min(std::min(std::max(t_axis[0], t_axis[1]), std::max(t_axis[2], t_axis[3])), std::max(t_axis[4], t_axis[5]));
+
+    // t_min < t_max - Ray which just touches a corner, edge, or face of the AABB will be considered non-intersecting
+    // t_min <= t_max - Rays which touch the box boundary are considered intersecting. A bit of a degenerate case, but decided to include it here, hence more relaxed inequality.
+    // t_min < ray.t_max - Clip to ray segment
+    return t_min <= t_max && t_max > 0.0 && t_min < ray.t_max; // False => No overlap => Ray does not intersect the AABB.
+}
+
 void intersect_BLAS(const Ray& ray,
     const BLAS& mesh_bvh,
     IntersectionOutput &out_intersection,
@@ -138,7 +160,7 @@ void intersect_BLAS(const Ray& ray,
         // Debug notes: Renders wrong if I uncomment below. But renders ok if I don't
         // So all triangle data per node is still preserved, which is good
         // => intersect AABB is wrong? calculating AABB? Like this suggests that we exit prematurely
-        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB of the node
 
         if (Node.left_child_idx == -1) {
             // No children => Leaf node => Intersect triangles
@@ -166,6 +188,7 @@ void intersect_BLAS(const Ray& ray,
             if (right != 0) stack.push_back(right);
             if(left != -1) stack.push_back(left);
             // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
+            // How to: Compare t_near from intersect_AABB for both children and intersect the closer one first
         }   
      }
 }
@@ -183,7 +206,7 @@ void intersect_TLAS(const Ray& ray,
         const TLAS_Node& Node = scene_TLAS.tlas_nodes[stack.back()];
         stack.pop_back();
 
-        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB_it of the node
+        if (!intersect_AABB(ray, Node.bounding_box)) continue; // Early exit if ray does not intersect the AABB of the node
         if (Node.left_child_idx == -1) {
             // No children => Leaf node => Intersect triangles
             //std::cout << "TLAS: Leaf node reached with " << Node.blas_count << " BLASes." << std::endl;
@@ -199,7 +222,6 @@ void intersect_TLAS(const Ray& ray,
             int right = left + 1;
             if (right != 0) stack.push_back(right);
             if(left != -1) stack.push_back(left);
-            // Potential improvement: testing node distance vs. ray to push the farther one first, so we trasverse closer child first.
         }
      }
 }

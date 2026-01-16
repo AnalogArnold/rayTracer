@@ -159,12 +159,16 @@ AABB create_node_AABB(const std::vector<AABB>& mesh_element_abbs,
     const int node_min_element_idx,
     const int node_element_count);
 
-bool intersect_AABB (const Ray& ray, const AABB& AABB);
-
 inline double find_SAH_cost_bin(unsigned int left_element_count,
     unsigned int right_element_count,
     const AABB& left_bounds,
     const AABB& right_bounds);
+
+inline double find_SAH_cost_bin_full(unsigned int left_element_count,
+    unsigned int right_element_count,
+    const AABB& left_bounds,
+    const AABB& right_bounds,
+    const AABB& parent_bounds);
 
 inline void midpoint_split(AABB& node_centroid_bounds,
     double axis_extent,

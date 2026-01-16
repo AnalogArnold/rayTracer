@@ -24,6 +24,8 @@ IntersectionOutput intersect_bvh_triangles(const Ray& ray,
     const std::vector<double>& node_coords,
     const unsigned int bvh_node_triangle_count);
 
+bool intersect_AABB (const Ray& ray, const AABB& AABB);
+
 void intersect_BLAS(const Ray& ray,
     const BLAS& mesh_bvh,
     IntersectionOutput &out_intersection,
