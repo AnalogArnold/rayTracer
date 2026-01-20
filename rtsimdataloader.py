@@ -5,10 +5,13 @@ import rtscene
 
 def simdata_to_mesh(pypath, field_components, fields_to_render, scale):
     # Convert the simulation output into a SimData object
-    sim_data = mh.ExodusReader(pypath).read_all_sim_data()
+    #sim_data = mh.ExodusReader(pypath).read_all_sim_data() # Pyvale 2025.8.1
+    sim_data = mh.ExodusLoader(pypath).load_all_sim_data() # Pyvale 2026.1.0
     # Scale the coordinates and displ. fields to mm
-    sim_data = sens.scale_length_units(scale=scale,sim_data=sim_data,disp_comps=field_components)
-    render_mesh = sens.create_render_mesh(sim_data, fields_to_render ,sim_spat_dim=3,field_disp_keys=field_components)
+    #sim_data = sens.scale_length_units(scale=scale,sim_data=sim_data,disp_comps=field_components) # Pyvale 2025.8.1
+    sim_data = sens.scale_length_units(scale=scale,sim_data=sim_data,disp_keys=field_components) # Pyvale 2026.1.0
+    #render_mesh = sens.create_render_mesh(sim_data, fields_to_render ,sim_spat_dim=3,field_disp_keys=field_components) # Pyvale 2025.8.1. Still works, but now we use enum for spatial dim, not a number
+    render_mesh = sens.create_render_mesh(sim_data, fields_to_render ,sim_spat_dim=sens.EDim.THREED,field_disp_keys=field_components) # Pyvale 2026.1.0
     return render_mesh
 
 def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), world_position = None, scale = 100.0) -> None:
@@ -21,7 +24,7 @@ def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_
     #coords = np.ascontiguousarray(render_mesh.coords[:,:3])
     connectivity = render_mesh.connectivity
     node_coords_expanded = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array. Comment out to test rtbvh_stack, rtbvh_recursion, or no BVH
-    x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes. Use this for coloring somehow
+    x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes.
     x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
     # Approach 2 - taking averages and stacking them together
     node_colors = np.column_stack((x_disp_node_norm, x_disp_node_norm, x_disp_node_norm))  # Convert each scalar to an RGB triplet
@@ -42,7 +45,7 @@ def get_mesh_data(pypath, field_components=("disp_x","disp_y", "disp_z"), fields
     coords = np.ascontiguousarray(coords_world[:,:3])
     connectivity = render_mesh.connectivity
     node_coords_expanded = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array.
-    x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes. Use this for coloring somehow
+    x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes.
     x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
     # Approach 2 - taking averages and stacking them together
     node_colors = np.column_stack((x_disp_node_norm, x_disp_node_norm, x_disp_node_norm))  # Convert each scalar to an RGB triplet

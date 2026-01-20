@@ -33,7 +33,7 @@ void render_scene(const int image_height,
     const std::vector<nb::DRef<EiVector3d>> pixel_00_centers,
     const std::vector<nb::DRef<Eigen::Matrix<double, 2, 3, Eigen::StorageOptions::RowMajor>>> matrix_pixel_spacings) {
 
-    //CALLGRIND_START_INSTRUMENTATION;
+    CALLGRIND_START_INSTRUMENTATION;
     size_t num_cameras = camera_centers.size();
 
     //std::chrono::time_point t1_d = std::chrono::high_resolution_clock::now();
@@ -51,7 +51,7 @@ void render_scene(const int image_height,
         render_ppm_image(camera_center, pixel_00_center, matrix_pixel_spacing, test_TLAS, image_height, image_width, number_of_samples);
     }
         
-    //CALLGRIND_STOP_INSTRUMENTATION;
+    CALLGRIND_STOP_INSTRUMENTATION;
 }
 
 /* Commented out - using connectivity and nodal coordinates, not expanded. Keeping it for tests with rtbvh_recursion and rtbvh_stack 

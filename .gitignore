@@ -1,6 +1,12 @@
+# Repo-specific
 /.vscode
 /build/
 /rtEnv/
+/rtEnvUpdate/
+*.so
+cachegrind.out.*
+callgrind*
+*.ppm
 
 *:Zone.Identifier
 
