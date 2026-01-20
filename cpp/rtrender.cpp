@@ -38,7 +38,8 @@ void render_ppm_image(const EiVector3d& camera_center,
     const TLAS& TLAS,
     const int image_height,
     const int image_width,
-    const int number_of_samples) {
+    const int number_of_samples,
+    const std::string filename) {
     // Get camera parameters from the dict and cast it to Eigen types so it works with existing code; by reference to avoid copying data
 
     std::vector<uint8_t> buffer;
@@ -67,8 +68,7 @@ void render_ppm_image(const EiVector3d& camera_center,
 
     std::ofstream image_file;
 
-    // WIP: Will have to make the filename change based on the camera number or some unique identifier, otherwise we will keep on overwriting the same file
-    image_file.open("test_nano.ppm");
+    image_file.open(filename);
     if (!image_file.is_open()) {
         std::cerr << "Failed to open the output file.\n";
         return;
