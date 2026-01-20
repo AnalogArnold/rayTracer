@@ -11,27 +11,30 @@ This repository is currently a rough development space rather than a polished st
 ## Project goals
 At this stage, the emphasis is on getting the core MVP done to be able to perform preliminary research analysis.
 - Provide a flexible, CPU-based ray tracing module with the potential expansion to GPU parallelization later on.
-- Focus on engineering and scientific rendering use cases, primarily simulating [Digital Image Correlation](https://www.zeiss.co.uk/metrology/explore/topics/digital-image-correlation.html)
+- Support engineering and scientific rendering use cases, primarily synthetic image generation for [Digital Image Correlation](https://www.zeiss.co.uk/metrology/explore/topics/digital-image-correlation.html)
     - This means using higher-order elements, not just triangles, to accurately capture complex geometries.
-    - Avoiding approximations that would speed up the rendering time at the expense of scientific accuracy.
+    - Avoiding approximations that would speed up the rendering time at the expense of fidelity.
     - Rasterizing cannot handle complex set-ups like refractive index changes due to curvature or material changes very well, which is why ray tracing is needed for experimental simulation.
----
+- Deliver an MVP suitable for preliminary research analysis within the Pyvale ecosystem.
+
+This project is **not** intended as a general-purpose standalone renderer; the main focus is its role as a module inside Pyvale.
+
 # Current features
 ## General
-* Python interface (`rtmain.py`) that works with pyvale, allowing the user to customise the camera location and orientation, anti-aliasing, and import mesh data.
-  * Currently WIP, a better API for users is yet to come.
-* Passing Python data to C++ rendering engine using [nanobind](https://nanobind.readthedocs.io/en/latest/index.html) for minimal overhead. It was found that nanobind consistently outperformed [pybind11](https://github.com/pybind/pybind11).
+* Python interface (`rtmain.py`) that works with PyVale, allowing the user to customise the camera location and orientation, anti-aliasing options, and import mesh data.
+  * The interface is still WIP; a more user-friendly public API is planned once we get all the functionality for an MVP.
+* Data transfer from Python to the C++ rendering engine via [nanobind](https://nanobind.readthedocs.io/en/latest/index.html), chosen for its low overhead and better performance in this project’s benchmarks compared to [pybind11](https://github.com/pybind/pybind11).
 
 ## Rendering images
-* **Multiple mesh and camera support**
-* Supports only **triangular meshes** for now, but the goal is to expand to quads and more complex elements.
-* **Anti-aliasing** - Sampling around the pixel rather than only considering its centre to achieve smoother results. 
+* **Multiple meshes and cameras** supported in a single scene.
+* Currently supports **triangular meshes** only, with plans to add quads and higher-order elements.
+* **Anti-aliasing** by sampling around each pixel, rather than only at its centre, to achieve smoother images.
   
 | No anti-aliasing  | Anti-aliasing with 50 samples |
 | ------------- | ------------- |
 | ![Example render without anti-aliasing](/images/ex_render_1.jpg) | ![Example render with anti-aliasing](/images/ex_render_2.jpg) |
 
-* **Output format**: Currently only .ppm images, with plans to expand to return a buffer and potentially different formats, as not all software can open .ppm images.
+* **Output format**: Currently `.ppm` images only, with plans to expose an in-memory buffer and additional image formats for easier downstream use.
 * **Colouring:** Mesh colours are currently based on the x-displacement field values. Grayscale is used for speed gains, as colours are not necessary for DIC.
 
 ## Acceleration structures - bounding volume hierarchies (BVH)
