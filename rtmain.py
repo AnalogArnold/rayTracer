@@ -45,8 +45,10 @@ camera1.add_camera_to_scene(scene)
 data_path = Path(Path().resolve().joinpath("simple_block.e")) # Temp to use the simple block simdata, since it was used in many benchmarks during the development
 data_path2 = dataset.render_mechanical_3d_path() # Test mesh 2
 add_mesh_to_scene(scene, data_path)
-add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
-add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
+#add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
+#add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
+
+add_mesh_to_scene(scene, data_path2, world_position=np.array([-15.0, -20.0, -10.0]), scale=200)
 
 # Playing with getting values at different timesteps
 #render_mesh = simdata_to_mesh(data_path,("disp_x","disp_y", "disp_z"), ("disp_y", "disp_x"), 100.0)
@@ -69,11 +71,11 @@ add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), 
 #print(scene.scene_face_colors[0].shape)
 #print(scene.scene_face_colors)
 
-#from rtmaincpp import cpp_render_scene
-number_of_samples = 50; # for anti-aliasing
+from rtmaincpp import cpp_render_scene
+number_of_samples = 1; # for anti-aliasing
 
 no_repeats = 5
-#cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)
+cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)
 # Below is with connectivity and node coords, not expanded version, for rtbvh_stack and rtbvh_recursion
 #time_results = timeit.repeat("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_connectivity, scene.scene_coords, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), repeat=no_repeats, number=1)
 #time_results = timeit.repeat("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), repeat=no_repeats, number=1)

@@ -6,7 +6,7 @@
 *.so
 cachegrind.out.*
 callgrind*
-*.ppm
+test_nano.ppm
 
 *:Zone.Identifier
 
