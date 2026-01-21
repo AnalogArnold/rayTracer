@@ -476,7 +476,7 @@ void copy_data_to_BLAS_node(BLAS &mesh_bvh,
     // Copies appropriate mesh data to store directly in BVH node, so it can be accessed easily upon intersection and be cache-friendly
     // This way we also avoid copying the mesh data when we move the node to the BVH tree vector as they're already there when we get to this part here.
 
-    std::cout << "BLAS builder: Copying mesh data into leaf nodes..." << std::endl;
+    //std::cout << "BLAS builder: Copying mesh data into leaf nodes..." << std::endl;
     size_t bvh_node_count = mesh_bvh.tree_nodes.size();
 
     // Iterate over all BVH nodes

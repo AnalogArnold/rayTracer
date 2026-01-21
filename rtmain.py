@@ -7,11 +7,17 @@ import timeit
 from pathlib import Path # Purely to use simple block mesh after it was removed in pyvale 2026.1.0 from dataset
 
 from rtcamera import Camera
-from rtsimdataloader import add_mesh_to_scene, get_mesh_data, simdata_to_mesh
+from rtsimdataloader import add_mesh_to_scene
 from rtscene import Scene
 
 # Tests for getting deformed timesteps
 import pyvale.sensorsim.simtools as simtools
+from enum import IntEnum
+
+# WIP Enum to specify render type to be able to let user pick between static and dynamic images
+class RenderType(IntEnum):
+    STATIC = 0
+    DYNAMIC = 1
 
 #################################################### INPUT #####################################################
 # Output image dimensions
@@ -49,35 +55,16 @@ add_mesh_to_scene(scene, data_path)
 add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
 add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
 
-#add_mesh_to_scene(scene, data_path2, world_position=np.array([-15.0, -20.0, -10.0]), scale=200)
-
-# Playing with getting values at different timesteps
-#render_mesh = simdata_to_mesh(data_path,("disp_x","disp_y", "disp_z"), ("disp_y", "disp_x"), 100.0)
-#timesteps = render_mesh.fields_render.shape[1]
-
-#for timestep in range(timesteps):
-#    print(f"Timestep {timestep}")
-#    print("Node coords")
-#    deformed_nodes = simtools.SimTools.get_deformed_nodes(timestep, render_mesh) # this works
-#    print(deformed_nodes)
-#    print(f"Deformed nodes size: {deformed_nodes.shape}")
-#    print("x-displacement nodal values")
-#    timestep_field_values = render_mesh.fields_render[:,timestep, 1] # Field displacement_x at given timestep for all nodes
-#    print(timestep_field_values)
-#    print(f"Timestep field values size: {timestep_field_values.shape}")
-    
-
 # Lights - to be added later
-
-#print(scene.scene_face_colors[0].shape)
-#print(scene.scene_face_colors)
 
 from rtmaincpp import cpp_render_scene
 number_of_samples = 1; # for anti-aliasing
-timestep = 1
+
+
+
 
 #no_repeats = 5
-cpp_render_scene(image_height, image_width, number_of_samples, timestep, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)
+#cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_timestep_count, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)
 # Below is with connectivity and node coords, not expanded version, for rtbvh_stack and rtbvh_recursion
 #time_results = timeit.repeat("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_connectivity, scene.scene_coords, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), repeat=no_repeats, number=1)
 #time_results = timeit.repeat("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), repeat=no_repeats, number=1)

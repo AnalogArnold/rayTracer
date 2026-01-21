@@ -1,7 +1,9 @@
 import pyvale.mooseherder as mh
 import pyvale.sensorsim as sens
+import pyvale.sensorsim.simtools as simtools
 import numpy as np
 import rtscene
+#import matplotlib as plt # for cmap face colour determination
 
 def simdata_to_mesh(pypath, field_components, fields_to_render, scale):
     # Convert the simulation output into a SimData object
@@ -14,8 +16,75 @@ def simdata_to_mesh(pypath, field_components, fields_to_render, scale):
     render_mesh = sens.create_render_mesh(sim_data, fields_to_render ,sim_spat_dim=sens.EDim.THREED,field_disp_keys=field_components) # Pyvale 2026.1.0
     return render_mesh
 
+def get_timesteps(pypath, field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), scale = 100.0):
+    '''Returns the number of timesteps for the given simdata object with datapath provided.'''
+    render_mesh = simdata_to_mesh(pypath, field_components, fields_to_render, scale)
+    return render_mesh.fields_render.shape[1]
+
+def get_timesteps_rm(render_mesh):
+    '''Returns the number of timesteps for the given RenderMesh object.'''
+    return render_mesh.fields_render.shape[1]
+
+def compute_face_colors_averages(field_nodal_values, connectivity):
+    '''Calculates face colors based on the nodal values for the chosen field. Approach 2 - taking averages and stacking them together'''
+    field_node_norm = (field_nodal_values - field_nodal_values.min())/(field_nodal_values.max()-field_nodal_values.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
+    node_colors = np.column_stack((field_node_norm, field_node_norm, field_node_norm)) # Convert each scalar to an RGB triplet
+    face_colors=np.mean(node_colors[connectivity],axis=1)
+    #print(f"face_colors_shape: {face_colors.shape}")
+    return  face_colors # Compute each face's colour as the average of its 3 node colours
+
+def compute_face_colors_cmap(field_nodal_values):
+    '''Approach 1 - using a colour map to assign an rgb value'''
+    field_node_norm = (field_nodal_values - field_nodal_values.min())/(field_nodal_values.max()-field_nodal_values.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
+    cmap = plt.get_cmap('viridis')
+    return cmap(field_node_norm)[:,:3]
+
 def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), world_position = None, scale = 100.0) -> None:
-    '''Adds a mesh to the scene dataclass.'''
+    '''Adds a mesh to the scene dataclass, including the data for all timesteps.'''
+    render_mesh = simdata_to_mesh(pypath, field_components, fields_to_render, scale)
+    if world_position is not None:
+        render_mesh.set_pos(world_position)
+    connectivity = render_mesh.connectivity
+    
+    # Handle nodal coordinates
+    coords_world = np.matmul(render_mesh.coords, render_mesh.mesh_to_world_mat.T) # Convert to world coordinates
+    render_mesh.coords = coords_world # Replace nodal coordinates in RenderMesh with their world coordinate equivalents. We can do that since for deformed nodes, we just add values
+    element_count = connectivity.shape[0]
+    timestep_count = render_mesh.fields_render.shape[1]
+    node_coords_expanded_over_time = np.ndarray(shape=(timestep_count, element_count, 3, 3), dtype=np.float64) # Store nodal coordinates over all timesteps
+    face_colors_over_time = np.ndarray(shape=(timestep_count, element_count, 3), dtype=np.float64) # Store face colors over all timesteps
+
+    # Process data for the 0th element - always the same for deformable and static images
+    coords = np.ascontiguousarray(render_mesh.coords[:,:3])
+    node_coords_expanded_over_time[0] = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array
+    # Calculate face colors
+    #x_disp_node_vals = render_mesh.fields_render[:,1,1] # Field displacement_x at timestep 1 for all nodes. Not 0 because then we get NaN
+    #face_colors = compute_face_colors_averages(x_disp_node_vals, connectivity)
+    face_colors_over_time[0] = np.ones(shape=(element_count, 3)) # Default - no deformation in the beginning, so set to 1 i.e., white. Would this be true for non-displacement fields though? Check
+
+    if timestep_count != 1:
+        for timestep in range(1, timestep_count):
+            # Get deformed nodal coordinates and expand them
+            node_coords = simtools.get_deformed_nodes(timestep, render_mesh)
+            coords = np.ascontiguousarray(node_coords)
+            #node_coords_expanded = coords[connectivity,:3]
+            node_coords_expanded_over_time[timestep] = coords[connectivity,:3] # Expand nodal coords, so we do not need the connectivity array and add to the array storing data for all timesteps
+            # Calculate face colors
+            x_disp_node_vals = render_mesh.fields_render[:,timestep,1] # Hard-coded for the development, but user should be able to select the field - enum?
+            face_colors_over_time[timestep] = compute_face_colors_averages(x_disp_node_vals, connectivity)
+       
+    #print("Node_coords_expanded_over_time: \n")
+    #print(node_coords_expanded_over_time)
+    #print("face_colors_over_time: \n")
+    #print(face_colors_over_time)
+    # Add mesh to scene
+    scene.add_mesh(node_coords_expanded_over_time, face_colors_over_time, timestep_count)
+
+
+
+def add_still_mesh_to_scene(scene, pypath,field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), world_position = None, scale = 100.0) -> None:
+    ''' Retired function, keeping it for static tests - retrieves mesh data only for the first timestep, then adds it to the scene dataclass.
+    Might expand it to get passed a specific timestep and render that to justify retaining it.'''
     render_mesh = simdata_to_mesh(pypath, field_components, fields_to_render, scale)
     if world_position is not None:
         render_mesh.set_pos(world_position)
@@ -25,19 +94,12 @@ def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_
     connectivity = render_mesh.connectivity
     node_coords_expanded = coords[connectivity,:3] # Expanded nodal coords, so we do not need the connectivity array. Comment out to test rtbvh_stack, rtbvh_recursion, or no BVH
     x_disp_node_vals = render_mesh.fields_render[:,1, 1] # Field displacement_x at timestep 1 for all nodes.
-    x_disp_node_norm = (x_disp_node_vals - x_disp_node_vals.min())/(x_disp_node_vals.max()-x_disp_node_vals.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
-    # Approach 2 - taking averages and stacking them together
-    node_colors = np.column_stack((x_disp_node_norm, x_disp_node_norm, x_disp_node_norm))  # Convert each scalar to an RGB triplet
-    face_colors = np.mean(node_colors[connectivity],axis=1)  # Compute each face's colour as the average of its 3 node colours
-    # Approach 1 - using a colour map to assign an rgb value
-    # cmap = plt.get_cmap('viridis')
-    # face_colors = cmap(x_disp_node_norm)[:,:3]
-    #scene.add_mesh(connectivity, coords, face_colors) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
-    scene.add_mesh(node_coords_expanded, face_colors)
+    face_colors = compute_face_colors_averages(x_disp_node_vals, connectivity)
+    scene.add_mesh(node_coords_expanded, face_colors, 1)
 
-# Function to get mesh data; partially deprecated due to the introduction of add_mesh_to_scene.
 def get_mesh_data(pypath, field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), world_position = None, scale = 100.0) -> dict:
-    '''Returns the mesh data as a numpy array.'''
+    '''Returns the mesh data as a numpy array.
+    Function to get mesh data; partially deprecated due to the introduction of add_mesh_to_scene.'''
     render_mesh = simdata_to_mesh(pypath, field_components, fields_to_render, scale)
     if world_position is not None:
         render_mesh.set_pos(world_position)
