@@ -36,16 +36,22 @@ void process_element_data_tri3(int mesh_number_of_triangles,
     const double* mesh_node_coords_ptr,
     std::vector<std::array<double,3>>& mesh_element_centroids,
     std::vector<AABB>& mesh_triangle_aabbs,
-    AABB& mesh_aabb){
+    AABB& mesh_aabb,
+    const int timestep){
     // Go over all triangles in a mesh and find their AABB and centroids, build mesh AABB, and store the data in vectors
     enum ElementNodeCount nodes_per_element = TRI3;
     const int coords_per_element = nodes_per_element * NODE_COORDINATES; // number of elements times 3 coordinates each
+    const int timestep_stride = timestep * mesh_number_of_triangles * nodes_per_element * NODE_COORDINATES;
+
     // Iterate over triangles comprising a mesh
     for (int triangle_idx = 0; triangle_idx < mesh_number_of_triangles; triangle_idx++) {
         // Use pointers - means we treat the 2D array as a flat 1D array and do the indexing manually by calculating the offset.
         // HAS to be contiguous in memory for this to work properly! c_contig flag in nanobind ensures that
+        int triangle_min_index = timestep_stride + triangle_idx * coords_per_element; // Find the minimum index corresponding to the given triangle at given timestep
+        //int triangle_idx_at_t = triangle_idx + timestep_stride;
+        //std::cout << "Triangle idx at t: " << triangle_idx_at_t << std::endl;
         std::array<double,9> triangle_node_coords;
-        int triangle_min_index = triangle_idx * coords_per_element;
+        //int triangle_min_index = triangle_idx_at_t * coords_per_element;
         //std::cout << "Triangle " << triangle_idx << " nodes: ";
         for (int i = 0; i < coords_per_element; ++i){
             triangle_node_coords[i] = mesh_node_coords_ptr[triangle_min_index + i];
@@ -472,13 +478,15 @@ void copy_data_to_BLAS_node(BLAS &mesh_bvh,
     std::vector<int>& mesh_element_indices,
     std::vector<int>& node_minimum_element_index,
     const double* mesh_node_coords_expanded_ptr,
-    const double* mesh_face_color_ptr){
+    const double* mesh_face_color_ptr,
+    const int timestep){
     // Copies appropriate mesh data to store directly in BVH node, so it can be accessed easily upon intersection and be cache-friendly
     // This way we also avoid copying the mesh data when we move the node to the BVH tree vector as they're already there when we get to this part here.
 
     //std::cout << "BLAS builder: Copying mesh data into leaf nodes..." << std::endl;
     size_t bvh_node_count = mesh_bvh.tree_nodes.size();
-
+    int mesh_element_count = mesh_element_indices.size();
+   
     // Iterate over all BVH nodes
     for (int i = 0; i < bvh_node_count; ++i){
         BLAS_Node& Node = mesh_bvh.tree_nodes[i];
@@ -496,11 +504,18 @@ void copy_data_to_BLAS_node(BLAS &mesh_bvh,
         //std::cout << "Min element id from node: " << Node.min_elem_idx << std::endl;;
         //std::cout << "Contained elems: ";
 
+        // Find strides for the given timestep to index correctly into Python buffers via pointers
+        // Node coords are dimensioned as [timesteps, element count, nodes per element, coords per node]
+        // Face colors are dimensioned as [timesteps, element count, coords per node]
+        const int timestep_coords_stride = timestep * mesh_element_count * coords_per_element;
+        const int timestep_color_stride = timestep * mesh_element_count * NODE_COORDINATES;
+
         // Iterate over elements in the node
         for (int element_idx = node_min_element_idx; element_idx < node_max_element_idx; ++element_idx){
             // Get the index of the stored mesh element from the reshuffled vector of indices that was created in BLAS builder
             int original_element_idx = mesh_element_indices[element_idx];
-            int element_min_index = original_element_idx * coords_per_element;
+            // Add element dimension stride to find min index of nodes comprising current mesh element
+            int original_element_idx_at_t = timestep_coords_stride + original_element_idx * coords_per_element; 
 
             //std::cout << "Element id " << element_idx << " with coords: " << std::endl;
             //std::cout << original_element_idx << " " << std::endl;
@@ -509,13 +524,15 @@ void copy_data_to_BLAS_node(BLAS &mesh_bvh,
             // Copy all nodal coordinates
             for (int j = 0; j < coords_per_element; ++j){
                 //std:: cout << mesh_node_coords_expanded_ptr[element_min_index + j] << " ";
-                Node.node_coords.push_back(mesh_node_coords_expanded_ptr[element_min_index + j]);
+                //Node.node_coords.push_back(mesh_node_coords_expanded_ptr[element_min_index + j]);
+                Node.node_coords.push_back(mesh_node_coords_expanded_ptr[original_element_idx_at_t + j]);
             }
             //std::cout << std::endl;
             // Copy all color (field) values for the mesh element
-            Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES]);
-            Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES + 1]);
-            Node.face_color.push_back(mesh_face_color_ptr[element_idx * NODE_COORDINATES + 2]);
+            size_t face_color_idx_at_t = timestep_color_stride + original_element_idx * NODE_COORDINATES;
+            Node.face_color.push_back(mesh_face_color_ptr[face_color_idx_at_t]);
+            Node.face_color.push_back(mesh_face_color_ptr[face_color_idx_at_t + 1]);
+            Node.face_color.push_back(mesh_face_color_ptr[face_color_idx_at_t + 2]);
         }
         //std::cout << "Node coords size: " << Node.node_coords.size() << std::endl;
        // std::cout << "Node element count: " << Node.element_count << std::endl;
@@ -570,7 +587,9 @@ inline void print_TLAS(TLAS &scene_TLAS){
  }
 */
 TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const double,nanobind::c_contig>>& scene_coords_expanded,
-    const std::vector<nanobind::ndarray<const double,nanobind::c_contig>>& scene_face_colors){
+    const std::vector<nanobind::ndarray<const double,nanobind::c_contig>>& scene_face_colors,
+    const int timestep,
+    const int timestep_count){
 // Handles building all acceleration structures in the scene - bottom and top level
 
     size_t scene_mesh_count = scene_coords_expanded.size(); 
@@ -590,7 +609,10 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
         enum ElementNodeCount nodes_per_element = TRI3; // Hard-code for now since we only have triangless.
 		nanobind::ndarray<const double, nanobind::c_contig> mesh_node_coords = scene_coords_expanded[mesh_idx];
         nanobind::ndarray<const double, nanobind::c_contig> mesh_face_colors = scene_face_colors[mesh_idx];
-        size_t mesh_element_count = mesh_face_colors.shape(0); // number of elements comprising the mesh
+
+        // size_t mesh_element_count = mesh_face_colors.shape(0); // number of elements comprising the mesh
+        size_t mesh_element_count = mesh_face_colors.shape(1); // number of elements comprising the mesh WITH TIMESTEPS
+
         double* mesh_node_coords_ptr = const_cast<double*>(mesh_node_coords.data());
         double* mesh_face_colors_ptr = const_cast<double*>(mesh_face_colors.data());
 
@@ -603,7 +625,7 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
         AABB& mesh_aabb = scene_blas_aabbs[mesh_idx]; // AABB for the entire mesh
 
         // Iterate over ELEMENTS in this mesh (only triangles for now)
-        process_element_data_tri3(mesh_element_count, mesh_node_coords_ptr, mesh_element_centroids, mesh_element_aabbs, mesh_aabb);
+        process_element_data_tri3(mesh_element_count, mesh_node_coords_ptr, mesh_element_centroids, mesh_element_aabbs, mesh_aabb, timestep);
      
         // Find centroid of the entire mesh
         scene_blas_centroids.emplace_back();
@@ -623,7 +645,7 @@ TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const do
 
         // BLAS BVH builder functions
         build_BLAS(mesh_bvh, mesh_element_centroids, mesh_element_aabbs, mesh_element_indices, node_minimum_element_index, mesh_element_count);
-        copy_data_to_BLAS_node(mesh_bvh, mesh_element_indices, node_minimum_element_index, mesh_node_coords_ptr, mesh_face_colors_ptr);
+        copy_data_to_BLAS_node(mesh_bvh, mesh_element_indices, node_minimum_element_index, mesh_node_coords_ptr, mesh_face_colors_ptr, timestep);
         //std::cout << "BLAS successfully built." << std::endl;
         //std::cout << "BVH has " << mesh_bvh.tree_nodes.size() << " nodes." << std::endl;
 

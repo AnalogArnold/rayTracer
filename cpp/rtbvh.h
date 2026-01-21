@@ -152,7 +152,8 @@ void process_element_data_tri3(int mesh_number_of_triangles,
     const double* mesh_node_coords_ptr,
     std::vector<std::array<double,3>>& mesh_element_centroids,
     std::vector<AABB>& mesh_triangle_aabbs,
-    AABB& mesh_aabb);
+    AABB& mesh_aabb,
+    const int timestep);
 
 AABB create_node_AABB(const std::vector<AABB>& mesh_element_abbs,
     const std::vector<int>& mesh_element_indices,
@@ -206,11 +207,14 @@ void copy_data_to_BLAS_node(BLAS &mesh_bvh,
     std::vector<int>& mesh_element_indices,
     std::vector<int>& node_minimum_element_index,
     const double* mesh_node_coords_expanded_ptr,
-    const double* mesh_face_color_ptr);
+    const double* mesh_face_color_ptr,
+    const int timestep);
     
 void copy_data_to_TLAS(TLAS &tlas,
     std::vector<BLAS>& scene_BLASes,
     const std::vector<int>& scene_blas_indices);
 
 TLAS build_acceleration_structures(const std::vector <nanobind::ndarray<const double,nanobind::c_contig>>& scene_coords_expanded,
-    const std::vector<nanobind::ndarray<const double,nanobind::c_contig>>& scene_face_colors);
+    const std::vector<nanobind::ndarray<const double,nanobind::c_contig>>& scene_face_colors,
+    const int timestep,
+    const int timestep_count);

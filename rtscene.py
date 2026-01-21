@@ -7,7 +7,9 @@ class Scene:
     while preserving user-friendly interface.'''
     #scene_connectivity: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
     #scene_coords: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
+    scene_coords_over_time: list[np.ndarray] = field(default_factory=list) 
     scene_coords_expanded: list[np.ndarray] = field(default_factory=list)
+    scene_deform_vals: list[np.ndarray] = field(default_factory=list)
     scene_face_colors: list[np.ndarray] = field(default_factory=list)
     scene_camera_center: list[np.ndarray] = field(default_factory=list)
     scene_pixel_00_center: list[np.ndarray] = field(default_factory=list)

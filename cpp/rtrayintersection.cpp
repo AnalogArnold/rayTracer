@@ -12,6 +12,7 @@ inline EiVector3d get_face_color(Eigen::Index minRowIndex,
     double c2 = face_color[minRowIndex * 3 + 1];
     double c3 = face_color[minRowIndex * 3 + 2];
     EiVector3d face_color_vec;
+    //face_color_vec << 0.0, 0.0, 0.0;
     face_color_vec << c1, c2, c3;
     return face_color_vec;
 }
