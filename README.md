@@ -36,6 +36,10 @@ This project is **not** intended as a general-purpose standalone renderer; the m
 
 * **Output format**: Currently `.ppm` images only, with plans to expose an in-memory buffer and additional image formats for easier downstream use.
 * **Colouring:** Mesh colours are currently based on the x-displacement field values. Grayscale is used for speed gains, as colours are not necessary for DIC.
+* **Single or multiple frames:** Users can choose if they want to render one or multiple frames.
+  * To avoid segmentation faults, if there is missing data for some of the meshes for later timesteps, it is filled with the last known position and an intermediate colour value (0.5). The same is true for the starting values, since the colours are currently based on the displacement field values, which are zero in the first frame.
+  
+    ![Example render of multiple timesteps](/images/animated_render.gif)
 
 ## Acceleration structures - bounding volume hierarchies (BVH)
 * Implements both **bottom-level (BLAS)** and **top-level (TLAS)** acceleration structures (BVHs) to avoid testing every ray against every mesh element, which is the most computationally expensive part of ray tracing.
