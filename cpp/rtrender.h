@@ -3,6 +3,7 @@
 #include <array>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 // nanobind header files
 #include <nanobind/nanobind.h>
@@ -25,7 +26,7 @@ void render_ppm_image(const EiVector3d &camera_center,
     const int image_height,
     const int image_width,
     const int number_of_samples,
-    const std::string filename);
+    const std::filesystem::path output_filepath);
 
 /* Version with pointers for no BVH, rtbvh_stack, and rtbvh_recursion
 inline EiVector3d get_color(Eigen::Index minRowIndex,

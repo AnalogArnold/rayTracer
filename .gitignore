@@ -3,6 +3,7 @@
 /build/
 /rtEnv/
 /rtEnvUpdate/
+/pyvale-output/
 *.so
 cachegrind.out.*
 callgrind*

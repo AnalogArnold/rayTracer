@@ -39,7 +39,7 @@ void render_ppm_image(const EiVector3d& camera_center,
     const int image_height,
     const int image_width,
     const int number_of_samples,
-    const std::string filename) {
+    const std::filesystem::path output_filepath) {
     // Get camera parameters from the dict and cast it to Eigen types so it works with existing code; by reference to avoid copying data
 
     std::vector<uint8_t> buffer;
@@ -68,7 +68,7 @@ void render_ppm_image(const EiVector3d& camera_center,
 
     std::ofstream image_file;
 
-    image_file.open(filename);
+    image_file.open(output_filepath);
     if (!image_file.is_open()) {
         std::cerr << "Failed to open the output file.\n";
         return;

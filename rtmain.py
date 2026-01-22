@@ -11,7 +11,6 @@ from rtsimdataloader import add_mesh_to_scene
 from rtscene import Scene
 
 # Tests for getting deformed timesteps
-import pyvale.sensorsim.simtools as simtools
 from enum import IntEnum
 import sys
 
@@ -20,7 +19,13 @@ class RenderType(IntEnum):
     STATIC = 0
     DYNAMIC = 1
 
+
 #################################################### INPUT #####################################################
+# Choose output directory for the rendered images
+base_dir = Path.cwd() / "pyvale-output"
+print(type(base_dir))
+if not base_dir.is_dir():
+    base_dir.mkdir(parents=True, exist_ok=True)
 # Output image dimensions
 image_width = 400  # px
 aspect_ratio = 16.0 / 9.0
@@ -64,9 +69,10 @@ number_of_samples = 1; # for anti-aliasing
 #np.set_printoptions(threshold=sys.maxsize)
 #print(scene.scene_face_colors[0][3])
 
+#def render_scene(image_height, image_width, scene, antialiasing_samples, out_directory_path):
 
 #no_repeats = 5
-cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_timestep_count, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)
+cpp_render_scene(image_height, image_width, number_of_samples, base_dir, scene.scene_timestep_count, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)
 # Below is with connectivity and node coords, not expanded version, for rtbvh_stack and rtbvh_recursion
 #time_results = timeit.repeat("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_connectivity, scene.scene_coords, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), repeat=no_repeats, number=1)
 #time_results = timeit.repeat("cpp_render_scene(image_height, image_width, number_of_samples, scene.scene_coords_expanded, scene.scene_face_colors, scene.scene_camera_center, scene.scene_pixel_00_center, scene.scene_matrix_pixel_spacing)", globals=globals(), repeat=no_repeats, number=1)
