@@ -38,6 +38,7 @@ void render_scene(const int image_height,
 
     CALLGRIND_START_INSTRUMENTATION;
     size_t num_cameras = camera_centers.size();
+    // Use std::filesystem so it always constructs the path properly for the running OS
     std::filesystem::path output_filepath;
     std::string filename; // Output image file
     
