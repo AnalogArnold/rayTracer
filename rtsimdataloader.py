@@ -2,10 +2,11 @@ import pyvale.mooseherder as mh
 import pyvale.sensorsim as sens
 import pyvale.sensorsim.simtools as simtools
 import numpy as np
-import rtscene
+from pathlib import Path
+from rtscene import Scene
 #import matplotlib as plt # for cmap face colour determination
 
-def simdata_to_mesh(pypath, field_components, fields_to_render, scale):
+def simdata_to_mesh(pypath: Path, field_components, fields_to_render, scale):
     # Convert the simulation output into a SimData object
     #sim_data = mh.ExodusReader(pypath).read_all_sim_data() # Pyvale 2025.8.1
     sim_data = mh.ExodusLoader(pypath).load_all_sim_data() # Pyvale 2026.1.0
@@ -25,7 +26,7 @@ def get_timesteps_rm(render_mesh):
     '''Returns the number of timesteps for the given RenderMesh object.'''
     return render_mesh.fields_render.shape[1]
 
-def compute_face_colors_averages(field_nodal_values, connectivity):
+def compute_face_colors_averages(field_nodal_values: np.ndarray, connectivity: np.ndarray):
     '''Calculates face colors based on the nodal values for the chosen field. Approach 2 - taking averages and stacking them together'''
     field_node_norm = (field_nodal_values - field_nodal_values.min())/(field_nodal_values.max()-field_nodal_values.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
     node_colors = np.column_stack((field_node_norm, field_node_norm, field_node_norm)) # Convert each scalar to an RGB triplet
@@ -33,13 +34,13 @@ def compute_face_colors_averages(field_nodal_values, connectivity):
     #print(f"face_colors_shape: {face_colors.shape}")
     return  face_colors # Compute each face's colour as the average of its 3 node colours
 
-def compute_face_colors_cmap(field_nodal_values):
+#def compute_face_colors_cmap(field_nodal_values: np.ndarray):
     '''Approach 1 - using a colour map to assign an rgb value'''
-    field_node_norm = (field_nodal_values - field_nodal_values.min())/(field_nodal_values.max()-field_nodal_values.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
-    cmap = plt.get_cmap('viridis')
-    return cmap(field_node_norm)[:,:3]
+ #   field_node_norm = (field_nodal_values - field_nodal_values.min())/(field_nodal_values.max()-field_nodal_values.min()) # Normalize displacement values, scaling them to range [0,1] so they can map to color intensities
+#    cmap = plt.get_cmap('viridis')
+ #   return cmap(field_node_norm)[:,:3]
 
-def add_mesh_to_scene(scene, pypath, field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), world_position = None, scale = 100.0) -> None:
+def add_mesh_to_scene(scene: Scene, pypath: Path, field_components=("disp_x","disp_y", "disp_z"), fields_to_render = ("disp_y", "disp_x"), world_position: np.ndarray = None, scale: float = 100.0) -> None:
     '''Adds a mesh to the scene dataclass, including the data for all timesteps.'''
     render_mesh = simdata_to_mesh(pypath, field_components, fields_to_render, scale)
     if world_position is not None:
@@ -119,5 +120,5 @@ def get_mesh_data(pypath, field_components=("disp_x","disp_y", "disp_z"), fields
     # Approach 1 - using a colour map to assign an rgb value
     # cmap = plt.get_cmap('viridis')
     # face_colors = cmap(x_disp_node_norm)[:,:3]
-    return {"node_coords_expanded": node_coords_expanded, "face_colors": face_colors}
+    return {"node_coords_expanded": node_coords_expanded, "face_colors": face_colors, "connectivity": connectivity, "coords": coords}
     #return {"connectivity": connectivity, "coords": coords, "face_colors": face_colors}

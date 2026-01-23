@@ -4,11 +4,12 @@
 /rtEnv/
 /rtEnvUpdate/
 /pyvale-output/
+/xatlas-python/
 *.so
 cachegrind.out.*
 callgrind*
 *.ppm
-
+*.stl
 *:Zone.Identifier
 
 ## Ignore Visual Studio temporary files, build results, and
