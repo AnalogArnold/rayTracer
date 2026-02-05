@@ -11,16 +11,16 @@ from pyvale.sensorsim.imagetools import ImageTools
 import timeit
 
 # Testing libigl
-import igl
-from stl import mesh
-import scipy as sp
-import pyvista
+#import igl
+#from stl import mesh
+#import scipy as sp
+#import pyvista
 #import bpy
 import pyvale.blender as blender
 import pyvale.sensorsim as sens
 from scipy.spatial.transform import Rotation
 # Try xatlas
-import xatlas
+#import xatlas
 
 #################################################### INPUT #####################################################
 # Choose output directory for the rendered images
@@ -54,6 +54,7 @@ camera1 = Camera(image_width, image_height, camera_center, camera_target, angle_
 camera1.add_camera_to_scene(scene)
 #camera0.add_camera_to_scene(scene)
 
+
 # Lights - to be added later
 
 
@@ -62,12 +63,30 @@ camera1.add_camera_to_scene(scene)
 #data_path = dataset.render_simple_block_path() # Test mesh 1; deleted in Pyvale 2025.8.1
 data_path = Path(Path().resolve().joinpath("simple_block.e")) # Temp to use the simple block simdata, since it was used in many benchmarks during the development
 data_path2 = dataset.render_mechanical_3d_path() # Test mesh 2
-add_mesh_to_scene(scene, data_path)
-add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
-add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
+#add_mesh_to_scene(scene, data_path)
+#add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
+#add_mesh_to_scene(scene, data_path, world_position=np.array([5.0, -3.5, -1.0]), scale=500)
+
+
 
 ############################################# DEBUG PLAYGROUND #############################################
 # Texture tests
+
+camera_center2 = np.array([-0.5, 1.1, 1.1])
+camera_target2 = np.array([0, 0, -1])
+angle_vertical_view2 = 90  # degrees
+blender_ex_cam = Camera(1500, 1040, camera_center2, camera_target2, angle_vertical_view)
+#blender_ex_cam.add_camera_to_scene(scene)
+
+add_mesh_to_scene(scene, data_path)
+add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
+
+render_scene(image_height, image_width, scene, number_of_samples, base_dir, RenderType.DYNAMIC, 2)
+
+
+
+
+
 
 # Get datapaths to .tiff images that come with pyvale
 ref_img = dataset.dic_plate_with_hole_ref() # Reference image with a speckle pattern. Comes with a hole so could potentiall be used with the mesh from data_path2?
@@ -92,16 +111,16 @@ block_mesh_vertices = block_mesh["coords"]
 ######################### Libigl and pyvista
 
 # Use numpy-stl to export mesh to try if saving as stl and then reading in libigl works since directly using numpy arrays doesn't
-test_block_exp = mesh.Mesh(np.zeros(block_mesh_faces.shape[0], dtype=mesh.Mesh.dtype))
-for i, f in enumerate(block_mesh_faces):
-    for j in range(3):
-        test_block_exp.vectors[i][j] = block_mesh_vertices[f[j],:]
+#test_block_exp = mesh.Mesh(np.zeros(block_mesh_faces.shape[0], dtype=mesh.Mesh.dtype))
+#for i, f in enumerate(block_mesh_faces):
+#    for j in range(3):
+#        test_block_exp.vectors[i][j] = block_mesh_vertices[f[j],:]
 #test_block_exp.save('test_block_exp.stl')
 
 # Try creating an STL from node coords expanded directly since dimensionally this checks out
-test_block_2 = mesh.Mesh(np.zeros(block_mesh_faces.shape[0], dtype=mesh.Mesh.dtype))
-for i in range(44):
-    test_block_2.vectors[i] = block_mesh["node_coords_expanded"][i]
+#test_block_2 = mesh.Mesh(np.zeros(block_mesh_faces.shape[0], dtype=mesh.Mesh.dtype))
+#for i in range(44):
+#    test_block_2.vectors[i] = block_mesh["node_coords_expanded"][i]
 #test_block_exp.save('test_block_exp_2.stl')
 
 # Currently using pyvista which needs the texture to be (size_1, size_2, 3 rgb values), so copy values and add axis 
@@ -115,7 +134,7 @@ for i in range(44):
 
 #print(test.shape)
 
-v, f = igl.read_triangle_mesh(Path.cwd() / "test_block_exp.stl")
+#v, f = igl.read_triangle_mesh(Path.cwd() / "test_block_exp.stl")
 #test = np.reshape(test_block_exp.vectors, (132,3))
 #print(test == v)
 
@@ -130,34 +149,34 @@ v, f = igl.read_triangle_mesh(Path.cwd() / "test_block_exp.stl")
 
 #print(f"v: {v}")
 
-test_v = np.reshape(block_mesh["node_coords_expanded"], (132,3))
+#test_v = np.reshape(block_mesh["node_coords_expanded"], (132,3))
 #print(test.shape)
 #print(test_v == v)
 
 #print(test_3 == v)
 
-temp_f = np.ndarray(shape=(44,3))
-count = 0
-for i in range(44):
-    for j in range(3):
-        temp_f[i,j] = count
-        count += 1
+#temp_f = np.ndarray(shape=(44,3))
+#count = 0
+#for i in range(44):
+#    for j in range(3):
+#        temp_f[i,j] = count
+#        count += 1
 #print(temp)
 
 ## Find the open boundary - common for all methods
-bnd = igl.boundary_loop(temp_f) # this works
+#bnd = igl.boundary_loop(temp_f) # this works
 #print(bnd)
 
 #bnd_def = igl.boundary_loop(f)
 #print(bnd_def)
 
 ## Map the boundary to a circle, preserving edge proportions
-bnd_uv = igl.map_vertices_to_circle(test_v, bnd) # this returns segmentation fault with out data layout
+#bnd_uv = igl.map_vertices_to_circle(test_v, bnd) # this returns segmentation fault with out data layout
 
 ## Harmonic parametrization for the internal vertices
 #bnd_uv = igl.map_vertices_to_circle(v, bnd) # this returns segmentation fault with out data layout
-uv = igl.harmonic(test_v, temp_f, bnd, bnd_uv, 1)
-v_p = np.hstack([uv, np.zeros((uv.shape[0],1))])
+#uv = igl.harmonic(test_v, temp_f, bnd, bnd_uv, 1)
+#v_p = np.hstack([uv, np.zeros((uv.shape[0],1))])
 
 # Now try with out data reshaped instead of reading stl
 
