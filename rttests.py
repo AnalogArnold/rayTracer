@@ -4,7 +4,7 @@ from pathlib import Path
 from rtsimdataloader import add_mesh_to_scene, get_mesh_data, simdata_to_mesh
 from rtcamera import Camera
 from rtscene import Scene, RenderType
-from rtmain import render_scene
+#from rtmain import render_scene
 
 import pyvale.dataset as dataset
 from pyvale.sensorsim.imagetools import ImageTools
@@ -78,14 +78,10 @@ angle_vertical_view2 = 90  # degrees
 blender_ex_cam = Camera(1500, 1040, camera_center2, camera_target2, angle_vertical_view)
 #blender_ex_cam.add_camera_to_scene(scene)
 
-add_mesh_to_scene(scene, data_path)
-add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
+#add_mesh_to_scene(scene, data_path)
+#add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=50)
 
-render_scene(image_height, image_width, scene, number_of_samples, base_dir, RenderType.DYNAMIC, 2)
-
-
-
-
+#render_scene(image_height, image_width, scene, number_of_samples, base_dir, RenderType.DYNAMIC, 2)
 
 
 # Get datapaths to .tiff images that come with pyvale
@@ -107,6 +103,42 @@ hole_mesh_faces = hole_mesh["connectivity"]
 hole_mesh_vertices = hole_mesh["coords"]
 block_mesh_faces = block_mesh["connectivity"]
 block_mesh_vertices = block_mesh["coords"]
+
+
+####### Tests for accessing mesh data in the BVH nodes in the C++ code - to check what data layout is better
+from rtsimdataloader_new import *
+from rtmaincpp import compare_data_access
+def data_access_compare_big_mesh():
+    add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=500)
+    #print(scene.scene_connectivity[0].shape[0])
+    #print(scene.scene_coords[0].shape[0])
+    #print(scene.coords_expanded[0].size)
+    #print(f"{scene.scene_connectivity[0].size + scene.scene_coords[0].size}")
+    add_mesh_to_scene(scene, data_path, scale = 500)
+    #print(scene.scene_connectivity[1].shape[0])
+    #print(scene.scene_coords[1].shape[0])
+    #print(scene.coords_expanded[1].size)
+    #print(f"{scene.scene_connectivity[1].size + scene.scene_coords[1].size}")
+    data_path_sp = Path(Path().resolve().joinpath("sphere_gmsh_vtk_test_2d_manyelems.vtk"))
+    rtmesh = vtk_mesh_to_rtmesh(data_path_sp, scale=500, world_position=np.array([1.0, -23, -1.0]))
+    #print(rtmesh.element_count)
+    #print(rtmesh.node_count)
+    rtmesh.set_surface(SurfType.FIELD_COLOR)
+    scene.add_rtmesh(rtmesh)
+    #print(scene.coords_expanded[2].size)
+    # print(f"{scene.scene_connectivity[2].size + scene.scene_coords[2].size}")
+    for i in range(10):
+        compare_data_access(scene.coords_expanded, scene.scene_connectivity, scene.scene_coords)
+
+def data_access_compare_timesteps():
+    add_mesh_to_scene(scene, data_path2, world_position=np.array([-5.0, 0.0, -10.0]), scale=500)
+    add_mesh_to_scene(scene, data_path2, world_position=np.array([5.0, 1.0, -1.0]), scale=1000)
+    add_mesh_to_scene(scene, data_path2, world_position=np.array([10.0, -3.0, -5.0]), scale=100)
+    add_mesh_to_scene(scene, data_path2, world_position=np.array([15.0, 6.0, -2.0]), scale=500)
+    for i in range(10):
+        compare_data_access(scene.coords_expanded, scene.scene_connectivity, scene.scene_coords)
+
+data_access_compare_timesteps()
 
 ######################### Libigl and pyvista
 

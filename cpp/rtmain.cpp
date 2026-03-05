@@ -17,13 +17,15 @@
 
 // raytracer header files
 #include "rteigentypes.h"
-#include "rtbvh.h"
+//#include "rtbvh.h"
 #include "rtrender.h"
-#include "rtbvh_recursion.h"
-#include "rtbvh_stack.h"
+//#include "rtbvh_recursion.h"
+//#include "rtbvh_stack.h"
+#include "access_test.h"
 
 namespace nb = nanobind;
 
+/*
 void render_scene(const int image_height,
     const int image_width,
     const int number_of_samples,
@@ -69,6 +71,41 @@ void render_scene(const int image_height,
         
     CALLGRIND_STOP_INSTRUMENTATION;
 }
+*/
+
+void compare_data_access(
+    std::vector<nb::ndarray<const double, nb::c_contig>>& scene_coords_expanded,
+    std::vector<nb::ndarray<const int, nb::c_contig>>& scene_connectivity,
+    std::vector<nb::ndarray<const double, nb::c_contig>>& scene_coords) {
+ // Purpose: Compare if it's better to have connectivity and node coordinate arrays separately, and index into them, or use "soup", which is the original approach with single array.
+ // Test will be conducted in "operational" conditions, i.e., the test functions follow the same pattern as BVH (BLAS) builder - because at later stages, we copy the data anyway, so it doesn't matter.
+
+   // Temp to get number of elements for second test
+    size_t num_meshes = scene_coords.size();
+    std::vector<size_t> mesh_element_counts(num_meshes);
+    for (size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx) {
+        // Access data from the scene for this particular mesh
+		nanobind::ndarray<const double, nanobind::c_contig> mesh_node_coords = scene_coords[mesh_idx];
+		nanobind::ndarray<const int, nanobind::c_contig> mesh_connectivity = scene_connectivity[mesh_idx];
+
+        size_t mesh_number_of_elements = mesh_connectivity.shape(0); // number of triangles/faces, will give us indices for some bits
+        mesh_element_counts[mesh_idx] = mesh_number_of_elements;
+    }
+
+    CALLGRIND_START_INSTRUMENTATION;
+    std::chrono::time_point t1_r = std::chrono::high_resolution_clock::now();
+    compare_bvh_access_time_double_array(scene_connectivity, scene_coords);
+    std::chrono::time_point t2_r = std::chrono::high_resolution_clock::now();
+
+    std::chrono::time_point t1_s = std::chrono::high_resolution_clock::now();
+    compare_bvh_access_time_soup(scene_coords_expanded, mesh_element_counts);
+    std::chrono::time_point t2_s = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Access time for double array approach: " << std::chrono::duration_cast<std::chrono::nanoseconds>(t2_r - t1_r).count() << " ns \n";
+    std::cout << "Access time for soup approach: " << std::chrono::duration_cast<std::chrono::nanoseconds>(t2_s - t1_s).count() << " ns \n";
+    CALLGRIND_STOP_INSTRUMENTATION;
+}
+
 
 /* Commented out - using connectivity and nodal coordinates, not expanded. Keeping it for tests with rtbvh_recursion and rtbvh_stack 
 void render_scene(const int image_height,
@@ -114,5 +151,10 @@ void render_scene(const int image_height,
 */
 
 NB_MODULE(rtmaincpp, a) {
-    a.def("cpp_render_scene", &render_scene);
+    a.def("compare_data_access", &compare_data_access);
 }
+
+/*
+NB_MODULE(rtmaincpp, a) {
+    a.def("cpp_render_scene", &render_scene);
+}*/

@@ -16,6 +16,7 @@
 
 constexpr int NODE_COORDINATES = 3; // number of coordinates per each mesh node. Used for some of flat indexing
 
+/*
 inline void compute_element_centroid_tri3(const std::array<double,9> &triangle_node_coords,
     std::array<double,3> &triangle_centroid) {
     // Find the centroid of a triangle.
@@ -31,7 +32,7 @@ inline void compute_mesh_centroid(AABB& mesh_aabb, std::array<double,3>& mesh_ce
         mesh_centroid[i] = (mesh_aabb.corner_min[i] + mesh_aabb.corner_max[i]) / 2.0;
     }
 }
-
+*/
 void process_element_data_tri3(int mesh_number_of_triangles,
     const double* mesh_node_coords_ptr,
     std::vector<std::array<double,3>>& mesh_element_centroids,

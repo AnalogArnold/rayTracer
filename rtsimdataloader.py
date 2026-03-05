@@ -62,7 +62,7 @@ def add_mesh_to_scene(scene: Scene, pypath: Path, field_components=("disp_x","di
     #x_disp_node_vals = render_mesh.fields_render[:,1,1] # Field displacement_x at timestep 1 for all nodes. Not 0 because then we get NaN
     #face_colors = compute_face_colors_averages(x_disp_node_vals, connectivity)
     face_colors_over_time[0] = np.ones(shape=(element_count, 3)) * 0.5 # Default - no deformation in the beginning, so set to 0.5 uniform color. Would this be true for non-displacement fields though? Check
-
+    """ Commented out for data access tests to keep single timestep at all times"""
     if timestep_count != 1:
         for timestep in range(1, timestep_count):
             # Get deformed nodal coordinates and expand them
@@ -73,14 +73,14 @@ def add_mesh_to_scene(scene: Scene, pypath: Path, field_components=("disp_x","di
             # Calculate face colors
             x_disp_node_vals = render_mesh.fields_render[:,timestep,1] # Hard-coded for the development, but user should be able to select the field - enum?
             face_colors_over_time[timestep] = compute_face_colors_averages(x_disp_node_vals, connectivity)
-
+    
     #print("Node_coords_expanded_over_time: \n")
     #print(node_coords_expanded_over_time)
     #print("face_colors_over_time: \n")
     #print(face_colors_over_time)
     # Add mesh to scene
-    scene.add_mesh(node_coords_expanded_over_time, face_colors_over_time, timestep_count)
-
+    #scene.add_mesh(node_coords_expanded_over_time, face_colors_over_time, timestep_count)
+    scene.add_mesh(node_coords_expanded_over_time, coords, connectivity, face_colors_over_time, timestep_count)
 
 
 

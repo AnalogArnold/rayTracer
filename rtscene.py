@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 import numpy as np
+from rtsimdataloader_new import RTMesh, SurfType
 
 # Enum to specify render type to be able to let user pick between static and dynamic images
 # Would make more sense to be in rtmain, but then we suffer from circular imports
@@ -12,8 +13,8 @@ class RenderType(Enum):
 class Scene:
     '''WIP: Dataclass for storing camera, mesh, and light data in a format that should work best with C++
     while preserving user-friendly interface.'''
-    #scene_connectivity: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
-    #scene_coords: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
+    scene_connectivity: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
+    scene_coords: list[np.ndarray] = field(default_factory=list) # Uncomment to test rtbvh_stack, rtbvh_recursion, or no BVH
     coords_expanded: list[np.ndarray] = field(default_factory=list)
     deform_vals: list[np.ndarray] = field(default_factory=list)
     face_colors: list[np.ndarray] = field(default_factory=list)
@@ -29,13 +30,29 @@ class Scene:
         self.pixel_00_center.append(pixel_00_center)
         self.matrix_pixel_spacing.append(matrix_pixel_spacing)
 
-    def add_mesh(self, node_coords_expanded: np.ndarray, face_colors: np.ndarray, timestep_count: int) -> None:
+    #def add_mesh(self, node_coords_expanded: np.ndarray, face_colors: np.ndarray, timestep_count: int) -> None:
+    def add_mesh(self, node_coords_expanded: np.ndarray, coords: np.ndarray, connectivity: np.ndarray, face_colors: np.ndarray, timestep_count: int) -> None:
         '''Adds a mesh to the scene.'''
         self.coords_expanded.append(node_coords_expanded)
+        self.scene_coords.append(coords)
+        self.scene_connectivity.append(connectivity) 
         self.face_colors.append(face_colors)
         self.mesh_count += 1
         if timestep_count > self.timestep_count: # Keep the highest timestep count (should be the same for all meshes, but you never know)
             self.timestep_count = timestep_count
+
+    def add_rtmesh(self, rtmesh: RTMesh) -> None:
+        '''Adds a rtmesh to the scene.'''
+        self.scene_coords.append(rtmesh.node_coords)
+        self.scene_connectivity.append(rtmesh.connectivity)
+        if rtmesh.surface_type is None:
+            print("Please set surface type for mesh before adding it to the scene.")
+            return
+        self.coords_expanded.append(rtmesh.node_coords_expanded_over_time)
+        if rtmesh.surface_type == SurfType.FIELD_COLOR:
+            self.face_colors.append(rtmesh.face_colors_over_time)
+        if rtmesh.timestep_count > self.timestep_count:  # Keep the highest timestep count (should be the same for all meshes, but you never know)
+            self.timestep_count = rtmesh.timestep_count
 
     def fill_empty_timesteps(self):
         '''Verifies that all meshes in the scene contain data for the defined number of timesteps. If there is missing data for some meshes,

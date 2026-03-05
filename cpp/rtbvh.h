@@ -143,10 +143,28 @@ struct TLAS {
     std::vector<TLAS_Node> tlas_nodes;
 };
 
+/*
 inline void compute_element_centroid_tri3(const std::array<double,9> &triangle_node_coords,
     std::array<double,3> &triangle_centroid);
 
 inline void compute_mesh_centroid(AABB& mesh_aabb, std::array<double,3>& mesh_centroid);
+*/
+
+inline void compute_element_centroid_tri3(const std::array<double,9> &triangle_node_coords,
+    std::array<double,3> &triangle_centroid) {
+    // Find the centroid of a triangle.
+    // Update the value of the passed array, so we don't have to fiddle with structs etc. to return a value.
+    for (int i=0; i < 3; ++i){
+            triangle_centroid[i] = (triangle_node_coords[i] + triangle_node_coords[i+3] + triangle_node_coords[i+6]) / 3.0;
+    }
+}
+
+inline void compute_mesh_centroid(AABB& mesh_aabb, std::array<double,3>& mesh_centroid) {
+    // Compute centroid of the mesh AABB
+    for (int i = 0; i < 3; ++i){
+        mesh_centroid[i] = (mesh_aabb.corner_min[i] + mesh_aabb.corner_max[i]) / 2.0;
+    }
+}
 
 void process_element_data_tri3(int mesh_number_of_triangles,
     const double* mesh_node_coords_ptr,
