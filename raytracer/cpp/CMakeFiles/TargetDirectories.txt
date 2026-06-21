@@ -1,0 +1,8 @@
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/rtmaincpp.dir
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/nanobind-static.dir
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/edit_cache.dir
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/rebuild_cache.dir
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/list_install_components.dir
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/install.dir
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/install/local.dir
+/home/micha/rayTracer/raytracer/cpp/CMakeFiles/install/strip.dir
