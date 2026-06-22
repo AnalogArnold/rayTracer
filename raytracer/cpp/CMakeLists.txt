@@ -41,6 +41,7 @@ else()
         eigen
         GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
         GIT_TAG 3.4.0
+        EXCLUDE_FROM_ALL #(CMake 3.28+); exclude Eigen's install targets so it works on a supercomputer
     )
     FetchContent_MakeAvailable(eigen)
 
@@ -131,5 +132,5 @@ endif()
 
 apply_compile_flags(rtmaincpp)
 
-install(TARGETS rtmaincpp LIBRARY DESTINATION /home/micha/rayTracer/raytracer) # home laptop
-#install(TARGETS rtmaincpp LIBRARY DESTINATION /home/tudent/rayTracer) # work laptop
+#install(TARGETS rtmaincpp LIBRARY DESTINATION /home/micha/rayTracer/raytracer) # home laptop
+install(TARGETS rtmaincpp LIBRARY DESTINATION /scratch/s.2029739/rayTracer/raytracer) # sunbird

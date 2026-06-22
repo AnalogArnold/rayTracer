@@ -4,17 +4,16 @@ import csv
 import os
 import cv2
 from scipy.spatial.transform import Rotation
-import matplotlib.pyplot as plt
 
 #import smplotlib # For nicer figures (imo), but no need to install if you don't want
 
-from rtmesh import *
-from rtmeshvisuals import *
-from rtcamera import *
-from rtscene import *
-from rtpresets import *
-from rtmain import *
-from rtoutputformat import *
+from raytracer.rtmesh import *
+from raytracer.rtmeshvisuals import *
+from raytracer.rtcamera import *
+from raytracer.rtscene import *
+from raytracer.rtpresets import *
+from raytracer.rtmain import *
+from raytracer.rtoutputformat import *
 
 # VERSION WITHOUT BLENDER - SHOULD RUN ON LINUX 
 # Make sure you have pre-processed UVs for the meshes (in the same folder as the meshes; so thesis-data/mesh-name)
