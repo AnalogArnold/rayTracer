@@ -4,8 +4,6 @@ import csv
 import os
 import timeit
 
-#import smplotlib # For nicer figures (imo), but no need to install if you don't want
-
 from raytracer.rtmesh import *
 from raytracer.rtmeshvisuals import *
 from raytracer.rtcamera import *
@@ -17,10 +15,9 @@ from raytracer.rtoutputformat import *
 # VERSION WITHOUT BLENDER - SHOULD RUN ON LINUX 
 # Make sure you have pre-processed UVs for the meshes (in the same folder as the meshes; so thesis-data/mesh-name)
 
-
 # Number of anti-aliasing samples at which we end the test regardless of whether the convergence
 # has been reached or not
-SUBSAMPLE_LIMIT_MAX = 8388608 # 2^23
+SUBSAMPLE_LIMIT_MAX = 2**23 # 8M
 
 # ================================================================================
 # Rendering test 2.1: Convergence, RAY TRACER; version with pre-processed UVs (Linux/supercomputer)-compatible
@@ -29,8 +26,9 @@ def conv_test_rt(test_case: TestCase,
                  resolution: Resolution = Resolution.HIGH,
                  starting_subsamples: int | None = None,
                  thread_count: int | None = None,
-                 element_idx: int | None = None,
-                 single_image: bool = False):
+                 element_idx: int | None = None, # 0 = QUAD4, 1 = QUAD8, 2 = QUAD9, 3 = TRI3, 4 = TRI6; as in Elements in global_utils
+                 single_image: bool = False,
+                 subsample_limit: int | None = None): # If true, renders only one image at the given starting_subsamples
     # NOTE: Resolution is a single digit, because these cameras had square viewport
     # NOTE 2: starting_subsamples must be set for everything that is not AIR_UNLIT
     # 1. Set mesh data that we can set currently
@@ -44,17 +42,28 @@ def conv_test_rt(test_case: TestCase,
     ref_texture = full_path("thesis-data/texture/speckle.tiff")
     beam_texture = load_image_greyscale(ref_texture) 
 
-   # 2. Settings based on the selected case
+    SUBSAMPLE_LIMIT = SUBSAMPLE_LIMIT_MAX
+    first_criterion_hit = False # Flag to mark when we hit the MaxAE/RMSE criterion for the first time, to run one more time for sureness and only then terminate
+
+    # Custom subsample limit - for convenience
+    if subsample_limit is not None and subsample_limit > 1:
+            SUBSAMPLE_LIMIT = subsample_limit
+    if starting_subsamples is None:
+            starting_subsamples = 1
+
+    roi_path = None
+    # ROI defined only for high res - for low, the entire image is our ROI
+    if resolution == Resolution.HIGH:
+        roi_path_access = f"thesis-data/roi_1024_{test_case.value}.csv" 
+        roi_path = full_path(roi_path_access)
+
+    # 2. Settings based on the selected case
     mat_type = MaterialType.UNLIT # Beam material
     if test_case == TestCase.AIR_UNLIT:
         print(f"--------------------------------\nTESTED CASE: AIR UNLIT\n--------------------------------")
         mat_type = MaterialType.UNLIT
-        if starting_subsamples is None:
-            starting_subsamples = 1
     else:
-        # This helps us speed up - it is certain that we will need more subsampling for shading
-        if starting_subsamples is None or starting_subsamples < 2:
-            raise ValueError("Please base your starting subsample count on the UNLIT case, otherwise this will run for ages.")
+
         if test_case == TestCase.AIR_DIFFUSE:
             print(f"--------------------------------\nTESTED CASE: AIR DIFFUSE\n--------------------------------")
             mat_type = MaterialType.DIFFUSE
@@ -140,8 +149,6 @@ def conv_test_rt(test_case: TestCase,
         subsamples = starting_subsamples # Anti-aliasing samples
         if single_image:
             time = timeit.timeit(lambda: render_scene(image_height, image_width, scene, subsamples, target, RenderType.STATIC, texture_sampler = TextureSampler.CATMULL_ROM, shading_type = ShadingType.FLAT, image_format = output_format_phs6, omp_thread_count = thread_count), number=1)
-            new_filename = "rtimage_" + "subsamples_" + str(subsamples) + ".tiff"
-            os.rename(target.joinpath(fresh_filename), target.joinpath(new_filename))
             with open(time_csv_path, mode=time_mode, newline="", encoding="utf-8") as timefile:
                 time_writer = csv.DictWriter(timefile, fieldnames=["subsamples","time (s)"])
                 if not time_log_exists:
@@ -158,7 +165,7 @@ def conv_test_rt(test_case: TestCase,
             # Open the CSV ready to append
             with open(csv_path, mode="w", newline="", encoding="utf-8") as csvfile, \
                 open(time_csv_path, mode=time_mode, newline="", encoding="utf-8") as timefile:
-                writer = csv.DictWriter(csvfile, fieldnames=["iteration", "subsamples", "rmse", "sim_score_rmse", "sim_score_identical"])
+                writer = csv.DictWriter(csvfile, fieldnames=CONV_CSV_COLS)
                 writer.writeheader()
                 # Push data from Python buffer to disk
                 csvfile.flush()
@@ -190,27 +197,33 @@ def conv_test_rt(test_case: TestCase,
                     timefile.flush()
                     os.fsync(timefile.fileno())
                     # Compare this brand new image with the previous one
-                    rmse, sim_score_rmse, sim_score_identical = bitwise_compare(target / new_filename, target / prev_filename)
+                    rmse, max_ae, percentile_diff, identical_count, total_pixels = bitwise_compare(target / new_filename, target / prev_filename, roi=roi_path, bit_depth=output_format_phs6.bit_depth)
                     print(f"-------------------------------- \nCURRENT SUBSAMPLE COUNT: {subsamples}"
-                        f"\n\t RMSE: {rmse}\n--------------------------------")
+                        f"\n\t RMSE: {rmse}"
+                        f"\n\t MAX ABS ERROR: {max_ae}\n--------------------------------")
                     # Store data in CSV/log
                     writer.writerow({
                         "iteration": iteration_number,
                         "subsamples": subsamples,
                         "rmse": rmse,
-                        "sim_score_rmse": sim_score_rmse,
-                        "sim_score_identical": sim_score_identical})
+                        "max_ae": max_ae,
+                        "99p_abs_error": percentile_diff,
+                        "identical_px_count": identical_count,
+                        "tot_px_roi": total_pixels})
                     csvfile.flush()
                     os.fsync(csvfile.fileno())
 
                     # Check if we can terminate for this element
                     # RMSE condition - the main one
-                    if rmse < RMSE_LIMIT_MIN: # ~ Root mean square error ~ 0.0 - we converged
-                        print("Images perfectly converged. Terminating this case.")
+                    if max_ae <= MAX_ABS_ERR_THRESHOLD: # RMSE is max. 1.0 for each individual pixel - we fall within least significant bit convergence
+                        if not first_criterion_hit:
+                            first_criterion_hit = True # True, so we terminate on the next case to make sure we've converged without weird behaviour
+                            continue
+                        print("Images converged to the least significant bit. Terminating this case.")
                         break
                     # Fallback: subsample count
-                    if subsamples >= SUBSAMPLE_LIMIT_MAX:
-                        print(f"Exceeded the maximum subsample limit of {SUBSAMPLE_LIMIT_MAX}. Terminating this case.")
+                    if subsamples >= SUBSAMPLE_LIMIT:
+                        print(f"Exceeded the maximum subsample limit of {SUBSAMPLE_LIMIT}. Terminating this case.")
                         break
 
-#conv_test_rt(TestCase.AIR_UNLIT, Resolution.LOW, 1, None, 1, True)
+conv_test_rt(TestCase.AIR_UNLIT, Resolution.LOW, 1, None, 1, False, 4)
